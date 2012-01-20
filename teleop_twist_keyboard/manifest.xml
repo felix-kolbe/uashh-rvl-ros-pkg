@@ -1,0 +1,17 @@
+<package>
+  <description brief="teleop_twist_keyboard">
+    Simple keyboard teleoping for Twist based robots.
+    Had been forked to support qwertz layouts and numpad.
+    Had been extended to control joint movements, e.g. turn the gripper cam.
+    
+    The origin is from Graylin Trevor Jay: 
+    http://code.google.com/p/brown-ros-pkg/
+  </description>
+  <author>Felix Kolbe, Graylin Trevor</author>
+  <license>BSD</license>
+
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="metralabs_ros"/>
+
+</package>
