@@ -1,0 +1,17 @@
+<package>
+  <description brief="joint_motion_service">
+
+     This joint_motion_service provides a self defined service, which can be called with a number of joint names and there target positions. It will forward those to the metralabs_ros node and check the current joint states. When they reach their target, the service call is replied successfully. Otherwise a timeout leads to a negative reply.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/joint_motion_service</url>
+  <depend package="roscpp"/>
+  <depend package="metralabs_ros"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+

@@ -1,0 +1,6 @@
+#request
+int8[] joint_ids
+float64[] positions
+---
+#response
+bool positions_ok
