@@ -1,0 +1,19 @@
+<package>
+  <description brief="move_demo">
+
+     Python example which commands the robot to drive forward while observing 
+     its odometry, stopping it after having moved a given distance.
+     
+     Wrote it for my paper, explaining ROS on our robot.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="nav_msgs"/>
+
+</package>
+
+
