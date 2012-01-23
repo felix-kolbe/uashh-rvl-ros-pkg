@@ -1,0 +1,23 @@
+yaw_goal_tolerance: 0.1 # 0.05 rad
+xy_goal_tolerance: 0.20 # 0.10 meter
+latch_xy_goal_tolerance: true # wenn Zielort erreicht, nur dreh en für Pose, nicht fahren
+
+#/move_base/aggressive_reset/reset_distance
+#/move_base/conservative_reset/reset_distance
+
+TrajectoryPlannerROS:
+  max_vel_x: 0.2 #0.45
+  min_vel_x: 0.2 #0.1
+  max_rotational_vel: 0.5 # 1.0
+  min_in_place_rotational_vel: 0.5 # 0.4
+
+  acc_lim_x: 2 # 2.5
+  acc_lim_y: 0 # 2.5
+  acc_lim_th: 3 # 3.2
+
+  holonomic_robot: false
+
+  dwa: false
+  yaw_goal_tolerance: 0.1 # 0.05 rad
+  xy_goal_tolerance: 0.20 # 0.10 meter
+  latch_xy_goal_tolerance: true # wenn Zielort erreicht, nur dreh en für Pose, nicht fahren

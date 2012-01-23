@@ -1,0 +1,13 @@
+<package>
+  <description brief="scitos_2dnav">
+
+     Configuration and launch files for navigation/mapping stack, made with wiki/navigation/Tutorials/RobotSetup.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+</package>
+
+
