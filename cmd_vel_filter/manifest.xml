@@ -1,0 +1,15 @@
+<package>
+  <description brief="cmd_vel_filter">
+
+     This small node, actually a workaround for /move_base' shaky output, filters the /cmd_vel_mb topic to /cmd_vel_filter, averaging over a definable number of messages, with respect to history timeout.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+
