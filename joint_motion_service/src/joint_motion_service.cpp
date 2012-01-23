@@ -25,12 +25,19 @@ bool serviceCallback( joint_motion_service::move_joints_service::Request &reques
 {
 	ROS_INFO("Service called!");
 
+	if(lastJointState == 0) {
+		ROS_ERROR("Joint move service receives no joint states!");
+		response.positions_ok = false;
+		return true;
+	}
+
 	// send wanted positions
 	for (uint joint = 0; joint < request.joint_ids.size(); ++joint) {
 		metralabs_ros::idAndFloatPtr output = boost::make_shared<metralabs_ros::idAndFloat>();
 		output->id = request.joint_ids.at(joint);
 		output->value = request.positions.at(joint);
 		pubMovePos.publish(output);
+
 		ros::Duration(SLEEP_TIME_SECS).sleep();
 	}
 
@@ -40,7 +47,7 @@ bool serviceCallback( joint_motion_service::move_joints_service::Request &reques
 	do {
 		// check for timeout, arm to slow or not moving anymore
 		if(ros::Time::now() > timeoutTime) {
-			ROS_WARN("Joint move service timed out!");
+			ROS_ERROR("Move joints service timed out! Stopping joint.");
 			response.positions_ok = false;
 			return true;
 		}
@@ -81,7 +88,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 
 	pubMovePos = nh.advertise<metralabs_ros::idAndFloat>("/movePosition", 1, false);
-	ros::Subscriber subJointStates = nh.subscribe("/schunk/position/joint_states", 1, jointStatesCallback);
+	ros::Subscriber subJointStates = nh.subscribe("/schunk/position/pre_mimic/joint_states", 1, jointStatesCallback);
 	ros::ServiceServer service = nh.advertiseService("/move_joints_service", serviceCallback);
 
 	ROS_INFO("Joint motion service running.");
