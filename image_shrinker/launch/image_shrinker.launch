@@ -1,0 +1,5 @@
+<launch>
+    <param name="/camera/image_small/compressed/jpeg_quality" value="42"/>
+    <node pkg="learning_image_transport" type="image_shrinker" name="image_shrinker" output="screen">
+    </node>
+</launch>

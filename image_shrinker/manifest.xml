@@ -1,0 +1,14 @@
+<package>
+  <description brief="image_shrinker">
+
+     This node shrinks an image topic very simple. Usefull to manually remote view a camera with less bandwidth. There is a define DIVISOR, the node copies every DIVISORth byte in both row and columns direction without any interpolation.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="image_transport"/>
+
+</package>
+
+
