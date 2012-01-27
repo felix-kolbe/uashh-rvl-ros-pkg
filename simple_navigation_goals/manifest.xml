@@ -1,0 +1,21 @@
+<package>
+  <description brief="simple_navigation_goals">
+
+     This was made with the navigation tutorial SendingSimpleGoals and 
+     demonstrates how to use the action lib let the navigation stack drive 
+     to robot to a self chosen coordinate. 
+     
+     Has been pimped to do this repeatedly to patrol back and forth x times.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://www.ros.org/wiki/navigation/Tutorials/SendingSimpleGoals</url>
+  <depend package="move_base_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
