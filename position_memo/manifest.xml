@@ -1,0 +1,17 @@
+<package>
+  <description brief="position_memo">
+
+     Simple interactive python tool which lets the user store a robots position and send those to the navigation stack.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <depend package="tf"/>
+  <depend package="rospy"/>
+  <depend package="actionlib"/>
+  <depend package="move_base_msgs"/>
+
+</package>
+
+
