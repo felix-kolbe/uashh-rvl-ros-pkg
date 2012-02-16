@@ -1,0 +1,4 @@
+<launch>
+    <param name="robot_description" textfile="$(find metralabs_ros)/Models/scitos_haw_schunk.urdf" />
+    <rosparam command="load" ns="robot_description_planning" file="$(find scitos_haw_schunk_arm_navigation)/config/scitos_haw_schunk_planning_description.yaml" />
+</launch>
