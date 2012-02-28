@@ -1,4 +1,5 @@
 <launch>
+	<!-- this 'real' launch file is for planning and executing with the real robot --> 
   <param name="/use_sim_time" value="true" />
   <include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_planning_environment.launch" />
   <node pkg="planning_environment" name="wall_clock_server" type="fake_time.py" />
@@ -10,15 +11,16 @@
     <param name="database_path" value="arm_navigation_dbs/scitos_haw_schunk"/>
   </node>
 
+  <remap from="/joint_states" to="/schunk/position/joint_states"/>
   <include file="$(find planning_environment)/launch/environment_server.launch">
-    <arg name="use_monitor" value="false" />
+    <arg name="use_monitor" value="true" />
     <arg name="use_collision_map" value="false" />
   </include>
   <include file="$(find scitos_haw_schunk_arm_navigation)/launch/constraint_aware_kinematics.launch" />
   <include file="$(find scitos_haw_schunk_arm_navigation)/launch/ompl_planning.launch" />
   <include file="$(find scitos_haw_schunk_arm_navigation)/launch/trajectory_filter_server.launch" />
-  <node pkg="robot_state_publisher" type="state_publisher" name="rob_st_pub" />
-  <node name="planning_scene_warehouse_viewer" pkg="move_arm_warehouse" type="planning_scene_warehouse_viewer"/>
+  <!--<node pkg="robot_state_publisher" type="state_publisher" name="rob_st_pub" />-->
+  <node name="planning_scene_warehouse_viewer" pkg="move_arm_warehouse" type="planning_scene_warehouse_viewer" output="screen"/>
 
   <node name="interpolated_ik_node_right" pkg="interpolated_ik_motion_planner" 
 	type="interpolated_ik_motion_planner.py" args="r" respawn="false" output="screen">
@@ -74,4 +76,6 @@
   <!-- Called to send the planning scene to the environment server -->
   <param name="set_planning_scene_diff_name" value="environment_server/set_planning_scene_diff"/>
   <param name="vis_topic_name" value="planning_scene_visualizer_markers"/>
+  
+  <param name="use_robot_data" value="true"/>
 </launch>

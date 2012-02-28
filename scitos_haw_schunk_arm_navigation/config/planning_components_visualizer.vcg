@@ -1,6 +1,6 @@
-Background\ ColorR=0.12549
-Background\ ColorG=0.12549
-Background\ ColorB=0.12549
+Background\ ColorR=0,337255
+Background\ ColorG=0,396078
+Background\ ColorB=0,486275
 Fixed\ Frame=base_link
 Target\ Frame=<Fixed Frame>
 Grid.Alpha=0.5

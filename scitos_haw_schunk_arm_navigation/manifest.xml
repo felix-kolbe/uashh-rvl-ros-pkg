@@ -3,8 +3,10 @@
 
      scitos_haw_schunk_arm_navigation
 
+     made from tutorial
+
   </description>
-  <author>electric tester</author>
+  <author>Felix Kolbe</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/scitos_haw_schunk_arm_navigation</url>

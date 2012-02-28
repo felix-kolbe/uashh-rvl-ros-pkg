@@ -1,4 +1,3 @@
----
 planner_configs:
   SBLkConfig1:
     type: kinematic::SBL
