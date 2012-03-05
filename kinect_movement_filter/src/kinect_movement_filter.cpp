@@ -47,8 +47,9 @@ public:
     {
       tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now() - ros::Duration(noMoveSpan), pastTf);
       tl.lookupTransform(sensorFrame, baseFrame, (*point_cloud).header.stamp, msgTf);
-      tl.waitForTransform(sensorFrame, baseFrame, ros::Time::now(), ros::Duration(0.2), ros::Duration(0.01));
-      //tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now(), currentTf);
+      ros::Time currentTime = ros::Time::now();
+      tl.waitForTransform(sensorFrame, baseFrame, currentTime, ros::Duration(0.2), ros::Duration(0.01));
+      tl.lookupTransform(sensorFrame, baseFrame, currentTime, currentTf);
 
       if (compareTf(pastTf, msgTf) && compareTf(msgTf, currentTf))
       {
