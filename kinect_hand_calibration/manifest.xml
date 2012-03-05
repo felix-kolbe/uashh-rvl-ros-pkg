@@ -17,7 +17,7 @@
   <depend package="image_transport"/>
   <depend package="common_rosdeps" />
   <depend package="joint_motion_service" />
-  <rosdep name="eigen" />
+  <!--<rosdep name="eigen" />-->
   <rosdep name="tinyxml" />
 </package>
 

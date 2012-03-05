@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <eigen3/Eigen/Eigen>
+//#include <eigen3/Eigen/Eigen>
 #include <joint_motion_service/move_joints_service.h>
 #include <tinyxml.h>
 #include <tf/transform_broadcaster.h>
