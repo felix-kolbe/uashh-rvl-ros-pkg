@@ -45,19 +45,20 @@ public:
 
     try
     {
-    tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now() - ros::Duration(noMoveSpan), pastTf);
-    tl.lookupTransform(sensorFrame, baseFrame, (*point_cloud).header.stamp, msgTf);
-    tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now(), currentTf);
+      tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now() - ros::Duration(noMoveSpan), pastTf);
+      tl.lookupTransform(sensorFrame, baseFrame, (*point_cloud).header.stamp, msgTf);
+      tl.waitForTransform(sensorFrame, baseFrame, ros::Time::now(), ros::Duration(0.2), ros::Duration(0.01));
+      //tl.lookupTransform(sensorFrame, baseFrame, ros::Time::now(), currentTf);
 
-    if (compareTf(pastTf, msgTf) && compareTf(msgTf, currentTf))
-    {
-      ROS_INFO("No motion detected, publishing message.");
-      pub.publish(point_cloud);
-    }
-    else
-    {
-      ROS_INFO("Motion detected, dropping message.");
-    }
+      if (compareTf(pastTf, msgTf) && compareTf(msgTf, currentTf))
+      {
+        ROS_INFO("No motion detected, publishing message.");
+        pub.publish(point_cloud);
+      }
+      else
+      {
+        ROS_INFO("Motion detected, dropping message.");
+      }
     }
     catch (tf::TransformException &e)
     {
