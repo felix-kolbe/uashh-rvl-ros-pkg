@@ -1,0 +1,18 @@
+<package>
+  <description brief="kinect_movement_filter">
+
+     kinect_movement_filter
+
+  </description>
+  <author>Ben Struss</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/kinect_movement_filter</url>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+

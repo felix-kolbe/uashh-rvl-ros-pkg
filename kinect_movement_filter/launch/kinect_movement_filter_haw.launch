@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="kinect_movement_filter" type="kinect_movement_filter" name="kinect_movement_filter" output="screen">
+      <param name="in_topic" value="/kinect1/depth_registered/points"/>
+      <param name="base_frame" value="/odom"/>
+      <param name="sensor_frame" value="/CameraMount"/>
+      <param name="no_movement_span_seconds" value="0.5"/>
+    </node>
+</launch>
