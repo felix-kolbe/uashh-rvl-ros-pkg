@@ -1,0 +1,44 @@
+<launch>
+<!--
+  <node pkg="nodelet" type="nodelet" name="collider_manager" args="manager"/>
+  <!- - Run a VoxelGrid filter to clean NaNs and downsample the data - ->
+  <node pkg="nodelet" type="nodelet" name="grid" args="load pcl/VoxelGrid collider_manager">
+    <remap from="~input"  to="/narrow_stereo_textured/points2" />
+    <remap from="~output" to="/collider/grid" />
+    <rosparam>
+      filter_field_name: z
+      filter_limit_min: 0.5
+      filter_limit_max: 5
+      leaf_size: 0.02
+    </rosparam>
+  </node>
+-->
+<!--
+  <node pkg="robot_self_filter" type="self_filter" name="stereo_self_filter" output="screen">
+    <remap from="cloud_in" to="/narrow_stereo_textured/points2" />
+    <remap from="cloud_out" to="/collider/grid" />
+    <param name="sensor_frame" type="string" value="narrow_stereo_optical_frame" />
+    <param name="subsample_value" type="double" value=".02"/>
+    <rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/self_filter.yaml" />
+  </node>
+-->
+  <node pkg="collider" type="collider_node" name="collider_node" respawn="false" output="screen">
+
+    <param name="fixed_frame" type="string" value="base_link" />
+    <param name="resolution" type="double" value="0.05" />
+    <param name="max_range" type="double" value="5.0" />
+    
+    <remap from="full_cloud_filtered" to="/kinect1/depth_registered/points" /><!-- /collider/grid -->
+
+    <!--<remap from="collision_map_out" to="collision_map_occ" />-->
+    <remap from="point_cloud_out" to="octomap_point_cloud" />
+
+    <!-- cloud sources -->
+    <rosparam command="load" file="collider_sensors.yaml" />
+
+
+    <!-- self filtering links -->
+    <!--<rosparam command="load" file="$(find pr2_arm_navigation_perception)/config/self_filter.yaml" />  -->
+  </node>
+
+</launch>

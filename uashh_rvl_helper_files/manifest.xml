@@ -1,0 +1,18 @@
+<package>
+  <description brief="uashh_rvl_launch_files">
+
+     Launch, configuration and other helper files for foreign packages 
+     used in RVL at UAS HH. At this time for robot and workstations.
+     
+     Add the following to your .bashrc after the PACKAGE_PATH extension 
+     to use the aliases:
+        source `rospack find uashh_rvl_helper_files`/aliases.bash
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+</package>
+
+
