@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Load basic openni -->
+  <include file="openni.launch"/>
+
+  <!-- Load Kinect_Hand_Calibration -->
+  <include file="$(find kinect_hand_calibration)/launch/kinect_hand_calibration_haw.launch"/>
+
+</launch>
