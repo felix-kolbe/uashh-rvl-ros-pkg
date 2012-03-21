@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="kinect_hand_calibration" type="kinect_hand_calibration" name="kinect_hand_calibration" output="screen">
+      <param name="in_color" value="/kinect1/rgb/image_color"/>
+      <param name="in_depth" value="/kinect1/depth_registered/image"/>
+      <param name="xml_calibration_file_path" value="/home/bstruss/ros/config/kinectHandCalibration.xml"/>
+      <param name="parent_frame" value="/CameraMount"/>
+      <param name="child_frame" value="/kinect1_link"/>
+      <param name="turn_axis_frame" value="/Gripper"/>
+      <param name="tf_x_offset" value="0.02"/>
+    </node>
+</launch>
