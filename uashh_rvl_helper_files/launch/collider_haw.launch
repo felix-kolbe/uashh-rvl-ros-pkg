@@ -30,7 +30,7 @@
     
     <remap from="full_cloud_filtered" to="/kinect1/depth_registered/points" /><!-- /collider/grid -->
 
-    <!--<remap from="collision_map_out" to="collision_map_occ" />-->
+    <remap from="collision_map_out" to="collision_map_occ" />
     <remap from="point_cloud_out" to="octomap_point_cloud" />
 
     <!-- cloud sources -->
