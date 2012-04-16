@@ -14,13 +14,16 @@ msg = """
 Position memo tool commands:
 ---------------------------
 h : show this help
+q : quit (^C)
+
 l : list stored positions
 p : print current position
 s : store current position
 
 r : read positions from file
 w : write positions to file
-q/^C: quit
+
+g : go to selectable position
 """
 
 def getKey():
@@ -49,6 +52,7 @@ if __name__ == '__main__':
     
     rospy.init_node('position_memo')
 
+    print 'Intializing transform listener and move base action client.'
     listener = tf.TransformListener()
     
     client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
@@ -57,7 +61,6 @@ if __name__ == '__main__':
     print msg
     
     while not rospy.is_shutdown():
-        print '----'
         key = getKey()
         
         ## quit
@@ -91,6 +94,7 @@ if __name__ == '__main__':
             
         ## go to position
         elif key == 'g':
+            print 'Stored position names:'
             for k, v in positions.iteritems():
                 print k
             
@@ -104,6 +108,7 @@ if __name__ == '__main__':
             
             goal.target_pose.pose = positions[posname]
             
+            print 'Waiting for base to reach goal...'
             client.send_goal_and_wait(goal)
             #client.wait_for_result(rospy.Duration.from_sec(25.0))
             
@@ -111,5 +116,11 @@ if __name__ == '__main__':
                 print ("Hooray, the base reached the goal.")
             else:
                 print ("The base failed to move to the goal for some reason")
+        
+        ## skip delimiter lines if bad keys pressed
+        else:
+            continue
+            
+        print '---------------------'
         
     ## end while
