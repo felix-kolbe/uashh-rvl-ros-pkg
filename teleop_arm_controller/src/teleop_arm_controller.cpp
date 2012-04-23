@@ -64,7 +64,7 @@ void jointStatesCallback(const sensor_msgs::JointStateConstPtr& newState)
   lastJointState = newState;
   if (initiatedMovement)
   {
-    ROS_INFO("Got joint states and i am moving the arm");
+    //ROS_INFO("Got joint states and i am moving the arm");
     if (!checkVelocityValid(YAW_JOINT_ID, lastJointState->velocity.at(YAW_JOINT_ID), lastJointState->position.at(YAW_JOINT_ID)))
     {
       sendVelocity(YAW_JOINT_ID, 0);
@@ -74,10 +74,10 @@ void jointStatesCallback(const sensor_msgs::JointStateConstPtr& newState)
       sendVelocity(PITCH_JOINT_ID, 0);
     }
   }
-  else
-  {
-    ROS_INFO("Got joint states and i am NOT moving the arm");
-  }
+//  else
+//  {
+//    ROS_INFO("Got joint states and i am NOT moving the arm");
+//  }
 }
 
 void moveVelocityCallback(const geometry_msgs::TwistConstPtr& moveVelocity)
