@@ -88,13 +88,13 @@ void moveVelocityCallback(const geometry_msgs::TwistConstPtr& moveVelocity)
 
   bool moving = false;
 
-  ROS_INFO("Yaw: %f  Pos: %f  CurVel: %f", yaw, lastJointState->position.at(YAW_JOINT_ID), lastJointState->velocity.at(YAW_JOINT_ID));
+  //ROS_INFO("Yaw: %f  Pos: %f  CurVel: %f", yaw, lastJointState->position.at(YAW_JOINT_ID), lastJointState->velocity.at(YAW_JOINT_ID));
   if (std::abs(yaw) > 1e-4 && checkVelocityValid(YAW_JOINT_ID, yaw, lastJointState->position.at(YAW_JOINT_ID)))
   {
     if (std::abs(yaw - lastJointState->velocity.at(YAW_JOINT_ID)) > 2e-2)
     {
       sendVelocity(YAW_JOINT_ID, yaw);
-      ROS_INFO("Started yaw movement: %f", yaw);
+      //ROS_INFO("Started yaw movement: %f", yaw);
     }
     moving = true;
   }
@@ -106,13 +106,13 @@ void moveVelocityCallback(const geometry_msgs::TwistConstPtr& moveVelocity)
     }
   }
 
-  ROS_INFO("Pitch: %f  Pos: %f  CurVel: %f", pitch, lastJointState->position.at(PITCH_JOINT_ID), lastJointState->velocity.at(PITCH_JOINT_ID));
+  //ROS_INFO("Pitch: %f  Pos: %f  CurVel: %f", pitch, lastJointState->position.at(PITCH_JOINT_ID), lastJointState->velocity.at(PITCH_JOINT_ID));
   if (std::abs(pitch) > 1e-6 && checkVelocityValid(PITCH_JOINT_ID, pitch, lastJointState->position.at(PITCH_JOINT_ID)))
   {
     if (std::abs(pitch - lastJointState->velocity.at(PITCH_JOINT_ID)) > 2e-2)
     {
       sendVelocity(PITCH_JOINT_ID, pitch);
-      ROS_INFO("Started pitch movement: %f", pitch);
+      //ROS_INFO("Started pitch movement: %f", pitch);
     }
     moving = true;
   }
