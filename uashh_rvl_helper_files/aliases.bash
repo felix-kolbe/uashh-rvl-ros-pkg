@@ -1,6 +1,6 @@
 HELPER_PKG=uashh_rvl_helper_files
 
-alias aliases_help='rosed '$HELPER_PKG' aliases.bash'
+alias aliases_edit='rosed '$HELPER_PKG' aliases.bash'
 alias aliases_reload='source `rospack find $HELPER_PKG`/aliases.bash'
 
 
@@ -48,4 +48,5 @@ alias rnl='rosnode list'
 alias joint_states='rostopic echo -n 1 /schunk/position/joint_states'
 alias joint_movePos='rostopic pub -1 /movePosition metralabs_ros/idAndFloat -- '
 alias joint_targetVel='rostopic pub -1 /targetVelocity metralabs_ros/idAndFloat -- '
+alias joint_targetAcc='rostopic pub -1 /targetAcceleration metralabs_ros/idAndFloat -- '
 alias joint_ref_gripper='rostopic pub -1 /ref std_msgs/Int8 5'
