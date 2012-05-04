@@ -1,0 +1,18 @@
+<package>
+  <description brief="teleop_arm_controller">
+
+     teleop_arm_controller
+
+  </description>
+  <author>Ben Struss</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/teleop_arm_controller</url>
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="metralabs_ros"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
