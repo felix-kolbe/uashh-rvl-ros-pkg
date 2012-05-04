@@ -1,0 +1,24 @@
+<package>
+  <description brief="uashh_smach">
+
+     Smach prototypes of University of Applied Sciences Hamburg.
+
+  </description>
+  <author>Felix</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uashh_smach</url>
+  <depend package="rospy"/>
+  <depend package="smach_ros"/>
+  <depend package="tf"/>
+  
+  <depend package="std_msgs"/>
+  <depend package="joint_motion_service"/>
+  <depend package="arm_navigation_msgs"/>
+  <!--<depend package="motion_planning_msgs"/>-->
+  <depend package="move_base_msgs"/>
+  
+
+</package>
+
+
