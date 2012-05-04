@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="move_arm" type="move_arm_simple_action" name="scitos_haw_schunk_move_SchunkArm">
+    <node pkg="move_arm" type="move_arm_simple_action" name="scitos_haw_schunk_move_SchunkArm" output="screen">
         <param name="group" type="string" value="SchunkArm" />
         <remap from="arm_ik" to="scitos_haw_schunk_SchunkArm_kinematics/get_constraint_aware_ik" />
         <param name="controller_action_name" type="string" value="schunk/follow_joint_trajectory" />
