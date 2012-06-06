@@ -30,7 +30,7 @@ class KinectHandCalibration
   image_transport::Subscriber colorImgSub;
   image_transport::Subscriber depthImgSub;
   ros::Subscriber calibSub;
-  image_transport::Publisher image_pub_;
+  //image_transport::Publisher image_pub_;
   ros::ServiceClient jointMotionServiceClient;
 
   bool captureColorImg;
@@ -64,7 +64,7 @@ public:
   {
     captureColorImg = false;
     captureDepthImg = false;
-    image_pub_ = it_.advertise("out", 1);
+    //image_pub_ = it_.advertise("out", 1);
     calibSub = nh_.subscribe("in_calibrate", 1, &KinectHandCalibration::doCalibrationCb, this);
     jointMotionServiceClient = nh_.serviceClient<joint_motion_service::move_joints_service>("move_joints_service");
 
@@ -416,10 +416,10 @@ public:
     tfListener.lookupTransform(childFrame, sensorFrame, ros::Time(0), childToSensor);
     double y = shift + axisToParent.getOrigin().getY() - childToSensor.getOrigin().getY();
     double z = elevation + axisToParent.getOrigin().getZ() - childToSensor.getOrigin().getZ();
-    btScalar ctsYaw, ctsPitch, ctsRoll, atpYaw, atpPitch, atpRoll;
-    btMatrix3x3 ctsRotMat(childToSensor.getRotation());
+    tfScalar ctsYaw, ctsPitch, ctsRoll, atpYaw, atpPitch, atpRoll;
+    tf::Matrix3x3 ctsRotMat(childToSensor.getRotation());
     ctsRotMat.getEulerYPR(ctsYaw, ctsPitch, ctsRoll);
-    btMatrix3x3 atpRotMat(childToSensor.getRotation());
+    tf::Matrix3x3 atpRotMat(childToSensor.getRotation());
     atpRotMat.getEulerYPR(atpYaw, atpPitch, atpRoll);
 
     currentTransform.setOrigin(tf::Vector3(currentTransform.getOrigin().getX(), y, z));
@@ -605,8 +605,8 @@ public:
     root->LinkEndChild(origin);
 
     TiXmlElement * rotation = new TiXmlElement( "rotation" );
-    btMatrix3x3 rotMat(currentTransform.getRotation());
-    btScalar yaw, pitch, roll;
+    tf::Matrix3x3 rotMat(currentTransform.getRotation());
+    tfScalar yaw, pitch, roll;
     rotMat.getEulerYPR(yaw, pitch, roll);
     rotation->SetDoubleAttribute("yaw", yaw);
     rotation->SetDoubleAttribute("pitch", pitch);

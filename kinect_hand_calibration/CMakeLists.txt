@@ -14,6 +14,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #find_package(Eigen REQUIRED)
 #include_directories(${Eigen_INCLUDE_DIRS})
 
+find_package(OpenCV REQUIRED)
+
 rosbuild_init()
 
 #set the default path for built executables to the "bin" directory
@@ -36,3 +38,5 @@ rosbuild_genmsg()
 
 rosbuild_add_executable(kinect_hand_calibration src/kinect_hand_calibration.cpp)
 
+target_link_libraries(kinect_hand_calibration tinyxml)
+target_link_libraries(kinect_hand_calibration ${OpenCV_LIBS})
