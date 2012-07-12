@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Load basic openni -->
-  <include file="$(find uashh_rvl_helper_files)/launch/openni.launch">
+  <include file="$(find uashh_rvl_helper_files)/launch/openni_fuerte.launch">
     <!-- provide arguments to that launch file -->
     <arg name="rgb_camera_info_url" value="file:///home/demo/ros_workspace/uashh-rvl-ros-pkg/uashh_rvl_helper_files/config/rgb.yaml" />
     <arg name="depth_camera_info_url" value="file:///home/demo/ros_workspace/uashh-rvl-ros-pkg/uashh_rvl_helper_files/config/depth.yaml" />

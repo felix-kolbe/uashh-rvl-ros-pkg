@@ -15,7 +15,7 @@ alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
 alias mla='roslaunch metralabs_ros scitos_haw_schunk_start.launch'
 alias rs='roslaunch rotoscan_node laserscanner_w_tf.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
-alias kinect='roslaunch '$HELPER_PKG' openni_with_calibration_haw.launch'
+alias kinect='roslaunch '$HELPER_PKG' openni_fuerte_with_calibration_haw.launch'
 
 
 # helper nodes
