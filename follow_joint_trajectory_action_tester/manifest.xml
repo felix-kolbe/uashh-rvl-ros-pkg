@@ -1,0 +1,18 @@
+<package>
+  <description brief="follow_joint_trajectory_action_tester">
+
+     Tests our (schunk/follow_joint_trajectory) joint trajectory action server 
+     by calling an control_msgs::FollowJointTrajectoryAction on it with a few joint points.
+
+  </description>
+  <author>Felix</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/follow_joint_trajectory_action_tester</url>
+  <depend package="roscpp"/>
+  <depend package="actionlib"/>
+  <depend package="control_msgs"/>
+
+</package>
+
+

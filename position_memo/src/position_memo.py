@@ -4,8 +4,8 @@ roslib.load_manifest('position_memo')
 import rospy
 import tf
 import actionlib
-from move_base_msgs.msg import *
-from geometry_msgs.msg import *
+from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
+from geometry_msgs.msg import Pose, Point, Quaternion
 
 import sys, select, termios, tty
 import string
