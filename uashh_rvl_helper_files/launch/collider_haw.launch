@@ -26,15 +26,15 @@
 
     <param name="fixed_frame" type="string" value="base_link" />
     <param name="resolution" type="double" value="0.05" />
-    <param name="max_range" type="double" value="5.0" />
+    <param name="max_range" type="double" value="15.0" /><!--5-->
     
-    <remap from="full_cloud_filtered" to="/kinect1/depth_registered/points" /><!-- /collider/grid -->
+    <remap from="full_cloud_filtered" to="/kinect1/depth_registered/points_no_motion" /><!-- /collider/grid -->
 
     <remap from="collision_map_out" to="collision_map_occ" />
     <remap from="point_cloud_out" to="octomap_point_cloud" />
 
     <!-- cloud sources -->
-    <rosparam command="load" file="collider_sensors.yaml" />
+    <rosparam command="load" file="$(find uashh_rvl_helper_files)/launch/collider_sensors.yaml" />
 
 
     <!-- self filtering links -->
