@@ -14,8 +14,8 @@ cloud_sources:
     point_subsample: 1
     sensor_frame: kinect1_rgb_optical_frame
     
-camera_info_topic: /narrow_stereo/left/camera_info
-camera_stereo_offset_left: 128
-camera_stereo_offset_right: 0
+#camera_info_topic: /narrow_stereo/left/camera_info
+#camera_stereo_offset_left: 128
+#camera_stereo_offset_right: 0
 
 

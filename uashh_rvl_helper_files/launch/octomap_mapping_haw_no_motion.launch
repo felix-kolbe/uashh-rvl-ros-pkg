@@ -15,7 +15,7 @@ and incrementally builds an octomap. The data is sent out in different represent
 		<param name="filter_ground" value="false" />
 		
 		<!-- data source to integrate (PointCloud2) -->
-		<remap from="cloud_in" to="/kinect1/depth_registered/points" />
+		<remap from="cloud_in" to="/kinect1/depth_registered/points_no_motion" />
 	
 	</node>
 </launch>
