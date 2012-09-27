@@ -1,0 +1,27 @@
+<launch>
+
+<!-- scitos and arm -->
+<include file="$(find metralabs_ros)/Launch/scitos_haw_schunk_start.launch"/>
+
+<!-- kinect -->
+<include file="$(find uashh_rvl_helper_files)/launch/openni_fuerte_with_calibration_haw.launch"/>
+<include file="$(find kinect_movement_filter)/launch/kinect_movement_filter_haw.launch"/>
+
+<!-- 3d nav -->
+<include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_arm_navigation_collision_map.launch"/>
+<include file="$(find uashh_rvl_helper_files)/launch/octomap_mapping_haw_no_motion.launch"/>
+<include file="$(find uashh_rvl_helper_files)/launch/collider_haw.launch"/>
+
+
+<!-- 2d nav -->
+<include file="$(find rotoscan_node)/launch/laserscanner_w_tf.launch"/>
+<include file="$(find uashh_rvl_helper_files)/launch/slam_gmapping_haw.launch"/>
+<!-- -->
+<include file="$(find uashh_rvl_helper_files)/launch/move_base_haw.launch"/>
+<!-- -->
+<!-- - ->
+<include file="$(find scitos_2dnav)/launch/move_base.launch"/>
+<node pkg="cmd_vel_filter" type="cmd_vel_filter" name="cmd_vel_filter"/>
+<!- - -->
+
+</launch>
