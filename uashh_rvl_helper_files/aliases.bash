@@ -32,6 +32,7 @@ alias mbnew='roslaunch scitos_2dnav move_base.launch'
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
+alias rosgui='rosrun rqt_gui rqt_gui'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
 alias camera_small_compressed='rosrun image_view image_view image:=/camera/image_small compressed'
