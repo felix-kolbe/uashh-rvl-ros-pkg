@@ -7,8 +7,8 @@ These movements via MoveArm.py are provided as a state machine container.
 import roslib; roslib.load_manifest('uashh_smach')
 
 import rospy
-import smach
-import smach_ros
+#import smach
+#import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
@@ -43,16 +43,18 @@ poses.append([0,0,0,0,0])
 #print poses
 
 
-def get_lookaround_smach():
+""" if the interjacent state is not omitted it needs to have the 'succeeded','aborted','preempted' outcomes """
+def get_lookaround_smach(interjacent_state=None):
 
     sq = Sequence(
         outcomes = ['succeeded','aborted','preempted'],
         connector_outcome = 'succeeded')
     
-    for i in range(len(poses)):
-        sq.add('MOVE_ARM_LOOKAROUND_%d'%i,
-               MoveArm.getMoveArmToJointsSimpleActionState(poses[i])
-               );
+    with sq:
+        for i in range(len(poses)):
+            sq.add('LOOKAROUND_MOVE_ARM_%d'%i, MoveArm.getMoveArmToJointsSimpleActionState(poses[i]));
+            if interjacent_state is not None:
+                sq.add('LOOKAROUND_INTERJACENT_STATE_%d'%i, interjacent_state)
     
     return sq
 

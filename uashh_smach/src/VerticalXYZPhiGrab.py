@@ -126,13 +126,13 @@ def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
     with sq:
         Sequence.add('MOVE_ARM_GRAB_PRE',
                        MoveVerticalGripperPoseActionState(),
-                     
                         remapping={ 'x':'x',
                                     'y':'y',
                                     'z':'z_pre',
                                     'phi':'phi',
                                     'parent_frame':'parent_frame'}
                       )
+        
         if(task == 'grab'):
             Sequence.add('MOVE_GRIPPER_OPEN', 
                            MoveJoints.getMoveGripperState(GRIPPER_MAX_WIDTH))
@@ -145,6 +145,7 @@ def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
                                     'phi':'phi',
                                     'parent_frame':'parent_frame'}
                       )
+        
         if(task == 'grab'):
             Sequence.add('MOVE_GRIPPER_CLOSE', 
                            MoveJoints.getMoveGripperState(grab_width))

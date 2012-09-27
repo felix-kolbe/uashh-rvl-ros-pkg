@@ -8,8 +8,8 @@ import rospy
 import tf
 import math
 
-import smach
-import smach_ros
+#import smach
+#import smach_ros
 from smach import State
 from smach_ros import ServiceState, SimpleActionState
 

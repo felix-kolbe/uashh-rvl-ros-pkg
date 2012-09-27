@@ -17,7 +17,7 @@ from smach_ros import ServiceState, SimpleActionState
 #import arm_navigation_msgs
 #from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-import lookaround      # duplicate import issues
+import LookAround      # duplicate import issues
 import VerticalXYZPhiGrab
 
 import MoveBase
@@ -27,6 +27,46 @@ import MoveArm
 
 
 BOX_THICKNESS = 0.048
+LOOKAROUND_SLEEP_DURATION = 2
+
+
+
+# define state PAUSE_STATE
+class PauseState(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['msg'])
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state PAUSE_STATE')
+        raw_input(userdata.msg)
+        return 'succeeded'
+    
+#    
+#class SleepState(smach.State):
+#    def __init__(self):
+#        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['duration'])
+#    
+#    def execute(self, userdata):
+#        try:
+#            rospy.sleep(userdata.duration)
+#            return 'succeeded'
+#        except rospy.ROSInterruptException:        
+#            return 'aborted'
+#        return 'aborted'
+
+class SleepState(smach.State):
+    def __init__(self, duration):
+        smach.State.__init__(self, outcomes=['succeeded','aborted'])
+        self.duration = duration
+    
+    def execute(self, userdata):
+        try:
+            rospy.sleep(self.duration)
+            return 'succeeded'
+        except rospy.ROSInterruptException:        
+            return 'aborted'
+        return 'aborted'
+
 
 
 
@@ -58,7 +98,7 @@ def main():
     with sq:
         '''Add states to the container'''
         
-        Sequence.add("ARM_LOOK_AROUND", lookaround.get_lookaround_smach())
+        Sequence.add("ARM_LOOK_AROUND", LookAround.get_lookaround_smach(SleepState(LOOKAROUND_SLEEP_DURATION)))
 
 
 #        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
@@ -78,7 +118,7 @@ def main():
 #                       )
 #    
 #        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
-#        
+        
         
         
 

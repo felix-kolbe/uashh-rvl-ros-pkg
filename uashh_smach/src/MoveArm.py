@@ -23,6 +23,7 @@ joint_names = ['DH_1_2',
                'DH_4_5',
                'DH_5_6']
 
+
 """ setup motion plan request
 the length of parameter joint_positions must match the length of global variable joint_names
 """
