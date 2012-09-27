@@ -19,7 +19,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
-rosbuild_gensrv()
+#rosbuild_gensrv()
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
@@ -29,7 +29,5 @@ rosbuild_gensrv()
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_executable(joint_motion_service src/joint_motion_service.cpp)
-
-rosbuild_add_executable(move_arm_joint_goal src/move_arm_joint_goal.cpp)
-rosbuild_add_executable(move_arm_simple_pose_goal src/move_arm_simple_pose_goal.cpp)
+rosbuild_add_executable(follow_joint_trajectory_action_tester src/follow_joint_trajectory_action_tester.cpp)
+rosbuild_add_compile_flags(follow_joint_trajectory_action_tester -std=c++0x)

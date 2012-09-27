@@ -4,11 +4,14 @@ roslib.load_manifest('position_memo')
 import rospy
 import tf
 import actionlib
-from move_base_msgs.msg import *
-from geometry_msgs.msg import *
+from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
+from geometry_msgs.msg import Pose, Point, Quaternion
 
 import sys, select, termios, tty
 import string
+import math, random
+
+TAU = math.pi*2
 
 msg = """
 Position memo tool commands:
@@ -24,6 +27,7 @@ r : read positions from file
 w : write positions to file
 
 g : go to selectable position
+r : go to a random position within robot's radius
 """
 
 def getKey():
@@ -104,7 +108,7 @@ if __name__ == '__main__':
             
             goal = MoveBaseGoal()
             goal.target_pose.header.frame_id = "/map"
-            goal.target_pose.header.stamp = rospy.Time()
+            goal.target_pose.header.stamp = rospy.Time.now()
             
             goal.target_pose.pose = positions[posname]
             
@@ -116,6 +120,31 @@ if __name__ == '__main__':
                 print ("Hooray, the base reached the goal.")
             else:
                 print ("The base failed to move to the goal for some reason")
+            
+        ## go to random position
+        elif key == 'r':
+            goal = MoveBaseGoal()
+            goal.target_pose.header.frame_id = "/base_link"
+            goal.target_pose.header.stamp = rospy.Time.now()
+            
+            radius = random.random()*2 + 1  # 1-3 m
+            #yaw = random.random()*TAU/2 - TAU/4    # +-90 deg
+            yaw = random.random()*TAU*3/4 - TAU*3/8    # +-135 deg
+            
+            quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
+            goal.target_pose.pose.orientation = Quaternion(*quat)
+            goal.target_pose.pose.position = Point(math.cos(yaw)*radius, math.sin(yaw)*radius, 0)
+            print 'Random goal:'
+            print goal
+            
+            print 'Waiting for base to reach goal...'
+            client.send_goal_and_wait(goal)
+            #client.wait_for_result(rospy.Duration.from_sec(25.0))
+            
+            if(client.get_state() == actionlib.simple_action_client.SimpleGoalState.DONE):
+                print ("Hooray, the base reached the goal.")
+            else:
+                print ("The base failed to move to the goal for some reason. State: %d, %s" % (client.get_state(), client.get_goal_status_text()) )
         
         ## skip delimiter lines if bad keys pressed
         else:

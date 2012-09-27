@@ -22,12 +22,14 @@ import MoveArm
 
 poses = [[0,0,0,0,0]]
 
-#    poses_lookaround_turnings = [3, 2, 1, 0, -1, -2]
-poses_lookaround_turnings = [1, 0, -1]
+poses_lookaround_turnings = [3, 2, 1, 0, -1, -2]
+#poses_lookaround_turnings = [1, 0, -1]
 poses_lookaround = [ # without first joint!
-#                    [0.523,1.309,-1.919,0], # looking down
-#                    [0.523,1.047,-1.745,0], # a bit higher
-                    [0.523,0.689,-1.745,0]  # a bit below horizontally
+                    [0.523,1.309,-1.919,0], # looking down
+                    [0.523,1.047,-1.745,0], # a bit higher
+                    [0.523,0.689,-1.745,0], # a bit below horizontally
+                    [0.523,0.444,-1.555,0], # a bit above horizontally
+                    [0.523,0.444,-1.333,0]  # a bit higher
                     ]
  
 for pose in poses_lookaround:

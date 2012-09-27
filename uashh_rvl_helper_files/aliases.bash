@@ -40,10 +40,12 @@ alias warehouse='roslaunch scitos_haw_schunk_arm_navigation planning_scene_wareh
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
+alias rosgui='rosrun rqt_gui rqt_gui'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
 alias camera_small_compressed='rosrun image_view image_view image:=/camera/image_small compressed'
 alias camera_small_theora='rosrun image_view image_view image:=/camera/image_small theora'
+alias view_kinect_compressed='rosrun image_view image_view image:=/kinect1/rgb/image_color compressed'
 
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'

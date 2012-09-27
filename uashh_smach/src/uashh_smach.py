@@ -17,7 +17,7 @@ from smach_ros import ServiceState, SimpleActionState
 #import arm_navigation_msgs
 #from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-#import lookaround       duplicate import issues
+import lookaround      # duplicate import issues
 import VerticalXYZPhiGrab
 
 import MoveBase
@@ -58,27 +58,27 @@ def main():
     with sq:
         '''Add states to the container'''
         
-#        Sequence.add("ARM_LOOK_AROUND", lookaround.get_lookaround_smach())
+        Sequence.add("ARM_LOOK_AROUND", lookaround.get_lookaround_smach())
 
 
-        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
-
-        Sequence.add('MOVE_ARM_GRAB_0',
-                       VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
-                       )
-        
-      
-        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
-        
-    
-        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
-        
-        Sequence.add('MOVE_ARM_DROP_0',
-                       VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
-                       )
-    
-        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
-        
+#        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
+#
+#        Sequence.add('MOVE_ARM_GRAB_0',
+#                       VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+#                       )
+#        
+#      
+#        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
+#        
+#    
+#        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
+#        
+#        Sequence.add('MOVE_ARM_DROP_0',
+#                       VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+#                       )
+#    
+#        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
+#        
         
         
 
