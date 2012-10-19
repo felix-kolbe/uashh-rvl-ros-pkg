@@ -6,14 +6,21 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
 
+
 #define SLEEP_TIME_SECS 0.10
 #define TIMEOUT_SECS    0.25
 
 #define YAW_JOINT_ID    0
 #define PITCH_JOINT_ID  3
 
+#define MAX_JOINT_SPEED	0.4
+
+
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
+#define DEG_TO_RAD(d)	((d)*M_PI/180.0)
+#define RAD_TO_DEG(r)	((r)*180.0/M_PI)
 
 
 ros::Publisher pubMoveVel;
@@ -21,11 +28,12 @@ ros::Time lastMessage;
 sensor_msgs::JointStateConstPtr lastJointState;
 bool initiatedMovement;
 
+
 bool checkVelocityValid(int joint, double velocity, double currentAngle)
 {
   if (joint == YAW_JOINT_ID)
   {
-    if ((velocity > 1e-6 && currentAngle >= 170*(M_PI/180)) || (velocity < -1e-6 && currentAngle <= -170*(M_PI/180)))
+    if ((velocity > 1e-6 && currentAngle >= DEG_TO_RAD(170)) || (velocity < -1e-6 && currentAngle <= DEG_TO_RAD(-170)))
     {
       return false;
     }
@@ -36,7 +44,8 @@ bool checkVelocityValid(int joint, double velocity, double currentAngle)
   }
   else if (joint == PITCH_JOINT_ID)
   {
-    if ((velocity > 1e-6 && currentAngle >= 50*(M_PI/180)) || (velocity < -1e-6 && currentAngle <= -120*(M_PI/180)))
+    if ((velocity > 1e-6 && currentAngle >= DEG_TO_RAD(-10)) || (velocity < -1e-6 && currentAngle <= DEG_TO_RAD(-120)))
+//    if ((velocity > 1e-6 && currentAngle >= DEG_TO_RAD(50)) || (velocity < -1e-6 && currentAngle <= DEG_TO_RAD(-120)))
     {
       return false;
     }
@@ -83,8 +92,8 @@ void jointStatesCallback(const sensor_msgs::JointStateConstPtr& newState)
 void moveVelocityCallback(const geometry_msgs::TwistConstPtr& moveVelocity)
 {
   lastMessage = ros::Time::now();
-  double yaw = MAX(MIN(moveVelocity->angular.z, 0.2), -0.2);
-  double pitch = MAX(MIN(moveVelocity->angular.y, 0.2), -0.2);
+  double yaw = MAX(MIN(moveVelocity->angular.z, MAX_JOINT_SPEED), -MAX_JOINT_SPEED);
+  double pitch = MAX(MIN(moveVelocity->angular.y, MAX_JOINT_SPEED), -MAX_JOINT_SPEED);
 
   bool moving = false;
 

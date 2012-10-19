@@ -1,0 +1,7 @@
+<launch>
+    <param name="use_sim_time" value="false"/>
+    <node pkg="topic_tools" type="throttle" name="image_throttle" output="screen" 
+	args="messages /kinect1/rgb/image_color/compressed 5 /camera/image_small/compressed"/>
+
+    <node pkg="teleop_arm_controller" type="teleop_arm_controller" name="teleop_arm_controller" output="screen"/>
+</launch>

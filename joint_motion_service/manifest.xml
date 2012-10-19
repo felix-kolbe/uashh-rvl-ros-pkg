@@ -11,6 +11,10 @@
   <depend package="roscpp"/>
   <depend package="metralabs_ros"/>
   <depend package="sensor_msgs"/>
+  
+  <depend package="arm_navigation_msgs"/>
+  <depend package="tf"/>
+  <depend package="actionlib"/>
 
 </package>
 

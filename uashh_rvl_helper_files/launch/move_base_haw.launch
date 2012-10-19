@@ -2,7 +2,7 @@
   <node pkg="move_base" type="move_base" name="move_base" output="screen">
 <!--        <param name="controller_frequency" value="5"/>-->
         
-        <param name="yaw_goal_tolerance" value="0.25"/><!--0.05-->
+        <param name="yaw_goal_tolerance" value="0.7"/><!--0.25 0.05-->
         <param name="latch_xy_goal_tolerance" value="true"/><!-- wenn Zielort erreicht, nur drehen für Pose, nicht fahren-->
         
         <param name="~TrajectoryPlannerROS/holonomic_robot" value="false"/>
@@ -17,10 +17,10 @@
 
 <!--        <param name="~TrajectoryPlannerROS/meter_scoring" value="true"/><!- -false-->
         <param name="~TrajectoryPlannerROS/sim_time" value="5"/><!--1 sec-->
-        <param name="~TrajectoryPlannerROS//vx_samples" value="7"/><!-- 3 samples -->
+        <param name="~TrajectoryPlannerROS/vx_samples" value="7"/><!-- 3 samples -->
 
 <!--
-        <param name="~TrajectoryPlannerROS//vx_samples" value="7"/><!- - 3 samples -->
+        <param name="~TrajectoryPlannerROS/vx_samples" value="7"/><!- - 3 samples -->
         <param name="~TrajectoryPlannerROS/" value=""/>
   -->
         

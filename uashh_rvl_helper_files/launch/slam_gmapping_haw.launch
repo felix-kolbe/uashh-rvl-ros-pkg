@@ -17,13 +17,16 @@
         <param name="maxRange" value="63.0"/>
         
         <param name="map_update_interval" value="5.0"/> <!-- def=5 -->
+        
+        
+        <param name="temporalUpdate" value="10"/>
 <!--
         <param name="linearUpdate" value="0.2"/>
         <param name="angularUpdate" value="0.3"/>
         <param name="temporalUpdate" value="1"/>
 -->
         
-        <param name="delta" value="0.05"/>
+        <param name="delta" value="0.03"/>
         
         
         <!-- olds

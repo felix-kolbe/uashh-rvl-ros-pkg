@@ -1,14 +1,9 @@
 <launch>
-    <node 
-        name="throttle_kinect1_depth_reg_points"
-        pkg="topic_tools" 
-        type="throttle"
-        args="messages /kinect1/depth_registered/points 5 /kinect1/depth_registered/points_throttle" />
-    <node pkg="kinect_movement_filter" type="kinect_movement_filter" name="kinect_movement_filter" output="screen">
-      <param name="in_topic" value="/kinect1/depth_registered/points_throttle"/>
+    <node pkg="kinect_movement_filter" type="kinect_movement_filter" name="kinect_movement_filter">
+      <param name="in_topic" value="/kinect1/depth_registered/points"/>
       <param name="out_topic" value="/kinect1/depth_registered/points_no_motion"/>
       <param name="base_frame" value="/odom"/>
       <param name="sensor_frame" value="/CameraMount"/>
-      <param name="no_movement_span_seconds" value="0.5"/>
+      <param name="no_movement_span_seconds" value="0.5"/><!--0.1-->
     </node>
 </launch>
