@@ -227,18 +227,6 @@ public:
           //ROS_INFO("Point (%i, %i): %f - %f: %f", i, j, x, y, curAvgDepth);
         }
       }
-
-      calcRowSlopes(pMatrixLt, dMatrixLt, rowSlopesLt);
-//      for (int i = 0; i < PATTERNHEIGHT; i++)
-//      {
-//        ROS_INFO("Row Slope (left turned) %i: %f", i, rowSlopesLt[i]);
-//      }
-
-      calcColumnSlopes(pMatrixLt, dMatrixLt, colSlopesLt);
-//      for (int i = 0; i < PATTERNWIDTH; i++)
-//      {
-//        ROS_INFO("Col Slope (left turned) %i: %f", i, colSlopesLt[i]);
-//      }
     }
     else
     {
@@ -315,28 +303,16 @@ public:
           //ROS_INFO("Point (%i, %i): %f - %f: %f", i, j, x, y, curAvgDepth);
         }
       }
-
-      calcRowSlopes(pMatrixRt, dMatrixRt, rowSlopesRt);
-//      for (int i = 0; i < PATTERNHEIGHT; i++)
-//      {
-//        ROS_INFO("Row Slope (right turned) %i: %f", i, rowSlopesRt[i]);
-//      }
-
-      calcColumnSlopes(pMatrixRt, dMatrixRt, colSlopesRt);
-//      for (int i = 0; i < PATTERNWIDTH; i++)
-//      {
-//        ROS_INFO("Col Slope (right turned) %i: %f", i, colSlopesRt[i]);
-//      }
-
     }
     else
     {
       ROS_INFO("No calibration chart detected!");
       return;
     }
+    calcColumnSlopes(pMatrixLt, dMatrixLt, colSlopesLt);
+    calcColumnSlopes(pMatrixRt, dMatrixRt, colSlopesRt);
 
-    // calculate pitch and yaw (x front, y left, z up)
-    // pitch
+    // calculate pitch (x front, y left, z up)
     double pitchCorrection = 0;
     for (int col = IGNOREOUTERCOLROWS; col < PATTERNWIDTH - IGNOREOUTERCOLROWS; col++)
     {
@@ -347,7 +323,35 @@ public:
     pitchCorrection /= PATTERNWIDTH - (IGNOREOUTERCOLROWS * 2);
     ROS_INFO("Pitch correction: %f", pitchCorrection);
 
-    // yaw
+    // first correct pitch
+    for (int col = 0; col < PATTERNWIDTH; col++)
+    {
+      for (int row = 0; row < PATTERNHEIGHT; row++)
+      {
+        double xLt = pMatrixLt[col][row].x;
+        double yLt = pMatrixLt[col][row].y;
+        double zLt = dMatrixLt[col][row];
+        double xRt = pMatrixRt[col][row].x;
+        double yRt = pMatrixRt[col][row].y;
+        double zRt = dMatrixRt[col][row];
+
+        double yLtS = cos(-pitchCorrection) * yLt - sin(-pitchCorrection) * zLt;
+        double yRtS = cos(-pitchCorrection) * yRt - sin(-pitchCorrection) * zRt;
+
+        double zLtS = sin(-pitchCorrection) * yLt + cos(-pitchCorrection) * zLt;
+        double zRtS = sin(-pitchCorrection) * yRt + cos(-pitchCorrection) * zRt;
+
+        pMatrixLt[col][row].y = yLtS;
+        dMatrixLt[col][row] = zLtS;
+        pMatrixRt[col][row].y = yRtS;
+        dMatrixRt[col][row] = zRtS;
+      }
+    }
+
+    calcRowSlopes(pMatrixLt, dMatrixLt, rowSlopesLt);
+    calcRowSlopes(pMatrixRt, dMatrixRt, rowSlopesRt);
+
+    // calculate yaw (x front, y left, z up)
     double yawCorrection = 0;
     for (int row = IGNOREOUTERCOLROWS; row < PATTERNHEIGHT - IGNOREOUTERCOLROWS; row++)
     {
@@ -357,6 +361,31 @@ public:
     }
     yawCorrection /= PATTERNHEIGHT - (IGNOREOUTERCOLROWS * 2);
     ROS_INFO("yaw correction: %f", yawCorrection);
+
+    // correct yaw
+    for (int col = 0; col < PATTERNWIDTH; col++)
+    {
+      for (int row = 0; row < PATTERNHEIGHT; row++)
+      {
+        double xLt = pMatrixLt[col][row].x;
+        double yLt = pMatrixLt[col][row].y;
+        double zLt = dMatrixLt[col][row];
+        double xRt = pMatrixRt[col][row].x;
+        double yRt = pMatrixRt[col][row].y;
+        double zRt = dMatrixRt[col][row];
+
+        double xLtT = cos(-yawCorrection) * xLt - sin(-yawCorrection) * zLt;
+        double xRtT = cos(-yawCorrection) * xRt - sin(-yawCorrection) * zRt;
+
+        double zLtT = -sin(-yawCorrection) * xLt + cos(-yawCorrection) * zLt;
+        double zRtT = -sin(-yawCorrection) * xRt + cos(-yawCorrection) * zRt;
+
+        pMatrixLt[col][row].x = xLtT;
+        dMatrixLt[col][row] = zLtT;
+        pMatrixRt[col][row].x = xRtT;
+        dMatrixRt[col][row] = zRtT;
+      }
+    }
 
     double sumTransX = 0;
     double sumTransY = 0;
@@ -368,27 +397,27 @@ public:
       {
         double xLt = pMatrixLt[col][row].x;
         double yLt = pMatrixLt[col][row].y;
-        double zLt = dMatrixLt[col][row];
+        //double zLt = dMatrixLt[col][row];
         double xRt = pMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1].x;
         double yRt = pMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1].y;
-        double zRt = dMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1];
+        //double zRt = dMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1];
 
         // first correct pitch
-        double xLtS = xLt;
-        double xRtS = xRt;
-
-        double yLtS = cos(-pitchCorrection) * yLt - sin(-pitchCorrection) * zLt;
-        double yRtS = cos(-pitchCorrection) * yRt - sin(-pitchCorrection) * zRt;
-
-        double zLtS = sin(-pitchCorrection) * yLt + cos(-pitchCorrection) * zLt;
-        double zRtS = sin(-pitchCorrection) * yRt + cos(-pitchCorrection) * zRt;
+//        double xLtS = xLt;
+//        double xRtS = xRt;
+//
+//        double yLtS = cos(-pitchCorrection) * yLt - sin(-pitchCorrection) * zLt;
+//        double yRtS = cos(-pitchCorrection) * yRt - sin(-pitchCorrection) * zRt;
+//
+//        double zLtS = sin(-pitchCorrection) * yLt + cos(-pitchCorrection) * zLt;
+//        double zRtS = sin(-pitchCorrection) * yRt + cos(-pitchCorrection) * zRt;
 
         // correct yaw
-        double xLtT = cos(-yawCorrection) * xLtS - sin(-yawCorrection) * zLtS;
-        double xRtT = cos(-yawCorrection) * xRtS - sin(-yawCorrection) * zRtS;
-
-        double yLtT = yLtS;
-        double yRtT = yRtS;
+//        double xLtT = cos(-yawCorrection) * xLtS - sin(-yawCorrection) * zLtS;
+//        double xRtT = cos(-yawCorrection) * xRtS - sin(-yawCorrection) * zRtS;
+//
+//        double yLtT = yLtS;
+//        double yRtT = yRtS;
 
         //double zLtT = -sin(-yawCorrection) * xLtS + cos(-yawCorrection) * zLtS;
         //double zRtT = -sin(-yawCorrection) * xRtS + cos(-yawCorrection) * zRtS;
@@ -396,8 +425,8 @@ public:
 
         //ROS_INFO("Point (%i, %i): %f - %f: %f", row, col, xLtT, yLtT, zLtT);
         //ROS_INFO("Translation (elevation; shift; depth): %f; %f; %f", (yLtT + yRtT)/2, (xLtT + xRtT)/2, (zLtT - zRtT)/2);
-        sumTransX += (yLtT + yRtT)/2;
-        sumTransY += (xLtT + xRtT)/2;
+        sumTransX += (yLt + yRt)/2;
+        sumTransY += (xLt + xRt)/2;
         cnt++;
       }
     }
