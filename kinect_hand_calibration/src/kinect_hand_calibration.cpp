@@ -17,7 +17,7 @@ namespace enc = sensor_msgs::image_encodings;
 
 using namespace cv;
 
-static const float kinectFocalLength = 530;
+static const float kinectFocalLength = 525;
 static const int PATTERNWIDTH = 8;
 static const int PATTERNHEIGHT = 6;
 
@@ -30,14 +30,17 @@ class KinectHandCalibration
   image_transport::Subscriber colorImgSub;
   image_transport::Subscriber depthImgSub;
   ros::Subscriber calibSub;
+  ros::Subscriber cameraInfoSub;
   //image_transport::Publisher image_pub_;
   ros::ServiceClient jointMotionServiceClient;
 
   bool captureColorImg;
+  bool captureCameraInfo;
   bool captureDepthImg;
 
   // parameters
   string colorTopicName;
+  string cameraInfoTopicName;
   string depthTopicName;
 
   string calibrationFile;
@@ -58,11 +61,18 @@ class KinectHandCalibration
 
   tf::TransformListener tfListener;
 
+  // camera parameters
+  double focalLengthX;
+  double focalLengthY;
+  double principlePointX;
+  double principlePointY;
+
 public:
   KinectHandCalibration()
     : it_(nh_)
   {
     captureColorImg = false;
+    captureCameraInfo = false;
     captureDepthImg = false;
     //image_pub_ = it_.advertise("out", 1);
     calibSub = nh_.subscribe("in_calibrate", 1, &KinectHandCalibration::doCalibrationCb, this);
@@ -70,6 +80,7 @@ public:
 
     ros::NodeHandle prnh("~");
     prnh.param<std::string>("in_color", colorTopicName, "/camera/rgb/image_color");
+    prnh.param<std::string>("in_cameraInfo", cameraInfoTopicName, "/camera/rgb/camera_info");
     prnh.param<std::string>("in_depth", depthTopicName, "/camera/depth_registered/image");
     prnh.param<std::string>("xml_calibration_file_path", calibrationFile, "kinectHandCalibration.xml");
 
@@ -81,7 +92,10 @@ public:
 
     prnh.param<double>("tf_x_offset", tfXOffset, 0);
 
-
+    focalLengthX = kinectFocalLength;
+    focalLengthY = kinectFocalLength;
+    principlePointX = 320;
+    principlePointY = 240;
 
     FILE *fp = fopen(calibrationFile.c_str() , "r");
     if (fp)
@@ -145,17 +159,31 @@ public:
     }
   }
 
+  void cameraInfoCb(const sensor_msgs::CameraInfoPtr& msg)
+  {
+    if (captureCameraInfo)
+    {
+      focalLengthX = msg->K[0];
+      focalLengthY = msg->K[4];
+      principlePointX = msg->K[2];
+      principlePointY = msg->K[5];
+      captureCameraInfo = false;
+    }
+  }
+
   void doCalibrationCb(const kinect_hand_calibration::DoCalibrationConstPtr& msg)
   {
     ROS_INFO("Activating subscriptions to kinect topics!");
     colorImgSub = it_.subscribe(colorTopicName, 1, &KinectHandCalibration::colorImageCb, this);
     depthImgSub = it_.subscribe(depthTopicName, 1, &KinectHandCalibration::depthImageCb, this);
+    cameraInfoSub = nh_.subscribe(cameraInfoTopicName, 1, &KinectHandCalibration::cameraInfoCb, this);
 
     performCalibration();
 
     ROS_INFO("Desubscribing from kinect topics!");
     colorImgSub.shutdown();
     depthImgSub.shutdown();
+    cameraInfoSub.shutdown();
   }
 
   void performCalibration()
@@ -169,6 +197,7 @@ public:
 
     ROS_INFO("Finished turning, starting capture...");
 
+    captureCameraInfo = true;
     captureColorImg = true;
     captureDepthImg = true;
     while(captureColorImg && nh_.ok())
@@ -202,6 +231,19 @@ public:
 
     ROS_INFO("Finished waiting for DepthImage");
 
+    while(captureCameraInfo && nh_.ok())
+    {
+      ros::spinOnce();
+    }
+
+    if (!nh_.ok())
+    {
+      return;
+    }
+
+    ROS_INFO("Finished waiting for CameraInfo");
+    ROS_INFO("Got fx: %f fy: %f px: %f py: %f", focalLengthX, focalLengthY, principlePointX, principlePointY);
+
     Point2f pMatrixLt[PATTERNWIDTH][PATTERNHEIGHT];
     float dMatrixLt[PATTERNWIDTH][PATTERNHEIGHT];
     float rowSlopesLt[PATTERNHEIGHT];
@@ -217,8 +259,8 @@ public:
           Point2f cp = corners[i * patternsize.width + j];
           float curAvgDepth = getAvgDepth(cp, 1);
 
-          float x = (cp.x - (grey.cols >> 1)) * curAvgDepth / kinectFocalLength;
-          float y = (cp.y - (grey.rows >> 1)) * curAvgDepth / kinectFocalLength;
+          float x = (cp.x - principlePointX) * curAvgDepth / focalLengthX;
+          float y = (cp.y - principlePointY) * curAvgDepth / focalLengthY;
 
           pMatrixLt[j][i] = Point2f(x, y);
           dMatrixLt[j][i] = curAvgDepth;
@@ -293,8 +335,8 @@ public:
           Point2f cp = corners[i * patternsize.width + j];
           float curAvgDepth = getAvgDepth(cp, 1);
 
-          float x = (cp.x - (grey.cols >> 1)) * curAvgDepth / kinectFocalLength;
-          float y = (cp.y - (grey.rows >> 1)) * curAvgDepth / kinectFocalLength;
+          float x = (cp.x - principlePointX) * curAvgDepth / focalLengthX;
+          float y = (cp.y - principlePointY) * curAvgDepth / focalLengthY;
 
           pMatrixRt[j][i] = Point2f(x, y);
           dMatrixRt[j][i] = curAvgDepth;
@@ -397,10 +439,10 @@ public:
       {
         double xLt = pMatrixLt[col][row].x;
         double yLt = pMatrixLt[col][row].y;
-        //double zLt = dMatrixLt[col][row];
+        double zLt = dMatrixLt[col][row];
         double xRt = pMatrixRt[PATTERNWIDTH - IGNOREOUTERCOLROWS - col][PATTERNHEIGHT - IGNOREOUTERCOLROWS - row].x;
         double yRt = pMatrixRt[PATTERNWIDTH - IGNOREOUTERCOLROWS - col][PATTERNHEIGHT - IGNOREOUTERCOLROWS - row].y;
-        //double zRt = dMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1];
+        double zRt = dMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1];
 
         // first correct pitch
 //        double xLtS = xLt;
@@ -424,7 +466,7 @@ public:
 
 
         //ROS_INFO("Point (%i, %i): %f - %f: %f", row, col, xLtT, yLtT, zLtT);
-        //ROS_INFO("Translation (elevation; shift; depth): %f; %f; %f", (yLtT + yRtT)/2, (xLtT + xRtT)/2, (zLtT - zRtT)/2);
+        ROS_INFO("Translation (elevation; shift; depth): %f; %f; %f", (yLt + yRt)/2, (xLt + xRt)/2, (zLt - zRt)/2);
         sumTransX += (yLt + yRt)/2;
         sumTransY += (xLt + xRt)/2;
         cnt++;
