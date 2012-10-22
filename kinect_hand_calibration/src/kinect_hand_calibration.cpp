@@ -316,7 +316,7 @@ public:
     double pitchCorrection = 0;
     for (int col = IGNOREOUTERCOLROWS; col < PATTERNWIDTH - IGNOREOUTERCOLROWS; col++)
     {
-      double angle = (atan(colSlopesLt[col]) + atan(colSlopesRt[PATTERNWIDTH - col - 1])) / 2;
+      double angle = (atan(colSlopesLt[col]) + atan(colSlopesRt[PATTERNWIDTH - IGNOREOUTERCOLROWS - col])) / 2;
       pitchCorrection += angle;
       //ROS_INFO("Pitch angle %i: %f", col, angle);
     }
@@ -355,7 +355,7 @@ public:
     double yawCorrection = 0;
     for (int row = IGNOREOUTERCOLROWS; row < PATTERNHEIGHT - IGNOREOUTERCOLROWS; row++)
     {
-      double angle = (atan(rowSlopesLt[row]) + atan(rowSlopesRt[PATTERNHEIGHT - row - 1])) / 2;
+      double angle = (atan(rowSlopesLt[row]) + atan(rowSlopesRt[PATTERNHEIGHT - IGNOREOUTERCOLROWS - row])) / 2;
       yawCorrection += angle;
       //ROS_INFO("yaw angle %i: %f", row, angle);
     }
@@ -377,8 +377,8 @@ public:
         double xLtT = cos(-yawCorrection) * xLt - sin(-yawCorrection) * zLt;
         double xRtT = cos(-yawCorrection) * xRt - sin(-yawCorrection) * zRt;
 
-        double zLtT = -sin(-yawCorrection) * xLt + cos(-yawCorrection) * zLt;
-        double zRtT = -sin(-yawCorrection) * xRt + cos(-yawCorrection) * zRt;
+        double zLtT = sin(-yawCorrection) * xLt + cos(-yawCorrection) * zLt;
+        double zRtT = sin(-yawCorrection) * xRt + cos(-yawCorrection) * zRt;
 
         pMatrixLt[col][row].x = xLtT;
         dMatrixLt[col][row] = zLtT;
@@ -398,8 +398,8 @@ public:
         double xLt = pMatrixLt[col][row].x;
         double yLt = pMatrixLt[col][row].y;
         //double zLt = dMatrixLt[col][row];
-        double xRt = pMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1].x;
-        double yRt = pMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1].y;
+        double xRt = pMatrixRt[PATTERNWIDTH - IGNOREOUTERCOLROWS - col][PATTERNHEIGHT - IGNOREOUTERCOLROWS - row].x;
+        double yRt = pMatrixRt[PATTERNWIDTH - IGNOREOUTERCOLROWS - col][PATTERNHEIGHT - IGNOREOUTERCOLROWS - row].y;
         //double zRt = dMatrixRt[PATTERNWIDTH - col - 1][PATTERNHEIGHT - row - 1];
 
         // first correct pitch
