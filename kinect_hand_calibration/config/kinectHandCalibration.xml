@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
 <transform>
-    <origin x="0.02" y="0.0225232" z="0.107986" />
-    <rotation yaw="0.00394572" pitch="0.0146528" roll="1.73065e-21" />
+    <origin x="0.02" y="-0.0114888" z="0.04432" />
+    <rotation yaw="0.0351436" pitch="0.00689998" roll="-5.58526e-21" />
 </transform>
