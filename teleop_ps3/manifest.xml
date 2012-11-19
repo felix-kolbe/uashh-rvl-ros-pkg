@@ -1,0 +1,20 @@
+<package>
+  <description brief="teleop_ps3">
+
+     Node that converts the ps3-joy message into robot commands
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/teleop_ps3</url>
+  <depend package="roscpp"/>
+  <depend package="std_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="joint_motion_service"/>
+  <depend package="metralabs_ros"/>
+
+</package>
+
+

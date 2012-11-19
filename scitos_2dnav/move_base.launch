@@ -10,13 +10,13 @@
   <!--<param name="navfn/allow_unknown" value="true"/>-->
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!--<remap from="cmd_vel" to="cmd_vel_mb"/>-->
     <rosparam file="$(find scitos_2dnav)/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find scitos_2dnav)/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find scitos_2dnav)/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/base_local_planner_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/base_global_planner_params.yaml" command="load" />
-    <!--<remap from="cmd_vel" to="cmd_vel_mb"/>-->
   </node>
 
 </launch>
