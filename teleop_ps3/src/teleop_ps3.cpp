@@ -68,12 +68,13 @@ private:
 	const static int axis_speed = PS3_AXIS_STICK_LEFT_UPWARDS;
 	const static int axis_turn = PS3_AXIS_STICK_LEFT_LEFTWARDS;
 	const static int axis_turbo = PS3_AXIS_BUTTON_REAR_RIGHT_2;
-	const static int axis_secondturbo = PS3_AXIS_BUTTON_REAR_LEFT_2;
+	const static int axis_turbo_second = PS3_AXIS_BUTTON_REAR_LEFT_2;
 	const static int button_deadman = PS3_BUTTON_REAR_RIGHT_1;
+	const static int button_deadman_second = PS3_BUTTON_REAR_LEFT_1;
 	const static int button_turbo = PS3_BUTTON_REAR_RIGHT_2;
 
 	const static int button_modifier_config = PS3_BUTTON_START;
-	const static int button_ack_all_joints = PS3_BUTTON_ACTION_SQUARE;
+	const static int button_joints_ack_all = PS3_BUTTON_ACTION_SQUARE;
 	const static int button_joints_go_pose = PS3_BUTTON_ACTION_TRIANGLE;
 	const static int button_emergency = PS3_BUTTON_ACTION_CIRCLE;
 
@@ -90,7 +91,9 @@ private:
 	constexpr static double turn = 0.7; // .5 1
 	constexpr static double joint_speed_pitch = 0.87;	// joint 4
 	constexpr static double joint_speed_yaw = 0.43;		// joint 0
-	constexpr static double gripper_speed = 0.08;
+//	constexpr static double gripper_speed = 0.08;
+	constexpr static double gripper_step = 0.01;
+	constexpr static double gripper_step_delay = 0.05;
 };
 
 
@@ -103,7 +106,7 @@ teleop_ps3::teleop_ps3()
 	ack_all_joints_pub_ = nh_.advertise<std_msgs::Bool>("/ackAll", 1);
 	arm_emergency_pub_ = nh_.advertise<std_msgs::Bool>("/emergency", 1);
 	joints_position_pub_ = nh_.advertise<sensor_msgs::JointState>("/schunk/target_pc/joint_states", 1);
-	gripper_pub_ = nh_.advertise<metralabs_ros::idAndFloat>("/moveVelocity", 1);
+	gripper_pub_ = nh_.advertise<metralabs_ros::idAndFloat>("/movePosition", 1);
 	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("/enable_smach", 1, true);
 
 }
@@ -123,9 +126,9 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	geometry_msgs::TwistPtr velocity_msg (new geometry_msgs::Twist);
 
-	if(joy->buttons[button_deadman] || joy->buttons[button_turbo]) {
+	if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second] || joy->buttons[button_turbo]) {
 //		int speedfactor = joy->buttons[button_turbo] ? 2 : 1; // twice the speed if turbo
-		double speedfactor = 1 + abs(joy->axes[axis_turbo]) + abs(joy->axes[axis_secondturbo]); // up to thrice the speed if turbo
+		double speedfactor = 1 + abs(joy->axes[axis_turbo]) + abs(joy->axes[axis_turbo_second]); // up to thrice the speed if turbo
 		velocity_msg->linear.x = joy->axes[axis_speed] * speed * speedfactor;
 		velocity_msg->angular.z = joy->axes[axis_turn] * turn * speedfactor;
 	}
@@ -141,12 +144,44 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		std_msgs::Bool booldummy;
 		arm_emergency_pub_.publish(booldummy);
 	}
-	else if(joy->buttons[button_deadman]) {
-		// arm
+	else if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second]) {
+		/// arm
 		geometry_msgs::TwistPtr arm_msg (new geometry_msgs::Twist);
 		arm_msg->angular.y = joy->axes[axis_arm_pitch] * joint_speed_pitch;
 		arm_msg->angular.z = -joy->axes[axis_arm_yaw] * joint_speed_yaw;
 		arm_pub_.publish(arm_msg);
+
+		/// gripper
+		// timed gate
+		static ros::Time lastAction = ros::Time(0);
+		if(ros::Time::now() - lastAction > ros::Duration(gripper_step_delay) ){
+			lastAction = ros::Time::now();
+
+			// static vars
+			static float new_gripper_value = 0.068;
+			static metralabs_ros::idAndFloatPtr gripper_msg (new metralabs_ros::idAndFloat);
+			gripper_msg->id = 5;
+
+			// input
+			float close_axis = - joy->axes[axis_gripper_close]; // converted to 0 to 1
+			float open_axis  = - joy->axes[axis_gripper_open ]; // converted to 0 to 1
+
+			// logic
+
+			if(!close_axis && open_axis)
+				new_gripper_value += gripper_step * open_axis;
+			else if(close_axis && !open_axis)
+				new_gripper_value -= gripper_step * close_axis;
+
+			new_gripper_value = fmax(new_gripper_value, 0);
+			new_gripper_value = fmin(new_gripper_value, 0.068);
+
+			if(gripper_msg->value != new_gripper_value) {
+				ROS_INFO_STREAM("new_gripper_value: " << new_gripper_value);
+				gripper_msg->value = new_gripper_value;
+				gripper_pub_.publish(gripper_msg);
+			}
+		}
 
 		/*// gripper
 		metralabs_ros::idAndFloatPtr gripper_msg (new metralabs_ros::idAndFloat);
@@ -168,7 +203,7 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	/// second layer arm buttons
 
 	if(joy->buttons[button_modifier_config]) {
-		if(joy->buttons[button_ack_all_joints]) {
+		if(joy->buttons[button_joints_ack_all]) {
 			std_msgs::Bool booldummy;
 			ack_all_joints_pub_.publish(booldummy);
 		}
