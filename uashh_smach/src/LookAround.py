@@ -20,7 +20,9 @@ import MoveArm
 
 """ calculating lookaround poses """
 
-poses = [[0,0,0,0,0]]
+#pose_default = [0,0,0,0,0]
+pose_default = [0,0.3,0.3,-0.6,0]
+poses = [pose_default]
 
 poses_lookaround_turnings = [3, 2, 1, 0, -1, -2]
 #poses_lookaround_turnings = [1, 0, -1]
@@ -38,7 +40,7 @@ for pose in poses_lookaround:
         
     poses_lookaround_turnings.reverse()
 
-poses.append([0,0,0,0,0])
+poses.append(pose_default)
 
 #print poses
 
