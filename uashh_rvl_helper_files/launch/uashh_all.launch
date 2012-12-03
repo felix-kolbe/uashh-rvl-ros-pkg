@@ -1,5 +1,10 @@
 <launch>
 
+<!-- templates
+<node pkg="" type="" name=""/>
+<include file="$(find )/launch/.launch"/>
+-->
+
 <!-- scitos and arm -->
 <include file="$(find metralabs_ros)/Launch/scitos_haw_schunk_start.launch"/>
 
@@ -23,5 +28,9 @@
 <include file="$(find scitos_2dnav)/move_base.launch"/>
 <node pkg="cmd_vel_filter" type="cmd_vel_filter" name="cmd_vel_filter"/>
 <!-- -->
+
+<!-- remote control -->
+<node pkg="teleop_arm_controller" type="teleop_arm_controller" name="teleop_arm_controller"/>
+<include file="$(find teleop_ps3)/launch/teleop_ps3.launch"/>
 
 </launch>

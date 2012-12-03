@@ -37,6 +37,8 @@ alias collmap='roslaunch '$HELPER_PKG' collider_haw.launch'
 alias armnav='roslaunch scitos_haw_schunk_arm_navigation scitos_haw_schunk_arm_navigation_collision_map.launch'
 alias warehouse='roslaunch scitos_haw_schunk_arm_navigation planning_scene_warehouse_viewer_scitos_haw_schunk_real_wo_rviz.launch'
 
+alias telearm='rosrun teleop_arm_controller teleop_arm_controller'
+
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
@@ -50,7 +52,8 @@ alias view_kinect_compressed='rosrun image_view image_view image:=/kinect1/rgb/i
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
 alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
-alias ps3_bt='sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py'
+alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py' # don't start it twice
+alias ps3_full='ps3_bt & ps3 & telearm'
 
 # small tools
 #alias rka='rosnode list; rosnode kill -a; rosnode list'
