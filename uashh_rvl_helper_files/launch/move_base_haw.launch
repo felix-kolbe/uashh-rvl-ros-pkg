@@ -16,7 +16,7 @@
 
 
 <!--        <param name="~TrajectoryPlannerROS/meter_scoring" value="true"/><!- -false-->
-        <param name="~TrajectoryPlannerROS/sim_time" value="5"/><!--1 sec-->
+        <param name="~TrajectoryPlannerROS/sim_time" value="3"/><!--1 sec-->
         <param name="~TrajectoryPlannerROS/vx_samples" value="7"/><!-- 3 samples -->
 
 <!--
