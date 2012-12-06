@@ -26,7 +26,7 @@ import MoveBase
 import MoveJoints
 import MoveArm
 
-import Utils
+import Util
 
 
 
@@ -64,7 +64,7 @@ def main():
     with sq:
         '''Add states to the container'''
         
-        Sequence.add("ARM_LOOK_AROUND", LookAround.get_lookaround_smach(Utils.SleepState(LOOKAROUND_SLEEP_DURATION)))
+        Sequence.add("ARM_LOOK_AROUND", LookAround.get_lookaround_smach(Util.SleepState(LOOKAROUND_SLEEP_DURATION)))
 
 
 #        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));

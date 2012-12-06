@@ -13,7 +13,7 @@ from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
 import MoveArm
-
+import Util
 
 
 
@@ -60,3 +60,36 @@ def get_lookaround_smach(interjacent_state=None):
     
     return sq
 
+
+
+
+def LookAroundTest():
+    rospy.init_node('smach')
+
+    sq = Sequence(
+        outcomes = ['succeeded','aborted','preempted'],
+        connector_outcome = 'succeeded')
+
+    with sq:
+        '''Add states to the container'''
+        
+        Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(Util.SleepState(LOOKAROUND_SLEEP_DURATION)))
+        
+    
+    # Create and start the introspection server
+    sis = smach_ros.IntrospectionServer('server_name', sq, '/SM_ROOT')
+    sis.start()
+    
+#    try:
+        # Execute the state machine
+    outcome = sq.execute()
+#    except Exception as ex:
+#        print ex
+
+    # Wait for ctrl-c to stop the application
+    rospy.spin()
+    sis.stop()
+
+
+if __name__ == '__main__':
+    LookAroundTest()
