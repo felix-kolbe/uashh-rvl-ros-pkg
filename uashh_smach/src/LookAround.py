@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
-""" This files generates poses which let the robot look around and let him scan his environment.
+""" This files generates poses which let the robot look around to e.g. scan its environment.
 These movements via MoveArm.py are provided as a state machine container.
 """
 
 import roslib; roslib.load_manifest('uashh_smach')
 
 import rospy
-#import smach
-#import smach_ros
-from smach import State, StateMachine, Sequence
-from smach_ros import ServiceState, SimpleActionState
+import smach
+import smach_ros
 
 import MoveArm
 import Util
@@ -21,10 +19,10 @@ import Util
 """ calculating lookaround poses """
 
 #pose_default = [0,0,0,0,0]
-pose_default = [0,0.3,0.3,-0.6,0]
+pose_default = [0,0.5,0.5,-2,0]
 poses = [pose_default]
 
-poses_lookaround_turnings = [3, 2, 1, 0, -1, -2]
+poses_lookaround_turnings = [3, 2, 1, 0, -1, -2] # used for first joint 
 #poses_lookaround_turnings = [1, 0, -1]
 poses_lookaround = [ # without first joint!
                     [0.523,1.309,-1.919,0], # looking down
@@ -37,7 +35,6 @@ poses_lookaround = [ # without first joint!
 for pose in poses_lookaround:
     for turn in poses_lookaround_turnings:
         poses.append([turn]+pose)
-        
     poses_lookaround_turnings.reverse()
 
 poses.append(pose_default)
@@ -48,7 +45,7 @@ poses.append(pose_default)
 """ if the interjacent state is not omitted it needs to have the 'succeeded','aborted','preempted' outcomes """
 def get_lookaround_smach(interjacent_state=None):
 
-    sq = Sequence(
+    sq = smach.Sequence(
         outcomes = ['succeeded','aborted','preempted'],
         connector_outcome = 'succeeded')
     
@@ -66,14 +63,14 @@ def get_lookaround_smach(interjacent_state=None):
 def LookAroundTest():
     rospy.init_node('smach')
 
-    sq = Sequence(
+    sq = smach.Sequence(
         outcomes = ['succeeded','aborted','preempted'],
         connector_outcome = 'succeeded')
 
     with sq:
         '''Add states to the container'''
         
-        Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(Util.SleepState(LOOKAROUND_SLEEP_DURATION)))
+        smach.Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(Util.SleepState(1)))
         
     
     # Create and start the introspection server

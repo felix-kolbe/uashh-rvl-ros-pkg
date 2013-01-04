@@ -29,23 +29,12 @@ import MoveArm
 import Util
 
 
-
 BOX_THICKNESS = 0.048
 LOOKAROUND_SLEEP_DURATION = 2
 
 
-
-
 def main():
     rospy.init_node('smach')
-
-#    ## setup goal
-#    arm_goal = MoveArmGoal()
-#    arm_goal.planner_service_name = "ompl_planning/plan_kinematic_path"
-#    arm_goal.motion_plan_request = create_motion_plan_request_for_joints([0,0,0,0,0])
-    
-
-
 
     sq = Sequence(
         outcomes = ['succeeded','aborted','preempted'],
@@ -64,43 +53,40 @@ def main():
     with sq:
         '''Add states to the container'''
         
-        Sequence.add("ARM_LOOK_AROUND", LookAround.get_lookaround_smach(Util.SleepState(LOOKAROUND_SLEEP_DURATION)))
-
-
-#        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
-#
-#        Sequence.add('MOVE_ARM_GRAB_0',
-#                       VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
-#                       )
-#        
-#      
-#        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
-#        
-#    
-#        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
-#        
-#        Sequence.add('MOVE_ARM_DROP_0',
-#                       VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
-#                       )
-#    
-#        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
+        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
+        
+        Sequence.add('MOVE_ARM_GRAB_0',
+                       VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+                       )
+        
+        
+        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
+        
+        
+        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
+        
+        Sequence.add('MOVE_ARM_DROP_0',
+                       VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+                       )
+        
+        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
         
         
         
-
+        
 #        Sequence.add('MOVE_ARM_GRAB_0',
 #                           VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
 #                           )
 #        
-#      
-#        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
 #        
+#        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
+#
 #        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
-#    
+#        
 #        Sequence.add('MOVE_ARM_DROP_0',
 #                           VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
 #                           )
-#    
+#        
 #        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
 #        
 #        
