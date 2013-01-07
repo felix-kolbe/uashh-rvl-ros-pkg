@@ -16,7 +16,7 @@
         <param name="maxUrange" value="59.0"/><!--60! ?-->
         <param name="maxRange" value="63.0"/>
         
-        <param name="map_update_interval" value="5.0"/> <!-- def=5 -->
+        <param name="map_update_interval" value="6.0"/> <!-- def=5 -->
         
         
         <param name="temporalUpdate" value="10"/>

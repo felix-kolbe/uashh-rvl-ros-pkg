@@ -7,6 +7,12 @@
 
 #include <math.h>
 
+
+// note on plain values:
+// buttons are either 0 or 1
+// button axes go from 0 to -1
+// stick axes go from 0 to +/-1
+
 #define PS3_BUTTON_SELECT            0
 #define PS3_BUTTON_STICK_LEFT        1
 #define PS3_BUTTON_STICK_RIGHT       2
@@ -94,6 +100,7 @@ private:
 //	constexpr static double gripper_speed = 0.08;
 	constexpr static double gripper_step = 0.01;
 	constexpr static double gripper_step_delay = 0.05;
+	constexpr static double velocity_epsilon = 0.001;
 };
 
 
@@ -125,17 +132,42 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	/// base move control
 
 	geometry_msgs::TwistPtr velocity_msg (new geometry_msgs::Twist);
-
+	static bool sent_zero_last_time = false;
 	if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second] || joy->buttons[button_turbo]) {
-//		int speedfactor = joy->buttons[button_turbo] ? 2 : 1; // twice the speed if turbo
-		double speedfactor = 1 + abs(joy->axes[axis_turbo]) + abs(joy->axes[axis_turbo_second]); // up to thrice the speed if turbo
+		double speedfactor = 1 + (-joy->axes[axis_turbo]) + (-joy->axes[axis_turbo_second]); // up to thrice the speed if turbo
 		velocity_msg->linear.x = joy->axes[axis_speed] * speed * speedfactor;
 		velocity_msg->angular.z = joy->axes[axis_turn] * turn * speedfactor;
+
+		ROS_DEBUG("effective linear x = %f, effective angular z = %f", velocity_msg->linear.x, velocity_msg->angular.z);
+		// do not repeat zero'd messages on idle to not disturb other publishers
+		if(fabs(velocity_msg->linear.x) <= velocity_epsilon && fabs(velocity_msg->angular.z) <= velocity_epsilon) {
+			velocity_msg->linear.x = 0;
+			velocity_msg->angular.z = 0;
+			if(sent_zero_last_time == false) {
+				sent_zero_last_time = true;
+				vel_pub_.publish(velocity_msg);
+				ROS_DEBUG("Sent zero'd.");
+			}
+			else
+				ROS_DEBUG("Sent nothing.");
+		}
+		else {
+			sent_zero_last_time = false;
+			vel_pub_.publish(velocity_msg);
+			ROS_DEBUG("Sent values.");
+		}
 	}
 	else {
 		// leave message zero'd
+		// do not repeat zero'd messages on idle to not disturb other publishers
+		if(sent_zero_last_time == false) {
+			sent_zero_last_time = true;
+			vel_pub_.publish(velocity_msg);
+			ROS_DEBUG("Sent zero'd.");
+		}
+		else
+			ROS_DEBUG("Sent nothing.");
 	}
-	vel_pub_.publish(velocity_msg);
 
 
 	/// arm move control
