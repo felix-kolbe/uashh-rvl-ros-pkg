@@ -34,6 +34,8 @@ def main():
     sq.userdata.saved_position_y = 0
     sq.userdata.saved_position_yaw = 1
 
+    wfg = MoveBase.WaitForGoal() # We don't want multiple subscribers so we need one WaitFor state
+    
     with sq:
         '''Add states to the container'''
         
@@ -45,7 +47,8 @@ def main():
                      )
         
         # wait for new goal
-        Sequence.add('WAIT_FOR_GOAL', MoveBase.WaitForGoal(),
+        Sequence.add('WAIT_FOR_GOAL', wfg,
+#        Sequence.add('WAIT_FOR_GOAL', MoveBase.WaitForGoal(),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'},
@@ -84,8 +87,8 @@ def main():
     outcome = sq.execute()
 
     # Wait for ctrl-c to stop the application
-#    rospy.spin()
-#    rospy.signal_shutdown("shutting down now")
+    rospy.spin()
+    rospy.signal_shutdown("shutting down now")
     sis.stop()
 
 

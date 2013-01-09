@@ -81,31 +81,6 @@ class MoveBase(SimpleActionState):
     
 
 
-        
-#def getWaitForGoalState():
-#    print 'getWaitForGoalState'
-#    return smach_ros.MonitorState("/move_base_task/goal", PoseStamped, waitForGoal_cb, output_keys=['x', 'y', 'yaw'])
-#
-#
-#class WaitForGoalState(smach_ros.MonitorState):
-#    def __init__(self, ):
-#        print 'WaitForGoalState.__init__'
-#        smach_ros.MonitorState.__init__(self, "/move_base_task/goal", PoseStamped, waitForGoal_cb, output_keys=['x', 'y', 'yaw'])
-#    
-#    def execute(self, userdata):
-#        print 'WaitForGoalState.execute'
-#        return smach_ros.MonitorState.execute(self, userdata)
-#
-#def waitForGoal_cb(ud, msg):
-#    print 'waitForGoal_cb'
-#    ud.x = msg.target_pose.pose.position.x
-#    ud.y = msg.target_pose.pose.position.y
-##    ud.yaw = msg.target_pose.pose.orientation
-#    return False
-
-
-
-
 '''This class acts as an generic message listener with blocking and timeout.
 It is meant to be extended with a case specific class that initializes this one appropriately,
  amongst others with a message callback that is called from this class' execute() with the recieved message,
@@ -122,7 +97,7 @@ class WaitForMsg(smach.State):
     def _callback(self, msg):
         print '_callback'
         self.mutex.acquire()
-        print '_callback: msg was: '+str(self.msg)
+#        print '_callback: msg was: '+str(self.msg)
         self.msg = msg
         self.mutex.release()
 
