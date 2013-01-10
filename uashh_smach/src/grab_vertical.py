@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" This file provides a smach sequence of MoveArm calls that let the robot arm grab 
+""" This file provides a smach sequence of move_arm calls that let the robot arm grab 
 an object from above with the gripper in vertical downwards orientation.
 """
 
@@ -18,14 +18,14 @@ from smach_ros import ServiceState, SimpleActionState
 from geometry_msgs.msg import Pose, Quaternion
 from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-import MoveJoints
+import move_joints
 
 
 PRE_GRAB_OFFSET = 0.1 # m
 GRIPPER_MAX_WIDTH = 0.068 # m
 
 
-def poseConstraintToPositionOrientationConstraints(pose_constraint):
+def pose_constraint_to_position_orientation_constraints(pose_constraint):
     position_constraint = PositionConstraint()
     orientation_constraint = OrientationConstraint()
     position_constraint.header = pose_constraint.header
@@ -56,16 +56,16 @@ def poseConstraintToPositionOrientationConstraints(pose_constraint):
     return (position_constraint, orientation_constraint)
 
 
-def addGoalConstraintToMoveArmGoal(pose_constraint, move_arm_goal):
-    position_constraint, orientation_constraint = poseConstraintToPositionOrientationConstraints(pose_constraint);
+def add_goal_constraint_to_move_arm_goal(pose_constraint, move_arm_goal):
+    position_constraint, orientation_constraint = pose_constraint_to_position_orientation_constraints(pose_constraint);
     move_arm_goal.motion_plan_request.goal_constraints.position_constraints.append(position_constraint)
     move_arm_goal.motion_plan_request.goal_constraints.orientation_constraints.append(orientation_constraint)
 
 
 
 
-""" state that moves the gripper to a vertical position regarding x, y, z, phi and parent_frame from userdata """
-class MoveVerticalGripperPoseActionState(SimpleActionState):
+"""State that moves the gripper to a vertical position regarding x, y, z, phi and parent_frame from userdata."""
+class MoveArmVerticalGrabState(SimpleActionState):
     def __init__(self):
         SimpleActionState.__init__(self, 'move_SchunkArm', MoveArmAction, input_keys=['x','y','z','phi','parent_frame'])
         pass
@@ -95,7 +95,7 @@ class MoveVerticalGripperPoseActionState(SimpleActionState):
         desired_pose.absolute_roll_tolerance = 0.04;
         desired_pose.absolute_pitch_tolerance = 0.04;
         desired_pose.absolute_yaw_tolerance = 0.04;
-        addGoalConstraintToMoveArmGoal(desired_pose, self._goal)
+        add_goal_constraint_to_move_arm_goal(desired_pose, self._goal)
         
         srv_out = SimpleActionState.execute(self, userdata)
  
@@ -103,14 +103,13 @@ class MoveVerticalGripperPoseActionState(SimpleActionState):
 
 
 
-""" """
-def getVerticalGrabSequence(x, y, z, phi, grab_width, parent_frame):
-    return _getVerticalSequence('grab', x, y, z, phi, grab_width, parent_frame)
+def get_vertical_grab_sequence(x, y, z, phi, grab_width, parent_frame):
+    return _get_vertical_sequence('grab', x, y, z, phi, grab_width, parent_frame)
 
-def getVerticalDropSequence(x, y, z, phi, grab_width, parent_frame):
-    return _getVerticalSequence('drop', x, y, z, phi, grab_width, parent_frame)
+def get_vertical_drop_sequence(x, y, z, phi, grab_width, parent_frame):
+    return _get_vertical_sequence('drop', x, y, z, phi, grab_width, parent_frame)
     
-def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
+def _get_vertical_sequence(task, x, y, z, phi, grab_width, parent_frame):
     
     sq = Sequence(
     outcomes = ['succeeded','aborted','preempted'],
@@ -125,7 +124,7 @@ def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
     
     with sq:
         Sequence.add('MOVE_ARM_GRAB_PRE',
-                       MoveVerticalGripperPoseActionState(),
+                       MoveArmVerticalGrabState(),
                         remapping={ 'x':'x',
                                     'y':'y',
                                     'z':'z_pre',
@@ -135,10 +134,10 @@ def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
         
         if(task == 'grab'):
             Sequence.add('MOVE_GRIPPER_OPEN', 
-                           MoveJoints.getMoveGripperState(GRIPPER_MAX_WIDTH))
+                           move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
             
         Sequence.add('MOVE_ARM_GRAB',
-                       MoveVerticalGripperPoseActionState(),
+                       MoveArmVerticalGrabState(),
                         remapping={ 'x':'x',
                                     'y':'y',
                                     'z':'z',
@@ -148,13 +147,13 @@ def _getVerticalSequence(task, x, y, z, phi, grab_width, parent_frame):
         
         if(task == 'grab'):
             Sequence.add('MOVE_GRIPPER_CLOSE', 
-                           MoveJoints.getMoveGripperState(grab_width))
+                           move_joints.get_move_gripper_state(grab_width))
         else:
             Sequence.add('MOVE_GRIPPER_OPEN',
-                           MoveJoints.getMoveGripperState(GRIPPER_MAX_WIDTH))
+                           move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
             
         Sequence.add('MOVE_ARM_GRAB_POST',
-                       MoveVerticalGripperPoseActionState(),
+                       MoveArmVerticalGrabState(),
                         remapping={ 'x':'x',
                                     'y':'y',
                                     'z':'z_pre',

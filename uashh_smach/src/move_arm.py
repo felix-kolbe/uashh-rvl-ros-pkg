@@ -24,8 +24,8 @@ joint_names = ['DH_1_2',
                'DH_5_6']
 
 
-""" setup motion plan request
-the length of parameter joint_positions must match the length of global variable joint_names
+""" Setup motion plan request
+The length of parameter joint_positions must match the length of global variable joint_names.
 """
 def create_motion_plan_request_for_joints(joint_positions): 
     motion_plan_request = MotionPlanRequest()
@@ -44,7 +44,7 @@ def create_motion_plan_request_for_joints(joint_positions):
     return motion_plan_request
 
 
-def getMoveArmToJointsSimpleActionState(joint_positions):
+def get_move_arm_to_joints_positions_state(joint_positions):
     arm_goal = arm_navigation_msgs.msg.MoveArmGoal()
     arm_goal.planner_service_name = "ompl_planning/plan_kinematic_path"
     arm_goal.motion_plan_request = create_motion_plan_request_for_joints(joint_positions)
@@ -54,5 +54,5 @@ def getMoveArmToJointsSimpleActionState(joint_positions):
                                  goal=arm_goal
                              )
 
-def getMoveArmToZerosSimpleActionState():
-    return getMoveArmToJointsSimpleActionState([0,0,0,0,0])
+def get_move_arm_to_zero_state():
+    return get_move_arm_to_joints_positions_state([0,0,0,0,0])

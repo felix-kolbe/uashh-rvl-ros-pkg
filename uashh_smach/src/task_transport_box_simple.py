@@ -19,14 +19,14 @@ from smach_ros import ServiceState, SimpleActionState
 #import arm_navigation_msgs
 #from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-import LookAround      # duplicate import issues
-import VerticalXYZPhiGrab
+import look_around      # duplicate import issues
+import grab_vertical
 
-import MoveBase
-import MoveJoints
-import MoveArm
+import move_base
+import move_joints
+import move_arm
 
-import Util
+import util
 
 
 BOX_THICKNESS = 0.048
@@ -53,44 +53,44 @@ def main():
     with sq:
         '''Add states to the container'''
         
-        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
+        Sequence.add('MOVE_BASE_Forward', move_base.get_move_base_in_odom_state(1, 0));
         
         Sequence.add('MOVE_ARM_GRAB_0',
-                       VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+                       grab_vertical.get_vertical_grab_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
                        )
         
         
-        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
+        Sequence.add('MOVE_ARM_ZERO', move_arm.get_move_arm_to_zero_state())
         
         
-        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
+        Sequence.add('MOVE_BASE_Backward', move_base.get_move_base_in_odom_state(0, 0));
         
         Sequence.add('MOVE_ARM_DROP_0',
-                       VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+                       grab_vertical.get_vertical_drop_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
                        )
         
-        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
+        Sequence.add('MOVE_ARM_ZERO_2', move_arm.get_move_arm_to_zero_state())
         
         
         
         
 #        Sequence.add('MOVE_ARM_GRAB_0',
-#                           VerticalXYZPhiGrab.getVerticalGrabSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+#                           grab_vertical.get_vertical_grab_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
 #                           )
 #        
 #        
-#        Sequence.add('MOVE_ARM_ZERO', MoveArm.getMoveArmToZerosSimpleActionState())
+#        Sequence.add('MOVE_ARM_ZERO', move_arm.get_move_arm_to_zero_state())
 #
-#        Sequence.add('MOVE_BASE_Forward', MoveBase.getMoveBaseGoalInOdomState(1, 0));
+#        Sequence.add('MOVE_BASE_Forward', move_base.get_move_base_in_odom_state(1, 0));
 #        
 #        Sequence.add('MOVE_ARM_DROP_0',
-#                           VerticalXYZPhiGrab.getVerticalDropSequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
+#                           grab_vertical.get_vertical_drop_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
 #                           )
 #        
-#        Sequence.add('MOVE_ARM_ZERO_2', MoveArm.getMoveArmToZerosSimpleActionState())
+#        Sequence.add('MOVE_ARM_ZERO_2', move_arm.get_move_arm_to_zero_state())
 #        
 #        
-#        Sequence.add('MOVE_BASE_Backward', MoveBase.getMoveBaseGoalInOdomState(0, 0));
+#        Sequence.add('MOVE_BASE_Backward', move_base.get_move_base_in_odom_state(0, 0));
         
         
     

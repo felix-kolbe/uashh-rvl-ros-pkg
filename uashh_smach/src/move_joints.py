@@ -4,7 +4,7 @@
 For this the joint_motion_service from our service is needed to be running.
 
 For the gripper an even easier to use pre defined method is provided.
-For other joints, MoveArm.py should be used, as the joint_motion_service does not check for collisions.
+For other joints, move_arm.py should be used, as the joint_motion_service does not check for collisions.
  """
 
 import roslib; roslib.load_manifest('uashh_smach')
@@ -24,7 +24,7 @@ from joint_motion_service.srv import move_joints_service, move_joints_serviceReq
 GRIPPER_ID = 5
 
 
-""" subclass extending ServiceState to react on the service response data """
+"""Subclass extending ServiceState to react on the service response data."""
 class MoveJointsServiceState(ServiceState):
     
     def execute(self, userdata):
@@ -40,7 +40,7 @@ class MoveJointsServiceState(ServiceState):
         return srv_out
         
 
-def getMoveGripperState(grab_width):
+def get_move_gripper_state(grab_width):
     return MoveJointsServiceState('move_joints_service', move_joints_service,
                                 request = move_joints_serviceRequest([5], [grab_width])
                                 )

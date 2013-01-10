@@ -14,8 +14,8 @@ import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
-import MoveBase
-import Util
+import move_base
+import util
 
 
 
@@ -34,13 +34,13 @@ def main():
     sq.userdata.saved_position_y = 0
     sq.userdata.saved_position_yaw = 1
 
-    wfg = MoveBase.WaitForGoal() # We don't want multiple subscribers so we need one WaitFor state
+    wfg = move_base.WaitForGoalState() # We don't want multiple subscribers so we need one WaitFor state
     
     with sq:
         '''Add states to the container'''
         
         # save position
-        Sequence.add('SAVE_ROBOT_POSITION', MoveBase.ReadRobotPosition(),
+        Sequence.add('SAVE_ROBOT_POSITION', move_base.ReadRobotPositionState(),
                      remapping={'x':'saved_position_x',
                                 'y':'saved_position_y',
                                 'yaw':'saved_position_yaw'},
@@ -48,7 +48,7 @@ def main():
         
         # wait for new goal
         Sequence.add('WAIT_FOR_GOAL', wfg,
-#        Sequence.add('WAIT_FOR_GOAL', MoveBase.WaitForGoal(),
+#        Sequence.add('WAIT_FOR_GOAL', move_base.WaitForGoalState(),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'},
@@ -58,7 +58,7 @@ def main():
                          )
         
         # nav to goal
-        Sequence.add('MOVE_BASE_GO', MoveBase.MoveBase('/odom'),
+        Sequence.add('MOVE_BASE_GO', move_base.MoveBaseState('/odom'),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'
@@ -66,10 +66,10 @@ def main():
                      )
         
         # wait
-        Sequence.add('PAUSE_AT_GOAL', Util.SleepState(2))
+        Sequence.add('PAUSE_AT_GOAL', util.SleepState(2))
         
         # nav back
-        Sequence.add('MOVE_BASE_RETURN', MoveBase.MoveBase('/odom'),
+        Sequence.add('MOVE_BASE_RETURN', move_base.MoveBaseState('/odom'),
                      remapping={'x':'saved_position_x',
                                 'y':'saved_position_y',
                                 'yaw':'saved_position_yaw'

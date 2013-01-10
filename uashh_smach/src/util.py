@@ -62,40 +62,42 @@ class SleepStateX(smach.State):
 
 '''As it makes no sense to have more than one transform listener, 
 here is a global one that has to be initialized via 
-initTransformListener().'''
-transformListener = None
+init_transform_listener().'''
+transform_listener = None
 
 '''Can be called multiple times.'''
-def initTransformListener():
-    global transformListener
-    if transformListener == None:
-        transformListener = tf.TransformListener();
+def init_transform_listener():
+    global transform_listener
+    if transform_listener == None:
+        transform_listener = tf.TransformListener();
 
 
 
 '''Returns a (x,y,yaw) tuple.'''
-def getCurrentRobotPositionInOdomFrame():
+def get_current_robot_position_in_odom_frame():
     try:
-        trans,rot = transformListener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+        trans,rot = transform_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(rot)
         return trans[0], trans[1], yaw
     except (tf.LookupException, tf.ConnectivityException) as e:
         print e
         return 0,0,0
     # TODO: i.e. forward exception 
-    
-def executeSmachContainer(smachContainer, enableIntrospection=False):
+
+
+
+def execute_smach_container(smach_container, enable_introspection=False):
     rospy.init_node('smach')
     
-    if enableIntrospection:
+    if enable_introspection:
         # Create and start the introspection server
-        sis = smach_ros.IntrospectionServer('server_name', smachContainer, '/SM_ROOT')
+        sis = smach_ros.IntrospectionServer('server_name', smach_container, '/SM_ROOT')
         sis.start()
         
-        outcome = smachContainer.execute()
+        outcome = smach_container.execute()
     
         # Wait for ctrl-c to stop the application
         rospy.spin()
         sis.stop()
     else:
-        outcome = smachContainer.execute()
+        outcome = smach_container.execute()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """ This files generates poses which let the robot look around to e.g. scan its environment.
-These movements via MoveArm.py are provided as a state machine container.
+These movements via move_arm.py are provided as a state machine container.
 """
 
 import roslib; roslib.load_manifest('uashh_smach')
@@ -10,8 +10,8 @@ import rospy
 import smach
 import smach_ros
 
-import MoveArm
-import Util
+import move_arm
+import util
 
 
 
@@ -51,7 +51,7 @@ def get_lookaround_smach(interjacent_state=None):
     
     with sq:
         for i in range(len(poses)):
-            sq.add('LOOKAROUND_MOVE_ARM_%d'%i, MoveArm.getMoveArmToJointsSimpleActionState(poses[i]));
+            sq.add('LOOKAROUND_MOVE_ARM_%d'%i, move_arm.get_move_arm_to_joints_positions_state(poses[i]));
             if interjacent_state is not None:
                 sq.add('LOOKAROUND_INTERJACENT_STATE_%d'%i, interjacent_state)
     
@@ -60,7 +60,7 @@ def get_lookaround_smach(interjacent_state=None):
 
 
 
-def LookAroundTest():
+def _test_look_around():
     rospy.init_node('smach')
 
     sq = smach.Sequence(
@@ -70,7 +70,7 @@ def LookAroundTest():
     with sq:
         '''Add states to the container'''
         
-        smach.Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(Util.SleepState(1)))
+        smach.Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(util.SleepState(1)))
         
     
     # Create and start the introspection server
@@ -89,4 +89,4 @@ def LookAroundTest():
 
 
 if __name__ == '__main__':
-    LookAroundTest()
+    _test_look_around()

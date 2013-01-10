@@ -19,7 +19,7 @@ from smach_ros import ServiceState, SimpleActionState
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion 
 
-import Util
+import util
 
 
 
@@ -29,22 +29,22 @@ def pose_orientation_to_quaternion(msg):
 
 
     
-def getMoveBaseGoalInMapState(x, y):
-    return getMoveBaseGoalState("/map", x, y)
+def get_move_base_in_map_state(x, y):
+    return get_move_base_state("/map", x, y)
 
-def getMoveBaseGoalInOdomState(x, y):
-    return getMoveBaseGoalState("/odom", x, y)
+def get_move_base_in_odom_state(x, y):
+    return get_move_base_state("/odom", x, y)
 
 
-def getMoveRandomGoalState():
+def get_move_base_random_state():
     radius = random.random()*2 + 1  # 1-3 m
     #yaw = random.random()*TAU/2 - TAU/4    # +-90 deg
-    yaw = random.random()*Util.TAU*3/4 - Util.TAU*3/8    # +-135 deg
+    yaw = random.random()*util.TAU*3/4 - util.TAU*3/8    # +-135 deg
     
-    return getMoveBaseGoalState("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
+    return get_move_base_state("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
     
 '''Returns a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
-def getMoveBaseGoalState(frame, x=0, y=0, yaw=0):
+def get_move_base_state(frame, x=0, y=0, yaw=0):
     base_goal = MoveBaseGoal()
     base_goal.target_pose.header.frame_id = frame
     base_goal.target_pose.header.stamp = rospy.Time.now()
@@ -60,9 +60,9 @@ def getMoveBaseGoalState(frame, x=0, y=0, yaw=0):
 
 
 
-'''MoveBase state with userdata input
+'''move_base state with userdata input
 frame defaults to '/odom' if not given'''
-class MoveBase(SimpleActionState):
+class MoveBaseState(SimpleActionState):
     def __init__(self, frame='/map'):
         SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self._goal_cb)
         self.frame = frame
@@ -85,7 +85,7 @@ class MoveBase(SimpleActionState):
 It is meant to be extended with a case specific class that initializes this one appropriately,
  amongst others with a message callback that is called from this class' execute() with the recieved message,
  but not after timeout.'''  
-class WaitForMsg(smach.State):
+class WaitForMsgState(smach.State):
     def __init__(self, topic, msg_type, msg_cb, additional_output_keys=[]):
         print '_init'
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
@@ -123,9 +123,9 @@ class WaitForMsg(smach.State):
         return 'aborted'
 
 
-class WaitForGoal(WaitForMsg):
+class WaitForGoalState(WaitForMsgState):
     def __init__(self):
-        WaitForMsg.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, additional_output_keys=['x', 'y', 'yaw'])
+        WaitForMsgState.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, additional_output_keys=['x', 'y', 'yaw'])
 
     def _msg_cb(self, msg, ud):
         ud.x = msg.pose.position.x
@@ -140,7 +140,7 @@ class WaitForGoal(WaitForMsg):
 It is meant to be extended with a case specific class that initializes this one appropriately
  and calls this class' waitForMsg() and handles its returned message as needed from within its own execute(). 
  That execute() will be called by smach and has to return 'succeeded' or 'aborted' as an outcome.'''
-class WaitForMsgX(smach.State):
+class WaitForMsgStateX(smach.State):
     def __init__(self, topic, msg_type, additional_output_keys=[]):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
         self.mutex = threading.Lock()
@@ -173,12 +173,12 @@ class WaitForMsgX(smach.State):
         #return 'aborted'
 
 
-class WaitForGoalX(WaitForMsgX):
+class WaitForGoalStateX(WaitForMsgStateX):
     def __init__(self):
-        WaitForMsgX.__init__(self, '/move_base_task/goal', PoseStamped, additional_output_keys=['x', 'y', 'yaw'])
+        WaitForMsgStateX.__init__(self, '/move_base_task/goal', PoseStamped, additional_output_keys=['x', 'y', 'yaw'])
 
     def execute(self, ud):
-        msg = WaitForMsgX.waitForMsg(self)
+        msg = WaitForMsgStateX.waitForMsg(self)
         if msg == None:
             return 'aborted' 
         else:
@@ -191,30 +191,30 @@ class WaitForGoalX(WaitForMsgX):
 
 
 
-def _testWaitForGoal():
+def _test_WaitForGoalState():
     rospy.init_node('smach')
-    wfg = WaitForGoal()
+    wfg = WaitForGoalState()
     print 'execute #1'
     wfg.execute(smach.UserData())
     print 'execute #2'
     wfg.execute(smach.UserData())
     print 'execute #3'
     wfg.execute(smach.UserData())
-    #Util.executeSmachContainer(WaitForGoal())
+    #util.execute_smach_container(WaitForGoalState())
 
 
 
 
 
 
-class HasMoved(State):
+class HasMovedState(State):
     def _getXY(self):
-        x,y,yaw = Util.getCurrentRobotPositionInOdomFrame();
+        x,y,yaw = util.get_current_robot_position_in_odom_frame();
         return x,y
     
     def __init__(self, minimumDistance):
         smach.State.__init__(self, outcomes=['movement_exceeds_distance', 'movement_within_distance'])
-        Util.initTransformListener()
+        util.init_transform_listener()
         self.minimumDistance = minimumDistance
         self.lastX, self.lastY = self._getXY()
 
@@ -230,16 +230,16 @@ class HasMoved(State):
             return 'movement_within_distance'
 
 
-class ReadRobotPosition(State):
+class ReadRobotPositionState(State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
-        Util.initTransformListener();
+        util.init_transform_listener();
 
     def execute(self, userdata):
-        userdata.x, userdata.y, userdata.yaw = Util.getCurrentRobotPositionInOdomFrame();
+        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position_in_odom_frame();
         return 'succeeded'
 
 
 
 if __name__ == '__main__':
-    _testWaitForGoal()
+    _test_WaitForGoalState()

@@ -20,15 +20,15 @@ from smach_ros import ServiceState, SimpleActionState
 #import arm_navigation_msgs
 #from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-import LookAround      # duplicate import issues
-import VerticalXYZPhiGrab
+import look_around      # duplicate import issues
+import grab_vertical
 
-import MoveBase
-import MoveJoints
-import MoveArm
+import move_base
+import move_joints
+import move_arm
 
 
-import Util
+import util
 
 
 LOOKAROUND_SLEEP_DURATION = 2
@@ -43,13 +43,13 @@ def main():
     
     
     with sm:
-        StateMachine.add('SLEEP', Util.SleepState(1),
+        StateMachine.add('SLEEP', util.SleepState(1),
                          transitions={'succeeded':'CHECK_ENABLED'})
         StateMachine.add('CHECK_ENABLED', smach_ros.MonitorState("/enable_smach", Bool, monitor_cb),
                          transitions={'invalid':'ARM_LOOK_AROUND',
                                       'valid':'SLEEP',
                                       'preempted':'preempted'})
-        StateMachine.add("ARM_LOOK_AROUND", LookAround.get_lookaround_smach(Util.SleepState(LOOKAROUND_SLEEP_DURATION)),
+        StateMachine.add("ARM_LOOK_AROUND", look_around.get_lookaround_smach(util.SleepState(LOOKAROUND_SLEEP_DURATION)),
                          transitions={'succeeded':'CHECK_ENABLED'})
     
     # Create and start the introspection server
