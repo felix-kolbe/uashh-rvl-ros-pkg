@@ -3,6 +3,7 @@
     <param name="connection" type="str" value="tty" />
     <param name="device" type="str" value="/dev/ttyS0" />
     <param name="baudrate" type="int" value="115200" />
+    <remap from="scan" to="scan_raw" />
   </node>
 <!--
   <node name="laser_tf" pkg="tf" type="static_transform_publisher" args="0.109 0 0.326  0 0 0  base_link laser 100"/>
