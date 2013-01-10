@@ -17,7 +17,7 @@ alias uashh_all='roslaunch '$HELPER_PKG' uashh_all.launch'
 # hardware nodes
 alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
 alias mla='roslaunch metralabs_ros scitos_haw_schunk_start.launch'
-alias rs='roslaunch rotoscan_node laserscanner_w_tf.launch'
+alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
 alias kinect='roslaunch '$HELPER_PKG' openni_fuerte_with_calibration_haw.launch'
 
@@ -33,7 +33,7 @@ alias mb='roslaunch '$HELPER_PKG' move_base_haw.launch'
 alias mbnew='roslaunch scitos_2dnav move_base.launch'
 
 alias octomap='roslaunch '$HELPER_PKG' octomap_mapping_haw_no_motion.launch'
-alias collmap='roslaunch '$HELPER_PKG' collider_haw.launch'
+alias collmap='roslaunch '$HELPER_PKG' collider_haw_no_motion.launch'
 alias armnav='roslaunch scitos_haw_schunk_arm_navigation scitos_haw_schunk_arm_navigation_collision_map.launch'
 alias warehouse='roslaunch scitos_haw_schunk_arm_navigation planning_scene_warehouse_viewer_scitos_haw_schunk_real_wo_rviz.launch'
 
@@ -52,7 +52,7 @@ alias view_kinect_compressed='rosrun image_view image_view image:=/kinect1/rgb/i
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
 alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
-alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py' # don't start it twice
+alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py' # ignores multiple starts
 alias ps3_full='ps3_bt & ps3 & telearm'
 
 # small tools
