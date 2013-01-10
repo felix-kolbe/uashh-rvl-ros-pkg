@@ -1,0 +1,6 @@
+scan_filter_chain:
+- name: left_cutoff
+  type: LaserScanAngularBoundsFilter
+  params: 
+    lower_angle: 1.60876090527
+    upper_angle: -1.65876090527
