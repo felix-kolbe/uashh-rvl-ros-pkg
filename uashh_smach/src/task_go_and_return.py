@@ -51,14 +51,11 @@ def main():
 #        Sequence.add('WAIT_FOR_GOAL', move_base.WaitForGoalState(),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
-                                'yaw':'goal_position_yaw'},
-#                     transitions={'valid':'MOVE_BASE_GO',
-#                                 'invalid':'aborted',
-#                                 'preempted':'preempted'}
+                                'yaw':'goal_position_yaw'}
                          )
         
         # nav to goal
-        Sequence.add('MOVE_BASE_GO', move_base.MoveBaseState('/odom'),
+        Sequence.add('MOVE_BASE_GO', move_base.MoveBaseState('/map'),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'
@@ -69,7 +66,7 @@ def main():
         Sequence.add('PAUSE_AT_GOAL', util.SleepState(2))
         
         # nav back
-        Sequence.add('MOVE_BASE_RETURN', move_base.MoveBaseState('/odom'),
+        Sequence.add('MOVE_BASE_RETURN', move_base.MoveBaseState('/map'),
                      remapping={'x':'saved_position_x',
                                 'y':'saved_position_y',
                                 'yaw':'saved_position_yaw'
