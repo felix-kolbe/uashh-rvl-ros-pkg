@@ -10,6 +10,7 @@
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
+#include <actionlib_msgs/GoalID.h>
 
 
 
@@ -75,6 +76,7 @@ private:
 	ros::NodeHandle nh_;
 
 	ros::Subscriber joy_sub_;
+
 	ros::Publisher base_vel_pub_;
 	ros::Publisher arm_vel_pub_;
 	ros::Publisher ack_all_joints_pub_;
@@ -83,6 +85,7 @@ private:
 	ros::Publisher gripper_pub_;
 	ros::Publisher smach_enable_pub_;
 	ros::Publisher bumper_reset_pub_;
+	ros::Publisher move_base_cancel_pub_;
 
 	const static int axis_speed = PS3_AXIS_STICK_LEFT_UPWARDS;
 	const static int axis_turn = PS3_AXIS_STICK_LEFT_LEFTWARDS;
@@ -95,14 +98,14 @@ private:
 	const static int button_modifier_config = PS3_BUTTON_START;
 	const static int button_joints_ack_all = PS3_BUTTON_ACTION_SQUARE;
 	const static int button_joints_go_pose = PS3_BUTTON_ACTION_TRIANGLE;
+
 	const static int button_emergency = PS3_BUTTON_ACTION_CIRCLE;
 
-	const static int button_modifier_smach = PS3_BUTTON_SELECT;
+	const static int button_modifier_nonarm_config = PS3_BUTTON_SELECT;
 	const static int button_smach_enable = PS3_BUTTON_ACTION_SQUARE;
 	const static int button_smach_disable = PS3_BUTTON_ACTION_CROSS;
-
-	const static int button_modifier_bumper = PS3_BUTTON_SELECT;
 	const static int button_bumper_reset = PS3_BUTTON_ACTION_TRIANGLE;
+	const static int button_move_base_cancel = PS3_BUTTON_ACTION_CIRCLE;
 
 	const static int axis_arm_pitch = PS3_AXIS_STICK_RIGHT_UPWARDS;
 	const static int axis_arm_yaw = PS3_AXIS_STICK_RIGHT_LEFTWARDS;
@@ -133,6 +136,7 @@ teleop_ps3::teleop_ps3()
 	gripper_pub_ = nh_.advertise<metralabs_ros::idAndFloat>("/movePosition", 1);
 	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("/enable_smach", 1, true);
 	bumper_reset_pub_ = nh_.advertise<std_msgs::Empty>("bumper_reset", 1);
+	move_base_cancel_pub_ = nh_.advertise<actionlib_msgs::GoalID>("/move_base/cancel", 1);
 }
 
 void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
@@ -282,9 +286,11 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	}
 
 
-	/// second layer arm buttons
+	/// second layer non arm config buttons
 
-	if(joy->buttons[button_modifier_smach]) {
+	if(joy->buttons[button_modifier_nonarm_config]) {
+
+		/// smach
 		std_msgs::Bool smach_msg;
 		if(joy->buttons[button_smach_disable]) {
 			smach_msg.data = false;
@@ -294,18 +300,24 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			smach_msg.data = true;
 			smach_enable_pub_.publish(smach_msg);
 		}
-	}
 
-
-	/// second layer bumper buttons
-
-	if(joy->buttons[button_modifier_bumper]) {
+		/// bumper
 		if(joy->buttons[button_bumper_reset]) {
 			// timed gate
 			static ros::Time lastAction = ros::Time(0);
 			if(ros::Time::now() - lastAction > ros::Duration(bumper_reset_mute_duration) ){
 				lastAction = ros::Time::now();
 				bumper_reset_pub_.publish(std_msgs::Empty());
+			}
+		}
+
+		/// move_base
+		if(joy->buttons[button_move_base_cancel]) {
+			// timed gate
+			static ros::Time lastAction = ros::Time(0);
+			if(ros::Time::now() - lastAction > ros::Duration(bumper_reset_mute_duration) ){
+				lastAction = ros::Time::now();
+				move_base_cancel_pub_.publish(actionlib_msgs::GoalID());
 			}
 		}
 	}
