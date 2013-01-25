@@ -52,11 +52,11 @@ alias view_kinect_compressed='rosrun image_view image_view image:=/kinect1/rgb/i
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
 alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
-alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py' # ignores multiple starts
+alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
 alias ps3_full='ps3_bt & ps3 & telearm'
 
 # small tools
-#alias rka='rosnode list; rosnode kill -a; rosnode list'
+alias rka='rosnode list; read -p "Kill all nodes? Enter or ^C:"; rosnode kill -a; rosnode list'
 alias rnl='rosnode list'
 alias rtl='rostopic list'
 
@@ -65,3 +65,5 @@ alias joint_movePos='rostopic pub -1 /movePosition metralabs_ros/idAndFloat -- '
 alias joint_targetVel='rostopic pub -1 /targetVelocity metralabs_ros/idAndFloat -- '
 alias joint_targetAcc='rostopic pub -1 /targetAcceleration metralabs_ros/idAndFloat -- '
 alias joint_ref_gripper='rostopic pub -1 /ref std_msgs/Int8 5'
+
+alias move_base_cancel_all='rostopic pub -1 /move_base/cancel actionlib_msgs/GoalID "{stamp: { secs: 0 , nsecs: 0 } , id: ''}"'
