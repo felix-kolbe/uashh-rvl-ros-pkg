@@ -2,5 +2,7 @@ scan_filter_chain:
 - name: left_cutoff
   type: laser_filters/LaserScanAngularBoundsFilter
   params: 
-    lower_angle: -1.65876090527
+#    lower_angle: -1.65876090527
+# provisionally making it symmetrically as of a bug in gmapping
+    lower_angle: -1.60876090527
     upper_angle: 1.60876090527
