@@ -35,7 +35,7 @@ def get_move_base_in_map_state(x, y):
 def get_move_base_in_odom_state(x, y):
     return get_move_base_state("/odom", x, y)
 
-
+'''Note: each state returned is only randomized once at initialization and then static.'''
 def get_move_base_random_state():
     radius = random.random()*2 + 1  # 1-3 m
     #yaw = random.random()*TAU/2 - TAU/4    # +-90 deg
