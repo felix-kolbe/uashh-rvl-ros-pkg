@@ -13,7 +13,7 @@ import threading
 
 import smach
 import smach_ros
-from smach import State
+from smach import State, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
@@ -44,7 +44,8 @@ def get_move_base_random_state():
     return get_move_base_state("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
     
 '''Returns a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
-def get_move_base_state(frame, x=0, y=0, yaw=0):
+def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
+    print "new goal: ", x, y, yaw
     base_goal = MoveBaseGoal()
     base_goal.target_pose.header.frame_id = frame
     base_goal.target_pose.header.stamp = rospy.Time.now()
@@ -61,7 +62,7 @@ def get_move_base_state(frame, x=0, y=0, yaw=0):
 
 
 '''move_base state with userdata input
-frame defaults to '/odom' if not given'''
+frame defaults to '/map' if not given'''
 class MoveBaseState(SimpleActionState):
     def __init__(self, frame='/map'):
         SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self._goal_cb)
@@ -78,17 +79,51 @@ class MoveBaseState(SimpleActionState):
         return goal
 
         
+'''radius range defaults to 1-3 m'''
+class CalcRandomGoalState(State):
+    def __init__(self, radius_min=1, radius_max=3):
+        State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
+        self.radius_min = radius_min
+        self.radius_max = radius_max
     
+    def execute(self, ud):
+        radius = random.random()*(self.radius_max - self.radius_min) + self.radius_min
+        yaw = random.random() * util.TAU*3/4 - util.TAU*3/8    # +-135 deg
+        
+        ud.x = math.cos(yaw) * radius
+        ud.y = math.sin(yaw) * radius
+        ud.yaw = yaw
+        return 'succeeded'
 
 
-'''This class acts as an generic message listener with blocking and timeout.
+def get_random_goal_smach(frame):
+    sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'], connector_outcome = 'succeeded') 
+    
+    sq.userdata.x = 0
+    sq.userdata.y = 0
+    sq.userdata.yaw = 0
+    
+    with sq: 
+        # implicit usage of above userdata
+        Sequence.add("CALC_RANDOM_GOAL", CalcRandomGoalState())
+        Sequence.add("MOVE_RANDOM_GOAL", MoveBaseState(frame))
+    
+    return sq
+
+
+
+
+'''This class acts as a generic message listener with blocking and timeout.
 It is meant to be extended with a case specific class that initializes this one appropriately,
  amongst others with a message callback that is called from this class' execute() with the recieved message,
- but not after timeout.'''  
+ but not after timeout.
+ If latch is True it will return the last received message in case there isn't a new one.  
+'''  
 class WaitForMsgState(smach.State):
-    def __init__(self, topic, msg_type, msg_cb, additional_output_keys=[]):
+    def __init__(self, topic, msg_type, msg_cb, additional_output_keys=[], latch=False):
         print '_init'
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
+        self.latch = latch
         self.mutex = threading.Lock()
         self.msg = None
         self.msg_cb = msg_cb
@@ -111,7 +146,8 @@ class WaitForMsgState(smach.State):
             if self.msg != None:
                 print 'Got message: '+str(self.msg)
                 self.msg_cb(self.msg, ud)
-                self.msg = None
+                if not self.latch:
+                    self.msg = None
 #                print 'setting to None, now is: '+str(self.msg)
                 
                 self.mutex.release()
@@ -136,13 +172,16 @@ class WaitForGoalState(WaitForMsgState):
         
 
     
-'''This class acts as an generic message listener with blocking and timeout.
+'''This class acts as a generic message listener with blocking and timeout.
 It is meant to be extended with a case specific class that initializes this one appropriately
  and calls this class' waitForMsg() and handles its returned message as needed from within its own execute(). 
- That execute() will be called by smach and has to return 'succeeded' or 'aborted' as an outcome.'''
+ That execute() will be called by smach and has to return 'succeeded' or 'aborted' as an outcome.
+ If latch is True it will return the last received message in case there isn't a new one.  
+'''
 class WaitForMsgStateX(smach.State):
-    def __init__(self, topic, msg_type, additional_output_keys=[]):
+    def __init__(self, topic, msg_type, additional_output_keys=[], latch=False):
         smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
+        self.latch = latch
         self.mutex = threading.Lock()
         self.msg = None
         self.subscriber = rospy.Subscriber(topic, msg_type, self._callback)
@@ -162,7 +201,10 @@ class WaitForMsgStateX(smach.State):
             if self.msg != None:
                 print 'Got message.'
                 message = self.msg
-                self.msg = None
+                if not self.latch:
+                    self.msg = None
+                
+                self.mutex.release()
                 return message
 #                return 'succeeded'
             self.mutex.release()
