@@ -23,23 +23,19 @@ import move_arm
 
 import util
 
-from move_base import WaitForMsgStateX
+from move_base import WaitForMsgState
 
 LOOKAROUND_SLEEP_DURATION = 2
 
 
 
-class CheckSmachEnabledState(WaitForMsgStateX):
+class CheckSmachEnabledState(WaitForMsgState):
     def __init__(self):
-        WaitForMsgStateX.__init__(self, '/enable_smach', Bool, additional_output_keys=[], latch=True) # outcomes=['enabled', 'disabled'], 
+        WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True) # outcomes=['enabled', 'disabled'], 
 
-    def execute(self, ud):
-        msg = WaitForMsgStateX.waitForMsg(self)
-        if msg != None and msg.data:
-            return 'succeeded'
-        else:
-            return 'aborted'
-        
+    def _msg_cb(self, msg, ud):
+        return msg != None and msg.data
+
 
 def main():
     rospy.init_node('smach')
