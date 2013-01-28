@@ -23,18 +23,9 @@ import move_arm
 
 import util
 
-from move_base import WaitForMsgState
 
 LOOKAROUND_SLEEP_DURATION = 2
 
-
-
-class CheckSmachEnabledState(WaitForMsgState):
-    def __init__(self):
-        WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True) # outcomes=['enabled', 'disabled'], 
-
-    def _msg_cb(self, msg, ud):
-        return msg != None and msg.data
 
 
 def main():
@@ -48,7 +39,7 @@ def main():
     with sm:
         StateMachine.add('SLEEP', util.SleepState(3),
                          transitions={'succeeded':'CHECK_ENABLED'})
-        StateMachine.add('CHECK_ENABLED', CheckSmachEnabledState(),
+        StateMachine.add('CHECK_ENABLED', util.CheckSmachEnabledState(),
                          transitions={'succeeded':'MOVE_RANDOMLY',
                                       'aborted':'SLEEP'})
         
