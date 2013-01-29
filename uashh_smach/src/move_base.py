@@ -115,7 +115,7 @@ def get_random_goal_smach(frame):
 
 class WaitForGoalState(WaitForMsgState):
     def __init__(self):
-        WaitForMsgState.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, additional_output_keys=['x', 'y', 'yaw'])
+        WaitForMsgState.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, output_keys=['x', 'y', 'yaw'])
 
     def _msg_cb(self, msg, ud):
         ud.x = msg.pose.position.x

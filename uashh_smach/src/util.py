@@ -74,7 +74,7 @@ class WaitForMsgState(smach.State):
     message beeing existent or None. Additionally, in the successfull case, the msg_cb, if given, will 
     be called with the message and the userdata, so that a self defined method can convert message data to 
     smach userdata.
-    Those userdata fields have to be passed via 'additional_output_keys'.
+    Those userdata fields have to be passed via 'output_keys'.
     
     If the state outcome should depend on the message content, the msg_cb can dictate the outcome:
     If msg_cb returns True, execute() will return "succeeded".
@@ -83,12 +83,15 @@ class WaitForMsgState(smach.State):
     
     If thats still not enough, execute() might be overloaded.
     
-    If latch is True it will return the last received message, so one message might be returned indefinite times.
+    latch: If True waitForMsg will return the last received message, so one message might be returned indefinite times.
+    timeout: Seconds to wait for a message, defaults to 60.
+    output_keys: Userdata keys that the message callback needs to write to. 
     """
     
-    def __init__(self, topic, msg_type, msg_cb=None, additional_output_keys=[], latch=False):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
+    def __init__(self, topic, msg_type, msg_cb=None, output_keys=[], latch=False, timeout=60):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=output_keys)
         self.latch = latch
+        self.timeout = timeout
         self.mutex = threading.Lock()
         self.msg = None
         self.msg_cb = msg_cb
@@ -100,10 +103,10 @@ class WaitForMsgState(smach.State):
         self.mutex.release()
 
     def waitForMsg(self):
-        '''returns the message or None, not an outcome'''
+        '''Await and return the message or None on timeout.'''
         print 'Waiting for message...'
-        # wait for a maximum of .. seconds
-        for i in range(0, 30*100):
+        timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
+        while rospy.Time.now() < timeout_time:
             self.mutex.acquire()
             if self.msg != None:
                 print 'Got message.'
