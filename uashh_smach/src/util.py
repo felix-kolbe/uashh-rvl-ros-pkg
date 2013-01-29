@@ -46,8 +46,8 @@ class SleepState(smach.State):
             return 'aborted'
         return 'aborted'
 
-'''this variant takes the duration via userdata and might be reactivated sometimes.''' 
 class SleepStateX(smach.State):
+    '''this variant takes the duration via userdata and might be reactivated sometimes.'''
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['duration'])
     
@@ -149,22 +149,29 @@ class CheckSmachEnabledState(WaitForMsgState):
 
 
 '''As it makes no sense to have more than one transform listener, 
-here is a global one that has to be initialized via 
-init_transform_listener().'''
-transform_listener = None
+here is a global one that has to be initialized via init_transform_listener() 
+and accessed via get_transform_listener().'''
+_transform_listener = None
 
-'''Can be called multiple times.'''
+def get_transform_listener():
+    return _transform_listener
+
 def init_transform_listener():
-    global transform_listener
-    if transform_listener == None:
-        transform_listener = tf.TransformListener();
+    '''Can safely be called multiple times.'''
+    global _transform_listener
+    if _transform_listener == None:
+        _transform_listener = tf.TransformListener();
 
 
 
-'''Returns a (x,y,yaw) tuple.'''
+
 def get_current_robot_position_in_odom_frame():
+    return get_current_robot_position('/odom')
+
+def get_current_robot_position(frame='/map'):
+    '''Returns a (x,y,yaw) tuple. Frame defaults to /map.'''
     try:
-        trans,rot = transform_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+        trans,rot = get_transform_listener().lookupTransform(frame, '/base_link', rospy.Time(0))
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(rot)
         return trans[0], trans[1], yaw
     except (tf.LookupException, tf.ConnectivityException) as e:
