@@ -13,8 +13,6 @@ import threading
 
 import smach
 import smach_ros
-#from smach import State, StateMachine, Sequence
-#from smach_ros import ServiceState, SimpleActionState
 
 
 
@@ -23,17 +21,26 @@ TAU = math.pi*2   # one tau is one turn. simply as that.
 
 
 
-class PauseState(smach.State):
+class PromptState(smach.State):
+    """Prompt and wait for user action or input on command line.
+    
+    userdata input prompt: message displayed at prompt 
+    userdata output user_input: where the user input is returned
+    """ 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['msg'])
+        smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['prompt'], output_keys=['user_input'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state PAUSE_STATE')
-        raw_input(userdata.msg)
-        return 'succeeded'
-    
+        rospy.loginfo('Executing PromptState')
+        try:
+            userdata.user_input = raw_input(userdata.prompt)
+            return 'succeeded'
+        except EOFError:
+            return 'aborted'
+
 
 class SleepState(smach.State):
+    """Sleep for a time duration, given of type rospy Duration or float in seconds at setup time."""
     def __init__(self, duration):
         smach.State.__init__(self, outcomes=['succeeded','aborted'])
         self.duration = duration
@@ -44,12 +51,11 @@ class SleepState(smach.State):
             return 'succeeded'
         except rospy.ROSInterruptException:        
             return 'aborted'
-        return 'aborted'
 
 class SleepStateX(smach.State):
     '''this variant takes the duration via userdata and might be reactivated sometimes.'''
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['duration'])
+        smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['duration'])
     
     def execute(self, userdata):
         try:
@@ -57,7 +63,6 @@ class SleepStateX(smach.State):
             return 'succeeded'
         except rospy.ROSInterruptException:        
             return 'aborted'
-        return 'aborted'
 
 
 
@@ -104,12 +109,12 @@ class WaitForMsgState(smach.State):
 
     def waitForMsg(self):
         '''Await and return the message or None on timeout.'''
-        print 'Waiting for message...'
+        rospy.loginfo('Waiting for message...')
         timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
         while rospy.Time.now() < timeout_time:
             self.mutex.acquire()
             if self.msg != None:
-                print 'Got message.'
+                rospy.loginfo('Got message.')
                 message = self.msg
                 
                 if not self.latch:
@@ -120,7 +125,7 @@ class WaitForMsgState(smach.State):
             self.mutex.release()
             rospy.sleep(.1)
         
-        print 'Timeout!'
+        rospy.loginfo('Timeout on waiting for message!')
         return None
 
     def execute(self, ud):
