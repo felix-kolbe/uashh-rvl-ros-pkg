@@ -35,16 +35,15 @@ def get_move_base_in_map_state(x, y):
 def get_move_base_in_odom_state(x, y):
     return get_move_base_state("/odom", x, y)
 
-'''Note: each state returned is only randomized once at initialization and then static.'''
 def get_move_base_random_state():
+    '''Note: each state returned is only randomized once at initialization and then static.'''
     radius = random.random()*2 + 1  # 1-3 m
-    #yaw = random.random()*TAU/2 - TAU/4    # +-90 deg
     yaw = random.random()*util.TAU*3/4 - util.TAU*3/8    # +-135 deg
     
     return get_move_base_state("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
     
-'''Returns a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
 def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
+    '''Return a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
     print "new goal: ", x, y, yaw
     base_goal = MoveBaseGoal()
     base_goal.target_pose.header.frame_id = frame
@@ -61,9 +60,11 @@ def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
 
 
 
-'''move_base state with userdata input
-frame defaults to '/map' if not given'''
 class MoveBaseState(SimpleActionState):
+    """Calls a move_base action server with the goal (x, y, yaw) from userdata.
+    
+    frame: defaults to /map
+    """
     def __init__(self, frame='/map'):
         SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self._goal_cb)
         self.frame = frame
@@ -79,8 +80,12 @@ class MoveBaseState(SimpleActionState):
         return goal
 
         
-'''radius range defaults to 1-3 m'''
 class CalcRandomGoalState(State):
+    """Return a random (x,y,yaw) tuple via userdata.
+    
+    (x,y) lies in the direction range of +135 degrees.
+    Radius range defaults to 1-3 m.
+    """
     def __init__(self, radius_min=1, radius_max=3):
         State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
         self.radius_min = radius_min
@@ -124,35 +129,26 @@ class WaitForGoalState(WaitForMsgState):
         ud.yaw = yaw
 
 
-def _test_WaitForGoalState():
-    rospy.init_node('smach')
-    wfg = WaitForGoalState()
-    print 'execute #1'
-    wfg.execute(smach.UserData())
-    print 'execute #2'
-    wfg.execute(smach.UserData())
-    print 'execute #3'
-    wfg.execute(smach.UserData())
-    #util.execute_smach_container(WaitForGoalState())
-
-
 
 
 class HasMovedState(State):
+    """Return whether the robot moved beyond a given distance in a given frame since the last exceeding check.""" 
     def _getXY(self):
-        x,y,yaw = util.get_current_robot_position_in_odom_frame();
+        x,y,yaw = util.get_current_robot_position(self.frame);
         return x,y
     
-    def __init__(self, minimumDistance):
+    def __init__(self, minimumDistance, frame='/map'):
         smach.State.__init__(self, outcomes=['movement_exceeds_distance', 'movement_within_distance'])
         util.init_transform_listener()
         self.minimumDistance = minimumDistance
+        self.frame = frame
         self.lastX, self.lastY = self._getXY()
 
     def execute(self, userdata):
         currentX, currentY = self._getXY()
         currentDistance = math.sqrt(math.pow(currentX, 2) + math.pow(currentY, 2))
-        rospy.logdebug("currentXY: %f,%f lastXY: %f,%f currentDistance: %f minimumDistance: %f", self.lastX, self.lastY, currentX, currentY, currentDistance, self.minimumDistance)
+        rospy.logdebug("currentXY: %f,%f lastXY: %f,%f currentDistance: %f minimumDistance: %f", 
+                       self.lastX, self.lastY, currentX, currentY, currentDistance, self.minimumDistance)
         if currentDistance >= self.minimumDistance:
             self.lastX = currentX
             self.lastY = currentY
@@ -162,15 +158,15 @@ class HasMovedState(State):
 
 
 class ReadRobotPositionState(State):
-    def __init__(self):
+    """Return the current robot position in the given frame via userdata.
+    
+    frame: defaults to /map
+    """
+    def __init__(self, frame='/map'):
         smach.State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
+        self.frame = frame
         util.init_transform_listener();
 
     def execute(self, userdata):
-        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position_in_odom_frame();
+        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position(self.frame);
         return 'succeeded'
-
-
-
-if __name__ == '__main__':
-    _test_WaitForGoalState()
