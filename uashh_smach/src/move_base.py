@@ -81,7 +81,7 @@ class MoveBaseState(SimpleActionState):
 
         
 class CalcRandomGoalState(State):
-    """Return a random (x,y,yaw) tuple via userdata.
+    """Return a random (x, y, yaw) tuple via userdata.
     
     (x,y) lies in the direction range of +135 degrees.
     Radius range defaults to 1-3 m.
@@ -101,7 +101,11 @@ class CalcRandomGoalState(State):
         return 'succeeded'
 
 
-def get_random_goal_smach(frame):
+def get_random_goal_smach(frame='/base_link'):
+    """Return a SMACH Sequence for navigation to a random goal, combining CalcRandomGoalState with MoveBaseState.
+    
+    frame: defaults to /base_link 
+    """
     sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'], connector_outcome = 'succeeded') 
     
     sq.userdata.x = 0

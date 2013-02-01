@@ -177,7 +177,9 @@ def get_current_robot_position_in_odom_frame():
     return get_current_robot_position('/odom')
 
 def get_current_robot_position(frame='/map'):
-    '''Returns a (x,y,yaw) tuple. Frame defaults to /map.'''
+    """Returns a (x,y,yaw) tuple for the robot in a given frame.
+    frame: defaults to /map
+    """
     try:
         trans,rot = get_transform_listener().lookupTransform(frame, '/base_link', rospy.Time(0))
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(rot)
