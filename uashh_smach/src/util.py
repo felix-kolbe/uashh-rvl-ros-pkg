@@ -40,28 +40,28 @@ class PromptState(smach.State):
 
 
 class SleepState(smach.State):
-    """Sleep for a time duration, given of type rospy Duration or float in seconds at setup time."""
-    def __init__(self, duration):
-        smach.State.__init__(self, outcomes=['succeeded','aborted'])
+    """Sleep for a time duration, given either on initialization or via userdata.
+    
+    duration: of type rospy Duration or float in seconds. If not given or None, 
+                duration is read from userdata key 'duration'.
+    """
+    def __init__(self, duration=None):
+        if duration == None: 
+            smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['duration'])
+        else:
+            smach.State.__init__(self, outcomes=['succeeded','aborted'])
         self.duration = duration
     
     def execute(self, userdata):
         try:
-            rospy.sleep(self.duration)
+            if self.duration == None: 
+                duration = userdata.duration
+            else:
+                duration = self.duration
+            rospy.loginfo("SleepState sleeping for %d seconds" % duration)
+            rospy.sleep(duration)
             return 'succeeded'
-        except rospy.ROSInterruptException:        
-            return 'aborted'
-
-class SleepStateX(smach.State):
-    '''this variant takes the duration via userdata and might be reactivated sometimes.'''
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['duration'])
-    
-    def execute(self, userdata):
-        try:
-            rospy.sleep(userdata.duration)
-            return 'succeeded'
-        except rospy.ROSInterruptException:        
+        except rospy.ROSInterruptException:
             return 'aborted'
 
 
