@@ -39,6 +39,9 @@ alias warehouse='roslaunch scitos_haw_schunk_arm_navigation planning_scene_wareh
 
 alias telearm='rosrun teleop_arm_controller teleop_arm_controller'
 
+alias map_server='rosrun map_server map_server ~/ros_workspace/recordings/Flur7_2013-02-04.yaml'
+alias amcl='rosrun amcl amcl'
+
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
