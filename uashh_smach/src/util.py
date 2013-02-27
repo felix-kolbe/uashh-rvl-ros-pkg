@@ -9,12 +9,10 @@ import tf
 from std_msgs.msg import Bool
 
 import math
-
+import threading
 
 import smach
 import smach_ros
-#from smach import State, StateMachine, Sequence
-#from smach_ros import ServiceState, SimpleActionState
 
 
 
@@ -23,60 +21,167 @@ TAU = math.pi*2   # one tau is one turn. simply as that.
 
 
 
-class PauseState(smach.State):
+class PromptState(smach.State):
+    """Prompt and wait for user action or input on command line.
+    
+    userdata input prompt: message displayed at prompt 
+    userdata output user_input: where the user input is returned
+    """ 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['msg'])
+        smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['prompt'], output_keys=['user_input'])
 
     def execute(self, userdata):
-        rospy.loginfo('Executing state PAUSE_STATE')
-        raw_input(userdata.msg)
-        return 'succeeded'
-    
+        rospy.loginfo('Executing PromptState')
+        try:
+            userdata.user_input = raw_input(userdata.prompt)
+            return 'succeeded'
+        except EOFError:
+            return 'aborted'
+
 
 class SleepState(smach.State):
-    def __init__(self, duration):
-        smach.State.__init__(self, outcomes=['succeeded','aborted'])
+    """Sleep for a time duration, given either on initialization or via userdata.
+    
+    duration: of type rospy Duration or float in seconds. If not given or None, 
+                duration is read from userdata key 'duration'.
+    """
+    def __init__(self, duration=None):
+        if duration == None: 
+            smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['duration'])
+        else:
+            smach.State.__init__(self, outcomes=['succeeded','aborted'])
         self.duration = duration
     
     def execute(self, userdata):
         try:
-            rospy.sleep(self.duration)
+            if self.duration == None: 
+                duration = userdata.duration
+            else:
+                duration = self.duration
+            rospy.loginfo("SleepState sleeping for %d seconds" % duration)
+            rospy.sleep(duration)
             return 'succeeded'
-        except rospy.ROSInterruptException:        
+        except rospy.ROSInterruptException:
             return 'aborted'
-        return 'aborted'
 
-'''this variant takes the duration via userdata and might be reactivated sometimes.''' 
-class SleepStateX(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded','preempted','aborted'], input_keys=['duration'])
+
+
+class WaitForMsgState(smach.State):
+    """This class acts as a generic message listener with blocking, timeout, latch and flexible usage.
     
-    def execute(self, userdata):
-        try:
-            rospy.sleep(userdata.duration)
+    It is meant to be extended with a case specific class that initializes this one appropriately 
+    and contains the msg_cb (or overloads execute if really needed).
+    
+    Its waitForMsg method implements the core functionality: waiting for the message, returning 
+    the message itself or None on timeout.
+    
+    Its execute method wraps the waitForMsg and returns succeeded or aborted, depending on the returned 
+    message beeing existent or None. Additionally, in the successfull case, the msg_cb, if given, will 
+    be called with the message and the userdata, so that a self defined method can convert message data to 
+    smach userdata.
+    Those userdata fields have to be passed via 'output_keys'.
+    
+    If the state outcome should depend on the message content, the msg_cb can dictate the outcome:
+    If msg_cb returns True, execute() will return "succeeded".
+    If msg_cb returns False, execute() will return "aborted".
+    If msg_cb has no return statement, execute() will act as described above.
+    
+    If thats still not enough, execute() might be overloaded.
+    
+    latch: If True waitForMsg will return the last received message, so one message might be returned indefinite times.
+    timeout: Seconds to wait for a message, defaults to 60.
+    output_keys: Userdata keys that the message callback needs to write to. 
+    """
+    
+    def __init__(self, topic, msg_type, msg_cb=None, output_keys=[], latch=False, timeout=60):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=output_keys)
+        self.latch = latch
+        self.timeout = timeout
+        self.mutex = threading.Lock()
+        self.msg = None
+        self.msg_cb = msg_cb
+        self.subscriber = rospy.Subscriber(topic, msg_type, self._callback, queue_size=1)
+
+    def _callback(self, msg):
+        self.mutex.acquire()
+        self.msg = msg
+        self.mutex.release()
+
+    def waitForMsg(self):
+        '''Await and return the message or None on timeout.'''
+        rospy.loginfo('Waiting for message...')
+        timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
+        while rospy.Time.now() < timeout_time:
+            self.mutex.acquire()
+            if self.msg != None:
+                rospy.loginfo('Got message.')
+                message = self.msg
+                
+                if not self.latch:
+                    self.msg = None
+                
+                self.mutex.release()
+                return message
+            self.mutex.release()
+            rospy.sleep(.1)
+        
+        rospy.loginfo('Timeout on waiting for message!')
+        return None
+
+    def execute(self, ud):
+        '''Default simplest execute(), see class description.'''
+        msg = self.waitForMsg()
+        if msg != None:
+            # call callback if there is one
+            if self.msg_cb != None:
+                cb_result = self.msg_cb(msg, ud)
+                # check if callback wants to dictate output
+                if cb_result != None:
+                    if cb_result:
+                        return 'succeeded'
+                    else:
+                        return 'aborted'
             return 'succeeded'
-        except rospy.ROSInterruptException:        
+        else:
             return 'aborted'
-        return 'aborted'
+
+
+
+class CheckSmachEnabledState(WaitForMsgState):
+    def __init__(self):
+        WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True) # outcomes=['enabled', 'disabled'], 
+
+    def _msg_cb(self, msg, ud):
+        return msg != None and msg.data
+
 
 
 '''As it makes no sense to have more than one transform listener, 
-here is a global one that has to be initialized via 
-init_transform_listener().'''
-transform_listener = None
+here is a global one that has to be initialized via init_transform_listener() 
+and accessed via get_transform_listener().'''
+_transform_listener = None
 
-'''Can be called multiple times.'''
+def get_transform_listener():
+    return _transform_listener
+
 def init_transform_listener():
-    global transform_listener
-    if transform_listener == None:
-        transform_listener = tf.TransformListener();
+    '''Can safely be called multiple times.'''
+    global _transform_listener
+    if _transform_listener == None:
+        _transform_listener = tf.TransformListener();
 
 
 
-'''Returns a (x,y,yaw) tuple.'''
+
 def get_current_robot_position_in_odom_frame():
+    return get_current_robot_position('/odom')
+
+def get_current_robot_position(frame='/map'):
+    """Returns a (x,y,yaw) tuple for the robot in a given frame.
+    frame: defaults to /map
+    """
     try:
-        trans,rot = transform_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+        trans,rot = get_transform_listener().lookupTransform(frame, '/base_link', rospy.Time(0))
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(rot)
         return trans[0], trans[1], yaw
     except (tf.LookupException, tf.ConnectivityException) as e:

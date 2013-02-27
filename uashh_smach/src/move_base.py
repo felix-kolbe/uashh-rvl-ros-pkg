@@ -9,17 +9,17 @@ import tf
 
 import math
 import random
-import threading
 
 import smach
 import smach_ros
-from smach import State
+from smach import State, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion 
 
 import util
+from util import WaitForMsgState
 
 
 
@@ -35,16 +35,16 @@ def get_move_base_in_map_state(x, y):
 def get_move_base_in_odom_state(x, y):
     return get_move_base_state("/odom", x, y)
 
-
 def get_move_base_random_state():
+    '''Note: each state returned is only randomized once at initialization and then static.'''
     radius = random.random()*2 + 1  # 1-3 m
-    #yaw = random.random()*TAU/2 - TAU/4    # +-90 deg
     yaw = random.random()*util.TAU*3/4 - util.TAU*3/8    # +-135 deg
     
     return get_move_base_state("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
     
-'''Returns a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
-def get_move_base_state(frame, x=0, y=0, yaw=0):
+def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
+    '''Return a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
+    print "new goal: ", x, y, yaw
     base_goal = MoveBaseGoal()
     base_goal.target_pose.header.frame_id = frame
     base_goal.target_pose.header.stamp = rospy.Time.now()
@@ -60,9 +60,11 @@ def get_move_base_state(frame, x=0, y=0, yaw=0):
 
 
 
-'''move_base state with userdata input
-frame defaults to '/odom' if not given'''
 class MoveBaseState(SimpleActionState):
+    """Calls a move_base action server with the goal (x, y, yaw) from userdata.
+    
+    frame: defaults to /map
+    """
     def __init__(self, frame='/map'):
         SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self._goal_cb)
         self.frame = frame
@@ -78,150 +80,79 @@ class MoveBaseState(SimpleActionState):
         return goal
 
         
+class CalcRandomGoalState(State):
+    """Return a random (x, y, yaw) tuple via userdata.
     
-
-
-'''This class acts as an generic message listener with blocking and timeout.
-It is meant to be extended with a case specific class that initializes this one appropriately,
- amongst others with a message callback that is called from this class' execute() with the recieved message,
- but not after timeout.'''  
-class WaitForMsgState(smach.State):
-    def __init__(self, topic, msg_type, msg_cb, additional_output_keys=[]):
-        print '_init'
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
-        self.mutex = threading.Lock()
-        self.msg = None
-        self.msg_cb = msg_cb
-        self.subscriber = rospy.Subscriber(topic, msg_type, self._callback, queue_size=1)
-
-    def _callback(self, msg):
-        print '_callback'
-        self.mutex.acquire()
-#        print '_callback: msg was: '+str(self.msg)
-        self.msg = msg
-        self.mutex.release()
-
+    (x,y) lies in the direction range of +135 degrees.
+    Radius range defaults to 1-3 m.
+    """
+    def __init__(self, radius_min=1, radius_max=3):
+        State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
+        self.radius_min = radius_min
+        self.radius_max = radius_max
+    
     def execute(self, ud):
-        print 'Waiting for message...'
-        # wait for a maximum of .. seconds
-        for i in range(0, 30*100):
-#            print 'gg_testing'
-            self.mutex.acquire()
-#            print 'msg currently is: '+str(self.msg)
-            if self.msg != None:
-                print 'Got message: '+str(self.msg)
-                self.msg_cb(self.msg, ud)
-                self.msg = None
-#                print 'setting to None, now is: '+str(self.msg)
-                
-                self.mutex.release()
-                return 'succeeded'
-            self.mutex.release()
-            rospy.sleep(1)
+        radius = random.random()*(self.radius_max - self.radius_min) + self.radius_min
+        yaw = random.random() * util.TAU*3/4 - util.TAU*3/8    # +-135 deg
         
-        print 'Timeout!'
-        return 'aborted'
+        ud.x = math.cos(yaw) * radius
+        ud.y = math.sin(yaw) * radius
+        ud.yaw = yaw
+        return 'succeeded'
+
+
+def get_random_goal_smach(frame='/base_link'):
+    """Return a SMACH Sequence for navigation to a random goal, combining CalcRandomGoalState with MoveBaseState.
+    
+    frame: defaults to /base_link 
+    """
+    sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'], connector_outcome = 'succeeded') 
+    
+    sq.userdata.x = 0
+    sq.userdata.y = 0
+    sq.userdata.yaw = 0
+    
+    with sq: 
+        # implicit usage of above userdata
+        Sequence.add("CALC_RANDOM_GOAL", CalcRandomGoalState())
+        Sequence.add("MOVE_RANDOM_GOAL", MoveBaseState(frame))
+    
+    return sq
+
+
 
 
 class WaitForGoalState(WaitForMsgState):
     def __init__(self):
-        WaitForMsgState.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, additional_output_keys=['x', 'y', 'yaw'])
+        WaitForMsgState.__init__(self, '/move_base_task/goal', PoseStamped, self._msg_cb, output_keys=['x', 'y', 'yaw'])
 
     def _msg_cb(self, msg, ud):
         ud.x = msg.pose.position.x
         ud.y = msg.pose.position.y
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(pose_orientation_to_quaternion(msg.pose.orientation))
         ud.yaw = yaw
-        
-        
-
-    
-'''This class acts as an generic message listener with blocking and timeout.
-It is meant to be extended with a case specific class that initializes this one appropriately
- and calls this class' waitForMsg() and handles its returned message as needed from within its own execute(). 
- That execute() will be called by smach and has to return 'succeeded' or 'aborted' as an outcome.'''
-class WaitForMsgStateX(smach.State):
-    def __init__(self, topic, msg_type, additional_output_keys=[]):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=additional_output_keys)
-        self.mutex = threading.Lock()
-        self.msg = None
-        self.subscriber = rospy.Subscriber(topic, msg_type, self._callback)
-
-    def _callback(self, msg):
-        self.mutex.acquire()
-        self.msg = msg
-        self.mutex.release()
-
-    '''returns the message or None, not an outcome'''
-    def waitForMsg(self):
-        print 'Waiting for message...'
-        # wait for a maximum of .. seconds
-        for i in range(0, 30*100):
-#            print 'gg_testing'
-            self.mutex.acquire()
-            if self.msg != None:
-                print 'Got message.'
-                message = self.msg
-                self.msg = None
-                return message
-#                return 'succeeded'
-            self.mutex.release()
-            rospy.sleep(.1)
-        
-        print 'Timeout!'
-        return None
-        #return 'aborted'
-
-
-class WaitForGoalStateX(WaitForMsgStateX):
-    def __init__(self):
-        WaitForMsgStateX.__init__(self, '/move_base_task/goal', PoseStamped, additional_output_keys=['x', 'y', 'yaw'])
-
-    def execute(self, ud):
-        msg = WaitForMsgStateX.waitForMsg(self)
-        if msg == None:
-            return 'aborted' 
-        else:
-            ud.x = msg.pose.position.x
-            ud.y = msg.pose.position.y
-            (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(pose_orientation_to_quaternion(msg.pose.orientation))
-            ud.yaw = yaw
-            return 'succeeded'
-
-
-
-
-def _test_WaitForGoalState():
-    rospy.init_node('smach')
-    wfg = WaitForGoalState()
-    print 'execute #1'
-    wfg.execute(smach.UserData())
-    print 'execute #2'
-    wfg.execute(smach.UserData())
-    print 'execute #3'
-    wfg.execute(smach.UserData())
-    #util.execute_smach_container(WaitForGoalState())
-
-
 
 
 
 
 class HasMovedState(State):
+    """Return whether the robot moved beyond a given distance in a given frame since the last exceeding check.""" 
     def _getXY(self):
-        x,y,yaw = util.get_current_robot_position_in_odom_frame();
+        x,y,yaw = util.get_current_robot_position(self.frame);
         return x,y
     
-    def __init__(self, minimumDistance):
+    def __init__(self, minimumDistance, frame='/map'):
         smach.State.__init__(self, outcomes=['movement_exceeds_distance', 'movement_within_distance'])
         util.init_transform_listener()
         self.minimumDistance = minimumDistance
+        self.frame = frame
         self.lastX, self.lastY = self._getXY()
 
     def execute(self, userdata):
         currentX, currentY = self._getXY()
         currentDistance = math.sqrt(math.pow(currentX, 2) + math.pow(currentY, 2))
-        rospy.logdebug("currentXY: %f,%f lastXY: %f,%f currentDistance: %f minimumDistance: %f", self.lastX, self.lastY, currentX, currentY, currentDistance, self.minimumDistance)
+        rospy.logdebug("currentXY: %f,%f lastXY: %f,%f currentDistance: %f minimumDistance: %f", 
+                       self.lastX, self.lastY, currentX, currentY, currentDistance, self.minimumDistance)
         if currentDistance >= self.minimumDistance:
             self.lastX = currentX
             self.lastY = currentY
@@ -231,15 +162,15 @@ class HasMovedState(State):
 
 
 class ReadRobotPositionState(State):
-    def __init__(self):
+    """Return the current robot position in the given frame via userdata.
+    
+    frame: defaults to /map
+    """
+    def __init__(self, frame='/map'):
         smach.State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
+        self.frame = frame
         util.init_transform_listener();
 
     def execute(self, userdata):
-        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position_in_odom_frame();
+        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position(self.frame);
         return 'succeeded'
-
-
-
-if __name__ == '__main__':
-    _test_WaitForGoalState()

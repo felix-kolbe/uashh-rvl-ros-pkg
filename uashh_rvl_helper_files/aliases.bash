@@ -6,8 +6,8 @@ alias aliases_reload='source `rospack find $HELPER_PKG`/aliases.bash'
 
 # config adjustments
 alias ros_what='echo ROS_MASTER_URI=$ROS_MASTER_URI; echo ROS_ROOT=$ROS_ROOT; echo ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH'
-alias ros_scitos='export ROS_MASTER_URI=http://scitos_w:11311'
-alias ros_local='export ROS_MASTER_URI=http://localhost:11311'
+alias ros_scitos='export ROS_MASTER_URI=http://scitos_w:11311 ; export PS1="'$PS1'"'
+alias ros_local='export ROS_MASTER_URI=http://localhost:11311 ; export PS1="'$(echo "$PS1" | sed 's/\\\$ $//')'!\[\033[01;33m\]roslocal\[\033[00m\]$ "'
 
 
 # all
@@ -45,6 +45,7 @@ alias amcl='rosrun amcl amcl'
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
+alias rviz_felix='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.vcg'
 alias rosgui='rosrun rqt_gui rqt_gui'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
@@ -59,7 +60,7 @@ alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystic
 alias ps3_full='ps3_bt & ps3 & telearm'
 
 # small tools
-alias rka='rosnode list; read -p "Kill all nodes? Enter or ^C:"; rosnode kill -a; rosnode list'
+alias rka='rosnode list; read -p "Kill all nodes? Press Enter or ^C:"; rosnode kill -a; rosnode list'
 alias rnl='rosnode list'
 alias rtl='rostopic list'
 

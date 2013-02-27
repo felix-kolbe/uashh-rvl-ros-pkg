@@ -16,22 +16,16 @@ import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
-#from arm_navigation_msgs.srv import 
-#import arm_navigation_msgs
-#from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
-
-import look_around      # duplicate import issues
-import grab_vertical
+import look_around
 
 import move_base
-import move_joints
 import move_arm
-
 
 import util
 
 
 LOOKAROUND_SLEEP_DURATION = 2
+
 
 
 def main():
@@ -43,24 +37,26 @@ def main():
     
     
     with sm:
-        StateMachine.add('SLEEP', util.SleepState(1),
+        StateMachine.add('SLEEP', util.SleepState(3),
                          transitions={'succeeded':'CHECK_ENABLED'})
-        StateMachine.add('CHECK_ENABLED', smach_ros.MonitorState("/enable_smach", Bool, monitor_cb),
-                         transitions={'invalid':'ARM_LOOK_AROUND',
-                                      'valid':'SLEEP',
-                                      'preempted':'preempted'})
-        StateMachine.add("ARM_LOOK_AROUND", look_around.get_lookaround_smach(util.SleepState(LOOKAROUND_SLEEP_DURATION)),
-                         transitions={'succeeded':'CHECK_ENABLED'})
-    
+        StateMachine.add('CHECK_ENABLED', util.CheckSmachEnabledState(),
+                         transitions={'succeeded':'MOVE_RANDOMLY',
+                                      'aborted':'SLEEP'})
+        
+        StateMachine.add('MOVE_RANDOMLY', move_base.get_random_goal_smach('/base_link'),
+                         transitions={'succeeded':'SLEEP',
+                                      'aborted':'CHECK_ENABLED'})
+        
+#        StateMachine.add("ARM_LOOK_AROUND", look_around.get_lookaround_smach(util.SleepState(LOOKAROUND_SLEEP_DURATION)),
+#        StateMachine.add('ARM_LOOK_AROUND', util.SleepState(1),    # mockup
+
+
     # Create and start the introspection server
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
     
-    try:
-        # Execute the state machine
-        outcome = sm.execute()
-    except Exception as ex:
-        print ex
+    # Execute the state machine
+    outcome = sm.execute()
 
     # Wait for ctrl-c to stop the application
     rospy.spin()
