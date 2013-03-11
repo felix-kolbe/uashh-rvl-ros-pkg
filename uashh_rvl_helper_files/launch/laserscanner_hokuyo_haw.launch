@@ -8,10 +8,19 @@
     <param name="min_ang" type="double" value="-2.1" />
     <param name="max_ang" type="double" value="+2.1" />
     
+    <!-- overwriting param to remove detection of robot itself -->
+    <param name="min_ang" type="double" value="-1.84" />
+    
     <param name="frame_id" type="str" value="laser_rear" />
     <remap from="scan" to="scan_rear" />
   </node>
   
-  <node name="laser_tf" pkg="tf" type="static_transform_publisher" args="-0.210 0 0.330  0 0 0  base_link laser_rear 100"/>
+  
+  <!-- how it should be as of CAD (z axis approximated) -->
+<!--
+  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.290 0 0.330  3.14159265359 0 0  base_link laser_rear 69"/>
+-->
+  <!-- manual calibration to match front laserscanner -->
+  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.310 0.010 0.330  3.105 0 0  base_link laser_rear 69"/>
   
 </launch>

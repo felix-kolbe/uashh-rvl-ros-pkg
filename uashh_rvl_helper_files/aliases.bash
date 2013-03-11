@@ -18,6 +18,7 @@ alias uashh_all='roslaunch '$HELPER_PKG' uashh_all.launch'
 alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
 alias mla='roslaunch metralabs_ros scitos_haw_schunk_start.launch'
 alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch & roslaunch '$HELPER_PKG' laserscan_filter.launch'
+alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
 alias kinect='roslaunch '$HELPER_PKG' openni_fuerte_with_calibration_haw.launch'
 
