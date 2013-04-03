@@ -1,0 +1,10 @@
+<launch>
+  <node name="cpu_monitor" pkg="pr2_computer_monitor" type="cpu_monitor.py" >
+    <param name="check_core_temps" type="bool" value="true" />
+    <param name="check_ipmi_tool" type="bool" value="false" />
+    <param name="enforce_clock_speed" type="bool" value="false" />
+  </node>
+  
+  <node name="hd_monitor" pkg="pr2_computer_monitor" type="hd_monitor.py" />
+  
+</launch>
