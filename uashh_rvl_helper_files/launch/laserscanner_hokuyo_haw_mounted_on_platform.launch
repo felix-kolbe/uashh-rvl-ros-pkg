@@ -1,3 +1,4 @@
+<!-- hokuyo laserscanner mounted on extension on platform (original holes) -->
 <launch>
   <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen">
     <!-- these are one below device maxima
@@ -15,12 +16,14 @@
     <remap from="scan" to="scan_rear" />
   </node>
   
+  <!-- static_transform_publisher rotation parameter order: z y x -->
   
   <!-- how it should be as of CAD (z axis approximated) -->
-<!--
+  <!--
   <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.290 0 0.330  3.14159265359 0 0  base_link laser_rear 69"/>
--->
+  -->
+
   <!-- manual calibration to match front laserscanner -->
-  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.310 0.010 0.330  3.105 0 0  base_link laser_rear 69"/>
+  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.310 0.010 0.330  3.105 0 0  base_link laser_rear 69"/>  
   
 </launch>

@@ -1,0 +1,21 @@
+<!-- hokuyo laserscanner mounted on extension on first holes (upwards) -->
+<launch>
+  <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" output="screen">
+    <!-- these are one below device maxima
+    <param name="min_ang" type="double" value="-2.086213" />
+    <param name="max_ang" type="double" value="+2.092349" />
+    -->
+    <!-- these values are to big and make the driver fall back to device maximum values -->
+    <param name="min_ang" type="double" value="-2.1" />
+    <param name="max_ang" type="double" value="+2.1" />
+    
+    <param name="frame_id" type="str" value="laser_rear" />
+    <remap from="scan" to="scan_rear" />
+  </node>
+  
+  <!-- static_transform_publisher rotation parameter order: z y x -->
+  
+  <!-- not calibrated yet ! -->
+  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.380 0.010 0.332  3.105 0 0  base_link laser_rear 69"/>
+  
+</launch>

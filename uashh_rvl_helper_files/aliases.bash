@@ -18,9 +18,10 @@ alias uashh_all='roslaunch '$HELPER_PKG' uashh_all.launch'
 alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
 alias mla='roslaunch metralabs_ros scitos_haw_schunk_start.launch'
 alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch & roslaunch '$HELPER_PKG' laserscan_filter.launch'
-alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw.launch'
+alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw_mounted_on_extension_downright.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
 alias kinect='roslaunch '$HELPER_PKG' openni_fuerte_with_calibration_haw.launch'
+alias cm='roslaunch '$HELPER_PKG' computer_monitor.launch'
 
 
 # helper nodes
@@ -30,6 +31,7 @@ alias kmf='roslaunch kinect_movement_filter kinect_movement_filter_haw.launch'
 
 # computing nodes
 alias gmapp='roslaunch '$HELPER_PKG' slam_gmapping_haw.launch'
+alias gmapp_rear='roslaunch '$HELPER_PKG' slam_gmapping_haw_rear.launch'
 alias mb='roslaunch '$HELPER_PKG' move_base_haw.launch'
 alias mbnew='roslaunch scitos_2dnav move_base.launch'
 
@@ -71,4 +73,5 @@ alias joint_targetVel='rostopic pub -1 /targetVelocity metralabs_ros/idAndFloat 
 alias joint_targetAcc='rostopic pub -1 /targetAcceleration metralabs_ros/idAndFloat -- '
 alias joint_ref_gripper='rostopic pub -1 /ref std_msgs/Int8 5'
 
+alias bumper_reset='rostopic pub -1 /bumper_reset std_msgs/Empty'
 alias move_base_cancel_all='rostopic pub -1 /move_base/cancel actionlib_msgs/GoalID "{stamp: { secs: 0 , nsecs: 0 } , id: ''}"'
