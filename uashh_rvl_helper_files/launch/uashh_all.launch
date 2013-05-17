@@ -6,7 +6,7 @@
 -->
 
 <!-- scitos and arm -->
-<include file="$(find metralabs_ros)/Launch/scitos_haw_schunk_start.launch"/>
+<include file="$(find metralabs_ros)/launch/scitos_haw_schunk_start.launch"/>
 
 <!-- kinect -->
 <include file="$(find uashh_rvl_helper_files)/launch/openni_fuerte_with_calibration_haw.launch"/>
