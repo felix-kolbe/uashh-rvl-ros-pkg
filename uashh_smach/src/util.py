@@ -93,8 +93,8 @@ class WaitForMsgState(smach.State):
     output_keys: Userdata keys that the message callback needs to write to. 
     """
     
-    def __init__(self, topic, msg_type, msg_cb=None, output_keys=[], latch=False, timeout=60):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],  output_keys=output_keys)
+    def __init__(self, topic, msg_type, msg_cb=None, output_keys=[], latch=False, timeout=10):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted', 'preempted'],  output_keys=output_keys)
         self.latch = latch
         self.timeout = timeout
         self.mutex = threading.Lock()
@@ -123,6 +123,12 @@ class WaitForMsgState(smach.State):
                 self.mutex.release()
                 return message
             self.mutex.release()
+            
+            if self.preempt_requested():
+                self.service_preempt()
+                rospy.loginfo('waitForMsg is preempted!')
+                return 'preempted'
+            
             rospy.sleep(.1)
         
         rospy.loginfo('Timeout on waiting for message!')
