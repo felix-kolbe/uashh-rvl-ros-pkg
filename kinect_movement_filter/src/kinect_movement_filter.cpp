@@ -95,7 +95,7 @@ public:
       }
       catch (tf::TransformException &e)
       {
-        ROS_INFO("Transform failed: %s", e.what());
+        ROS_WARN("Transform failed: %s", e.what());
       }
     }
   }
@@ -109,7 +109,7 @@ public:
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "kinect_movement_filter");
-  ROS_INFO("Starting node...");
+  ROS_INFO("Starting MovementFilter...");
   MovementFilter mf;
 
   ros::spin();

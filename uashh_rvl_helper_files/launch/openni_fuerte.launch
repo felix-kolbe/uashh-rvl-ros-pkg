@@ -24,7 +24,7 @@
   <arg name="depth_camera_info_url" default="" />
 
   <!-- Use OpenNI's factory-calibrated depth->RGB registration? -->
-  <arg name="depth_registration" default="true" />
+  <arg name="depth_registration" default="false" /> <!-- disabling registration as of openni driver bug since jan/feb'13 -->
 
   <!-- Arguments for remapping all device namespaces -->
   <arg name="rgb"              default="rgb" />
