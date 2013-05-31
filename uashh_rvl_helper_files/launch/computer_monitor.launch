@@ -5,6 +5,8 @@
     <param name="enforce_clock_speed" type="bool" value="false" />
   </node>
   
+  <!--
   <node name="hd_monitor" pkg="pr2_computer_monitor" type="hd_monitor.py" />
+  -->
   
 </launch>

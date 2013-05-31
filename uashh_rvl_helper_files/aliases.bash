@@ -28,6 +28,8 @@ alias cm='roslaunch '$HELPER_PKG' computer_monitor.launch'
 alias jms='rosrun joint_motion_service joint_motion_service'
 alias is='roslaunch image_shrinker image_shrinker.launch'
 alias kmf='roslaunch kinect_movement_filter kinect_movement_filter_haw.launch'
+alias diag_agg='rosrun diagnostic_aggregator aggregator_node'
+
 
 # computing nodes
 alias gmapp='roslaunch '$HELPER_PKG' slam_gmapping_haw.launch'
@@ -45,6 +47,7 @@ alias telearm='rosrun teleop_arm_controller teleop_arm_controller'
 alias map_server='rosrun map_server map_server ~/ros_workspace/recordings/Flur7_2013-02-04.yaml'
 alias amcl='rosrun amcl amcl'
 
+
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
@@ -61,6 +64,7 @@ alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
 alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
 alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
 alias ps3_full='ps3_bt & ps3 & telearm'
+
 
 # small tools
 alias rka='rosnode list; read -p "Kill all nodes? Press Enter or ^C:"; rosnode kill -a; rosnode list'
