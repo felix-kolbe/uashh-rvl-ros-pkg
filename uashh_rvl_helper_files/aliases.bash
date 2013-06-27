@@ -71,11 +71,11 @@ alias rka='rosnode list; read -p "Kill all nodes? Press Enter or ^C:"; rosnode k
 alias rnl='rosnode list'
 alias rtl='rostopic list'
 
-alias joint_states='rostopic echo -n 1 /schunk/position/joint_states'
-alias joint_movePos='rostopic pub -1 /movePosition metralabs_ros/idAndFloat -- '
-alias joint_targetVel='rostopic pub -1 /targetVelocity metralabs_ros/idAndFloat -- '
-alias joint_targetAcc='rostopic pub -1 /targetAcceleration metralabs_ros/idAndFloat -- '
-alias joint_ref_gripper='rostopic pub -1 /ref std_msgs/Int8 5'
+alias joint_states='rostopic echo -n 1 /joint_states'
+alias joint_movePos='rostopic pub -1 /schunk/movePosition metralabs_ros/idAndFloat -- '
+alias joint_targetVel='rostopic pub -1 /schunk/targetVelocity metralabs_ros/idAndFloat -- '
+alias joint_targetAcc='rostopic pub -1 /schunk/targetAcceleration metralabs_ros/idAndFloat -- '
+alias joint_ref_gripper='rostopic pub -1 /schunk/ref std_msgs/Int8 5'
 
 alias bumper_reset='rostopic pub -1 /bumper_reset std_msgs/Empty'
 alias move_base_cancel_all='rostopic pub -1 /move_base/cancel actionlib_msgs/GoalID "{stamp: { secs: 0 , nsecs: 0 } , id: ''}"'

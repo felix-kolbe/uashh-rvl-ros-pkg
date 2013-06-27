@@ -1,7 +1,4 @@
 <launch>
-    
-    <remap from="/joint_states" to="/schunk/position/joint_states"/>
-    
     <include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_planning_environment.launch" />
     <include file="$(find planning_environment)/launch/environment_server.launch">
         <arg name="use_monitor" value="true" />

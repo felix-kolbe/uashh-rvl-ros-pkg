@@ -215,7 +215,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   pubMoveVel = nh.advertise<metralabs_ros::idAndFloat>("/moveVelocity", 1, false);
-  ros::Subscriber subJointStates = nh.subscribe("/schunk/position/pre_mimic/joint_states", 1, jointStatesCallback);
+  ros::Subscriber subJointStates = nh.subscribe("/schunk/pre_mimic_joint_states", 1, jointStatesCallback);
   ros::Subscriber subArmTwist = nh.subscribe("/moveArmVelocity", 1, moveVelocityCallback);
 
   ROS_INFO("Teleop arm controller online.");

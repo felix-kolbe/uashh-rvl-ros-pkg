@@ -109,7 +109,7 @@ if __name__=="__main__":
 	pubArm = rospy.Publisher('movePosition', idAndFloat)
 	rospy.init_node('teleop_twist_keyboard')
 
-	subArm = rospy.Subscriber('/schunk/position/joint_states', JointState, jointStateUpdate)
+	subArm = rospy.Subscriber('joint_states', JointState, jointStateUpdate)
 
 	x = 0
 	th = 0

@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 
 	pubMovePos = nh.advertise<metralabs_ros::idAndFloat>("/movePosition", 1, false);
-	ros::Subscriber subJointStates = nh.subscribe("/schunk/position/pre_mimic/joint_states", 1, jointStatesCallback);
+	ros::Subscriber subJointStates = nh.subscribe("/schunk/pre_mimic_joint_states", 1, jointStatesCallback);
 	ros::ServiceServer service = nh.advertiseService("/move_joints_service", serviceCallback);
 
 	ROS_INFO("Joint motion service running.");

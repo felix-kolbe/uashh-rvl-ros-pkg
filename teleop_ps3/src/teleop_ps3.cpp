@@ -74,6 +74,7 @@ private:
 	void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
 	ros::NodeHandle nh_;
+	ros::NodeHandle nh_schunk_("schunk");
 
 	ros::Subscriber joy_sub_;
 
@@ -128,15 +129,17 @@ teleop_ps3::teleop_ps3()
 {
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 1, &teleop_ps3::joyCallback, this);
 
-	base_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 3);
-	arm_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("/moveArmVelocity", 3);
-	ack_all_joints_pub_ = nh_.advertise<std_msgs::Bool>("/ackAll", 1);
-	arm_emergency_pub_ = nh_.advertise<std_msgs::Bool>("/emergency", 1);
-	joints_position_pub_ = nh_.advertise<sensor_msgs::JointState>("/schunk/target_pc/joint_states", 1);
-	gripper_pub_ = nh_.advertise<metralabs_ros::idAndFloat>("/movePosition", 1);
-	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("/enable_smach", 1, true);
+	base_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 3);
+
+	arm_vel_pub_ = nh_schunk_.advertise<geometry_msgs::Twist>("moveArmVelocity", 3);
+	ack_all_joints_pub_ = nh_schunk_.advertise<std_msgs::Bool>("ackAll", 1);
+	arm_emergency_pub_ = nh_schunk_.advertise<std_msgs::Bool>("emergency", 1);
+	joints_position_pub_ = nh_schunk_.advertise<sensor_msgs::JointState>("move_all_position", 1);
+	gripper_pub_ = nh_schunk_.advertise<metralabs_ros::idAndFloat>("movePosition", 1);
+
+	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("enable_smach", 1, true);
 	bumper_reset_pub_ = nh_.advertise<std_msgs::Empty>("bumper_reset", 1);
-	move_base_cancel_pub_ = nh_.advertise<actionlib_msgs::GoalID>("/move_base/cancel", 1);
+	move_base_cancel_pub_ = nh_.advertise<actionlib_msgs::GoalID>("move_base/cancel", 1);
 }
 
 void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)

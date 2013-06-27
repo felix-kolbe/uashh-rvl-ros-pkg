@@ -11,7 +11,6 @@
     <param name="database_path" value="arm_navigation_dbs/scitos_haw_schunk"/>
   </node>
 
-  <remap from="/joint_states" to="/schunk/position/joint_states"/>
   <!--
   <include file="$(find planning_environment)/launch/environment_server.launch">
     <arg name="use_monitor" value="true" />
