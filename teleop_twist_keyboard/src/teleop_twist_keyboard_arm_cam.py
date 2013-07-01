@@ -106,7 +106,7 @@ if __name__=="__main__":
 	settings = termios.tcgetattr(sys.stdin)
 	
 	pub = rospy.Publisher('cmd_vel', Twist)
-	pubArm = rospy.Publisher('movePosition', idAndFloat)
+	pubArm = rospy.Publisher('schunk/move_position', idAndFloat)
 	rospy.init_node('teleop_twist_keyboard')
 
 	subArm = rospy.Subscriber('joint_states', JointState, jointStateUpdate)

@@ -1,12 +1,11 @@
 
 #include <math.h>
 
-#include <metralabs_ros/idAndFloat.h>
-
 #include <ros/ros.h>
 
 #include <std_msgs/Empty.h>
 #include <std_msgs/Bool.h>
+#include <metralabs_ros/idAndFloat.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
@@ -74,7 +73,7 @@ private:
 	void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
 
 	ros::NodeHandle nh_;
-	ros::NodeHandle nh_schunk_("schunk");
+	ros::NodeHandle nh_schunk_;
 
 	ros::Subscriber joy_sub_;
 
@@ -125,21 +124,21 @@ private:
 };
 
 
-teleop_ps3::teleop_ps3()
+teleop_ps3::teleop_ps3() :
+		nh_schunk_("schunk")
 {
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 1, &teleop_ps3::joyCallback, this);
 
 	base_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 3);
-
-	arm_vel_pub_ = nh_schunk_.advertise<geometry_msgs::Twist>("moveArmVelocity", 3);
-	ack_all_joints_pub_ = nh_schunk_.advertise<std_msgs::Bool>("ackAll", 1);
-	arm_emergency_pub_ = nh_schunk_.advertise<std_msgs::Bool>("emergency", 1);
-	joints_position_pub_ = nh_schunk_.advertise<sensor_msgs::JointState>("move_all_position", 1);
-	gripper_pub_ = nh_schunk_.advertise<metralabs_ros::idAndFloat>("movePosition", 1);
-
 	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("enable_smach", 1, true);
 	bumper_reset_pub_ = nh_.advertise<std_msgs::Empty>("bumper_reset", 1);
 	move_base_cancel_pub_ = nh_.advertise<actionlib_msgs::GoalID>("move_base/cancel", 1);
+
+	arm_vel_pub_ = nh_schunk_.advertise<geometry_msgs::Twist>("moveArmVelocity", 3);
+	ack_all_joints_pub_ = nh_schunk_.advertise<std_msgs::Empty>("ack_all", 1);
+	arm_emergency_pub_ = nh_schunk_.advertise<std_msgs::Empty>("emergency", 1);
+	joints_position_pub_ = nh_schunk_.advertise<sensor_msgs::JointState>("move_all_position", 1);
+	gripper_pub_ = nh_schunk_.advertise<metralabs_ros::idAndFloat>("move_position", 1);
 }
 
 void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
@@ -197,8 +196,7 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	/// arm move control
 
 	if(joy->buttons[button_emergency]) {
-		std_msgs::Bool booldummy;
-		arm_emergency_pub_.publish(booldummy);
+		arm_emergency_pub_.publish(std_msgs::Empty());
 	}
 	else if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second]) {
 		/// arm
@@ -260,8 +258,7 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	if(joy->buttons[button_modifier_config]) {
 		if(joy->buttons[button_joints_ack_all]) {
-			std_msgs::Bool booldummy;
-			ack_all_joints_pub_.publish(booldummy);
+			ack_all_joints_pub_.publish(std_msgs::Empty());
 		}
 
 		static bool button_blocked = false;
