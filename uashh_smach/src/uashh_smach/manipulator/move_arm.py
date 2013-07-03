@@ -24,10 +24,10 @@ joint_names = ['DH_1_2',
                'DH_5_6']
 
 
-""" Setup motion plan request
-The length of parameter joint_positions must match the length of global variable joint_names.
-"""
 def create_motion_plan_request_for_joints(joint_positions): 
+    """Setup motion plan request.
+    The length of parameter joint_positions must match the length of global variable joint_names.
+    """
     motion_plan_request = MotionPlanRequest()
     motion_plan_request.group_name = "SchunkArm"
     motion_plan_request.num_planning_attempts = 1

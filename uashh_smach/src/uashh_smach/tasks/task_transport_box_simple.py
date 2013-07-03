@@ -19,14 +19,14 @@ from smach_ros import ServiceState, SimpleActionState
 #import arm_navigation_msgs
 #from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
 
-import look_around      # duplicate import issues
-import grab_vertical
+import uashh_smach.manipulator.look_around as look_around      # duplicate import issues
+import uashh_smach.manipulator.grab_vertical as grab_vertical
 
-import move_base
-import move_joints
-import move_arm
+import uashh_smach.platform.move_base as move_base
+import uashh_smach.manipulator.move_joints as move_joints
+import uashh_smach.manipulator.move_arm as move_arm
 
-import util
+import uashh_smach.util as util
 
 
 BOX_THICKNESS = 0.048
@@ -51,9 +51,9 @@ def main():
 #    sq.userdata.phi = 0
 
     with sq:
-        '''Add states to the container'''
+        ## Add states to the container
         
-        Sequence.add('MOVE_BASE_Forward', move_base.get_move_base_in_odom_state(1, 0));
+        Sequence.add('MOVE_BASE_Forward', move_base.get_move_base_in_odom_state(1, 0))
         
         Sequence.add('MOVE_ARM_GRAB_0',
                        grab_vertical.get_vertical_grab_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")
@@ -63,7 +63,7 @@ def main():
         Sequence.add('MOVE_ARM_ZERO', move_arm.get_move_arm_to_zero_state())
         
         
-        Sequence.add('MOVE_BASE_Backward', move_base.get_move_base_in_odom_state(0, 0));
+        Sequence.add('MOVE_BASE_Backward', move_base.get_move_base_in_odom_state(0, 0))
         
         Sequence.add('MOVE_ARM_DROP_0',
                        grab_vertical.get_vertical_drop_sequence(-0.23, -0.5, 0.85+0.1, math.radians(90), BOX_THICKNESS, "/base_link")

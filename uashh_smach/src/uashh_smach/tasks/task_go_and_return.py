@@ -14,8 +14,8 @@ import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
-import move_base
-import util
+import uashh_smach.platform.move_base as move_base
+import uashh_smach.util as util
 
 
 
@@ -37,7 +37,7 @@ def main():
     wfg = move_base.WaitForGoalState() # We don't want multiple subscribers so we need one WaitFor state
     
     with sq:
-        '''Add states to the container'''
+        ### Add states to the container
         
         # save position
         Sequence.add('SAVE_ROBOT_POSITION', move_base.ReadRobotPositionState(),

@@ -18,8 +18,8 @@ from smach_ros import ServiceState, SimpleActionState
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion 
 
-import util
-from util import WaitForMsgState
+import uashh_smach.util as util
+from uashh_smach.util import WaitForMsgState
 
 
 
@@ -66,10 +66,10 @@ class MoveBaseState(SimpleActionState):
     frame: defaults to /map
     """
     def __init__(self, frame='/map'):
-        SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self._goal_cb)
+        SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self.__goal_cb)
         self.frame = frame
     
-    def _goal_cb(self, userdata, old_goal):
+    def __goal_cb(self, userdata, old_goal):
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = self.frame
         goal.target_pose.header.stamp = rospy.Time.now()
@@ -138,7 +138,7 @@ class WaitForGoalState(WaitForMsgState):
 class HasMovedState(State):
     """Return whether the robot moved beyond a given distance in a given frame since the last exceeding check.""" 
     def _getXY(self):
-        x,y,yaw = util.get_current_robot_position(self.frame);
+        x,y,yaw = util.get_current_robot_position(self.frame)
         return x,y
     
     def __init__(self, minimumDistance, frame='/map'):
@@ -172,5 +172,5 @@ class ReadRobotPositionState(State):
         util.init_transform_listener();
 
     def execute(self, userdata):
-        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position(self.frame);
+        userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position(self.frame)
         return 'succeeded'

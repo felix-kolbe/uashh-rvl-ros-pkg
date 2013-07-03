@@ -8,7 +8,7 @@ import smach
 import smach_ros
 
 
-from util import PromptState, SleepState
+from uashh_smach.util import PromptState, SleepState
 
 
 def _test_PromptState():

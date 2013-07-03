@@ -46,7 +46,7 @@ class SleepState(smach.State):
                 duration is read from userdata key 'duration'.
     """
     def __init__(self, duration=None):
-        if duration == None: 
+        if duration is None: 
             smach.State.__init__(self, outcomes=['succeeded','aborted'], input_keys=['duration'])
         else:
             smach.State.__init__(self, outcomes=['succeeded','aborted'])
@@ -54,7 +54,7 @@ class SleepState(smach.State):
     
     def execute(self, userdata):
         try:
-            if self.duration == None: 
+            if self.duration is None: 
                 duration = userdata.duration
             else:
                 duration = self.duration
@@ -93,7 +93,9 @@ class WaitForMsgState(smach.State):
     output_keys: Userdata keys that the message callback needs to write to. 
     """
     
-    def __init__(self, topic, msg_type, msg_cb=None, output_keys=[], latch=False, timeout=10):
+    def __init__(self, topic, msg_type, msg_cb=None, output_keys=None, latch=False, timeout=10):
+        if output_keys is None:
+            output_keys = []
         smach.State.__init__(self, outcomes=['succeeded', 'aborted', 'preempted'],  output_keys=output_keys)
         self.latch = latch
         self.timeout = timeout
@@ -113,7 +115,7 @@ class WaitForMsgState(smach.State):
         timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
         while rospy.Time.now() < timeout_time:
             self.mutex.acquire()
-            if self.msg != None:
+            if self.msg is not None:
                 rospy.loginfo('Got message.')
                 message = self.msg
                 
@@ -137,12 +139,12 @@ class WaitForMsgState(smach.State):
     def execute(self, ud):
         '''Default simplest execute(), see class description.'''
         msg = self.waitForMsg()
-        if msg != None:
+        if msg is not None:
             # call callback if there is one
-            if self.msg_cb != None:
+            if self.msg_cb is not None:
                 cb_result = self.msg_cb(msg, ud)
                 # check if callback wants to dictate output
-                if cb_result != None:
+                if cb_result is not None:
                     if cb_result:
                         return 'succeeded'
                     else:
@@ -158,7 +160,7 @@ class CheckSmachEnabledState(WaitForMsgState):
         WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True) # outcomes=['enabled', 'disabled'], 
 
     def _msg_cb(self, msg, ud):
-        return msg != None and msg.data
+        return msg is not None and msg.data
 
 
 

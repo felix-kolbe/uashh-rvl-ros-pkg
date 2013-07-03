@@ -16,12 +16,12 @@ import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
-import look_around
+import uashh_smach.manipulator.look_around as look_around
 
-import move_base
-import move_arm
+import uashh_smach.platform.move_base as move_base
+import uashh_smach.manipulator.move_arm as move_arm
 
-import util
+import uashh_smach.util as util
 
 
 LOOKAROUND_SLEEP_DURATION = 2

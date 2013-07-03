@@ -57,18 +57,17 @@ def pose_constraint_to_position_orientation_constraints(pose_constraint):
 
 
 def add_goal_constraint_to_move_arm_goal(pose_constraint, move_arm_goal):
-    position_constraint, orientation_constraint = pose_constraint_to_position_orientation_constraints(pose_constraint);
+    position_constraint, orientation_constraint = pose_constraint_to_position_orientation_constraints(pose_constraint)
     move_arm_goal.motion_plan_request.goal_constraints.position_constraints.append(position_constraint)
     move_arm_goal.motion_plan_request.goal_constraints.orientation_constraints.append(orientation_constraint)
 
 
 
 
-"""State that moves the gripper to a vertical position regarding x, y, z, phi and parent_frame from userdata."""
 class MoveArmVerticalGrabState(SimpleActionState):
+    """State that moves the gripper to a vertical position regarding x, y, z, phi and parent_frame from userdata."""
     def __init__(self):
         SimpleActionState.__init__(self, 'move_SchunkArm', MoveArmAction, input_keys=['x','y','z','phi','parent_frame'])
-        pass
     
     def execute(self, userdata):
         self._goal.planner_service_name = "ompl_planning/plan_kinematic_path"
@@ -81,20 +80,20 @@ class MoveArmVerticalGrabState(SimpleActionState):
         self._goal.motion_plan_request = motion_plan_request 
         
         desired_pose = SimplePoseConstraint()
-        desired_pose.header.frame_id = userdata.parent_frame;
-        desired_pose.link_name = "Gripper";
-        desired_pose.pose.position.x = userdata.x;
-        desired_pose.pose.position.y = userdata.y;
-        desired_pose.pose.position.z = userdata.z;
+        desired_pose.header.frame_id = userdata.parent_frame
+        desired_pose.link_name = "Gripper"
+        desired_pose.pose.position.x = userdata.x
+        desired_pose.pose.position.y = userdata.y
+        desired_pose.pose.position.z = userdata.z
         
         quat = tf.transformations.quaternion_from_euler(-math.pi/2, math.pi/2, userdata.phi)
         desired_pose.pose.orientation = Quaternion(*quat)
-        desired_pose.absolute_position_tolerance.x = 0.02;
-        desired_pose.absolute_position_tolerance.y = 0.02;
-        desired_pose.absolute_position_tolerance.z = 0.02;
-        desired_pose.absolute_roll_tolerance = 0.04;
-        desired_pose.absolute_pitch_tolerance = 0.04;
-        desired_pose.absolute_yaw_tolerance = 0.04;
+        desired_pose.absolute_position_tolerance.x = 0.02
+        desired_pose.absolute_position_tolerance.y = 0.02
+        desired_pose.absolute_position_tolerance.z = 0.02
+        desired_pose.absolute_roll_tolerance = 0.04
+        desired_pose.absolute_pitch_tolerance = 0.04
+        desired_pose.absolute_yaw_tolerance = 0.04
         add_goal_constraint_to_move_arm_goal(desired_pose, self._goal)
         
         srv_out = SimpleActionState.execute(self, userdata)

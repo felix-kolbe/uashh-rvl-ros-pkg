@@ -8,7 +8,7 @@ import smach
 import smach_ros
 
 
-from move_base import WaitForGoalState
+from uashh_smach.platform.move_base import WaitForGoalState
 
 
 def _test_WaitForGoalState():

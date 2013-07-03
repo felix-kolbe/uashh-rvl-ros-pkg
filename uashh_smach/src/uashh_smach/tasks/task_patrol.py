@@ -15,8 +15,8 @@ import smach_ros
 from smach import State, StateMachine, Sequence
 from smach_ros import ServiceState, SimpleActionState
 
-import move_base
-import util
+import uashh_smach.platform.move_base as move_base
+import uashh_smach.util as util
 
 
 

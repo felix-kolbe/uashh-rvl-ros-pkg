@@ -11,12 +11,12 @@ import smach
 import smach_ros
 
 import move_arm
-import util
+import uashh_smach.util as util
 
 
 
 
-""" calculating lookaround poses """
+### calculating lookaround poses
 
 #pose_default = [0,0,0,0,0]
 pose_default = [0,0.5,0.5,-2,0]
@@ -42,16 +42,15 @@ poses.append(pose_default)
 #print poses
 
 
-""" if the interjacent state is not omitted it needs to have the 'succeeded','aborted','preempted' outcomes """
 def get_lookaround_smach(interjacent_state=None):
-
+    """if the interjacent state is not omitted it needs to have the 'succeeded','aborted','preempted' outcomes."""
     sq = smach.Sequence(
         outcomes = ['succeeded','aborted','preempted'],
         connector_outcome = 'succeeded')
     
     with sq:
         for i in range(len(poses)):
-            sq.add('LOOKAROUND_MOVE_ARM_%d'%i, move_arm.get_move_arm_to_joints_positions_state(poses[i]));
+            sq.add('LOOKAROUND_MOVE_ARM_%d'%i, move_arm.get_move_arm_to_joints_positions_state(poses[i]))
             if interjacent_state is not None:
                 sq.add('LOOKAROUND_INTERJACENT_STATE_%d'%i, interjacent_state)
     
@@ -68,7 +67,7 @@ def _test_look_around():
         connector_outcome = 'succeeded')
 
     with sq:
-        '''Add states to the container'''
+        ### Add states to the container
         
         smach.Sequence.add("ARM_LOOK_AROUND", get_lookaround_smach(util.SleepState(1)))
         

@@ -8,7 +8,7 @@ import smach
 import smach_ros
 
 
-from util import SleepState
+from uashh_smach.util import SleepState
 
 
 def _test_SleepState():

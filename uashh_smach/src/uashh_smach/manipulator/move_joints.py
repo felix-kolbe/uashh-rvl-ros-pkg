@@ -24,9 +24,8 @@ from joint_motion_service.srv import move_joints_service, move_joints_serviceReq
 GRIPPER_ID = 5
 
 
-"""Subclass extending ServiceState to react on the service response data."""
 class MoveJointsServiceState(ServiceState):
-    
+    """Subclass extending ServiceState to react on the service response data."""
     def execute(self, userdata):
         srv_out = ServiceState.execute(self, userdata)
         rospy.logdebug('srv_out was: '+srv_out+', response.positions_ok is: %r' % self._response.positions_ok)
