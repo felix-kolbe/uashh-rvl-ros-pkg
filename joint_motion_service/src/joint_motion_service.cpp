@@ -2,7 +2,7 @@
 
 #include <ros/ros.h>
 
-#include <metralabs_ros/idAndFloat.h>
+#include <metralabs_msgs/IDAndFloat.h>
 #include <sensor_msgs/JointState.h>
 #include <joint_motion_service/move_joints_service.h>
 
@@ -33,7 +33,7 @@ bool serviceCallback( joint_motion_service::move_joints_service::Request &reques
 
 	// send wanted positions
 	for (uint joint = 0; joint < request.joint_ids.size(); ++joint) {
-		metralabs_ros::idAndFloatPtr output = boost::make_shared<metralabs_ros::idAndFloat>();
+		metralabs_msgs::IDAndFloatPtr output = boost::make_shared<metralabs_msgs::IDAndFloat>();
 		output->id = request.joint_ids.at(joint);
 		output->value = request.positions.at(joint);
 		pubMovePos.publish(output);
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "joint_motion_service");
 	ros::NodeHandle nh;
 
-	pubMovePos = nh.advertise<metralabs_ros::idAndFloat>("/move_position", 1, false);
+	pubMovePos = nh.advertise<metralabs_msgs::IDAndFloat>("/move_position", 1, false);
 	ros::Subscriber subJointStates = nh.subscribe("/schunk/pre_mimic_joint_states", 1, jointStatesCallback);
 	ros::ServiceServer service = nh.advertiseService("/move_joints_service", serviceCallback);
 

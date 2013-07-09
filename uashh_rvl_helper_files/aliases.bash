@@ -72,9 +72,9 @@ alias rnl='rosnode list'
 alias rtl='rostopic list'
 
 alias joint_states='rostopic echo -n 1 /joint_states'
-alias joint_move_position='rostopic pub -1 /schunk/move_position metralabs_ros/idAndFloat -- '
-alias joint_set_velocity='rostopic pub -1 /schunk/set_velocity metralabs_ros/idAndFloat -- '
-alias joint_set_acceleration='rostopic pub -1 /schunk/set_acceleration metralabs_ros/idAndFloat -- '
+alias joint_move_position='rostopic pub -1 /schunk/move_position metralabs_msgs/IDAndFloat -- '
+alias joint_set_velocity='rostopic pub -1 /schunk/set_velocity metralabs_msgs/IDAndFloat -- '
+alias joint_set_acceleration='rostopic pub -1 /schunk/set_acceleration metralabs_msgs/IDAndFloat -- '
 alias joint_ref_gripper='rostopic pub -1 /schunk/ref std_msgs/Int8 5'
 
 alias bumper_reset='rostopic pub -1 /bumper_reset std_msgs/Empty'

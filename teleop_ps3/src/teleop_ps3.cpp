@@ -5,7 +5,7 @@
 
 #include <std_msgs/Empty.h>
 #include <std_msgs/Bool.h>
-#include <metralabs_ros/idAndFloat.h>
+#include <metralabs_msgs/IDAndFloat.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
@@ -138,7 +138,7 @@ teleop_ps3::teleop_ps3() :
 	ack_all_joints_pub_ = nh_schunk_.advertise<std_msgs::Empty>("ack_all", 1);
 	arm_emergency_pub_ = nh_schunk_.advertise<std_msgs::Empty>("emergency", 1);
 	joints_position_pub_ = nh_schunk_.advertise<sensor_msgs::JointState>("move_all_position", 1);
-	gripper_pub_ = nh_schunk_.advertise<metralabs_ros::idAndFloat>("move_position", 1);
+	gripper_pub_ = nh_schunk_.advertise<metralabs_msgs::IDAndFloat>("move_position", 1);
 }
 
 void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
@@ -213,7 +213,7 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 			// static vars
 			static float new_gripper_value = 0.068;
-			static metralabs_ros::idAndFloatPtr gripper_msg (new metralabs_ros::idAndFloat);
+			static metralabs_msgs::IDAndFloatPtr gripper_msg (new metralabs_msgs::IDAndFloat);
 			gripper_msg->id = 5;
 
 			// input
@@ -238,7 +238,7 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		}
 
 		/*// gripper
-		metralabs_ros::idAndFloatPtr gripper_msg (new metralabs_ros::idAndFloat);
+		metralabs_msgs::IDAndFloatPtr gripper_msg (new metralabs_msgs::IDAndFloat);
 		gripper_msg->id = 5;
 
 		float close_axis = - joy->axes[axis_gripper_close]; // converted to 0 to 1

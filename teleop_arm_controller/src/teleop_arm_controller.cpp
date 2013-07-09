@@ -2,7 +2,7 @@
 
 #include <ros/ros.h>
 
-#include <metralabs_ros/idAndFloat.h>
+#include <metralabs_msgs/IDAndFloat.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
 
@@ -62,7 +62,7 @@ bool checkVelocityValid(int joint, double velocity, double currentAngle)
 
 void sendVelocity(int joint, double velocity)
 {
-  metralabs_ros::idAndFloatPtr output = boost::make_shared<metralabs_ros::idAndFloat>();
+  metralabs_msgs::IDAndFloatPtr output = boost::make_shared<metralabs_msgs::IDAndFloat>();
   output->id = joint;
   output->value = velocity;
   pubMoveVel.publish(output);
@@ -160,7 +160,7 @@ void moveVelocityCallback(const geometry_msgs::TwistConstPtr& moveVelocity)
 //
 //        // send wanted positions
 //        for (uint joint = 0; joint < request.joint_ids.size(); ++joint) {
-//                metralabs_ros::idAndFloatPtr output = boost::make_shared<metralabs_ros::idAndFloat>();
+//                metralabs_msgs::IDAndFloatPtr output = boost::make_shared<metralabs_msgs::IDAndFloat>();
 //                output->id = request.joint_ids.at(joint);
 //                output->value = request.positions.at(joint);
 //                pubMoveVel.publish(output);
@@ -214,7 +214,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "teleop_arm_controller");
   ros::NodeHandle nh;
 
-  pubMoveVel = nh.advertise<metralabs_ros::idAndFloat>("/move_velocity", 1, false);
+  pubMoveVel = nh.advertise<metralabs_msgs::IDAndFloat>("/move_velocity", 1, false);
   ros::Subscriber subJointStates = nh.subscribe("/schunk/pre_mimic_joint_states", 1, jointStatesCallback);
   ros::Subscriber subArmTwist = nh.subscribe("/moveArmVelocity", 1, moveVelocityCallback);
 
