@@ -28,6 +28,8 @@ alias cm='roslaunch '$HELPER_PKG' computer_monitor.launch'
 alias jms='rosrun joint_motion_service joint_motion_service'
 alias is='roslaunch image_shrinker image_shrinker.launch'
 alias kmf='roslaunch kinect_movement_filter kinect_movement_filter_haw.launch'
+alias diag_agg='rosrun diagnostic_aggregator aggregator_node'
+
 
 # computing nodes
 alias gmapp='roslaunch '$HELPER_PKG' slam_gmapping_haw.launch'
@@ -44,6 +46,7 @@ alias telearm='rosrun teleop_arm_controller teleop_arm_controller'
 
 alias map_server='rosrun map_server map_server ~/ros_workspace/recordings/Flur7_2013-02-04.yaml'
 alias amcl='rosrun amcl amcl'
+
 
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
@@ -62,16 +65,17 @@ alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
 alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
 alias ps3_full='ps3_bt & ps3 & telearm'
 
+
 # small tools
 alias rka='rosnode list; read -p "Kill all nodes? Press Enter or ^C:"; rosnode kill -a; rosnode list'
 alias rnl='rosnode list'
 alias rtl='rostopic list'
 
-alias joint_states='rostopic echo -n 1 /schunk/position/joint_states'
-alias joint_movePos='rostopic pub -1 /movePosition metralabs_ros/idAndFloat -- '
-alias joint_targetVel='rostopic pub -1 /targetVelocity metralabs_ros/idAndFloat -- '
-alias joint_targetAcc='rostopic pub -1 /targetAcceleration metralabs_ros/idAndFloat -- '
-alias joint_ref_gripper='rostopic pub -1 /ref std_msgs/Int8 5'
+alias joint_states='rostopic echo -n 1 /joint_states'
+alias joint_move_position='rostopic pub -1 /schunk/move_position metralabs_msgs/IDAndFloat -- '
+alias joint_set_velocity='rostopic pub -1 /schunk/set_velocity metralabs_msgs/IDAndFloat -- '
+alias joint_set_acceleration='rostopic pub -1 /schunk/set_acceleration metralabs_msgs/IDAndFloat -- '
+alias joint_ref_gripper='rostopic pub -1 /schunk/ref std_msgs/Int8 5'
 
 alias bumper_reset='rostopic pub -1 /bumper_reset std_msgs/Empty'
 alias move_base_cancel_all='rostopic pub -1 /move_base/cancel actionlib_msgs/GoalID "{stamp: { secs: 0 , nsecs: 0 } , id: ''}"'

@@ -12,6 +12,6 @@
 
   <depend package="geometry_msgs"/>
   <depend package="sensor_msgs"/>
-  <depend package="metralabs_ros"/>
+  <depend package="metralabs_msgs"/>
 
 </package>

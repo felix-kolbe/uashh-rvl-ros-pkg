@@ -10,7 +10,7 @@
   <url>http://ros.org/wiki/teleop_arm_controller</url>
   <depend package="roscpp"/>
   <depend package="geometry_msgs"/>
-  <depend package="metralabs_ros"/>
+  <depend package="metralabs_msgs"/>
   <depend package="sensor_msgs"/>
 
 </package>

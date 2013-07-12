@@ -3,7 +3,7 @@ import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
 
 from geometry_msgs.msg import Twist
-from metralabs_ros.msg import idAndFloat
+from metralabs_msgs.msg import IDAndFloat
 from sensor_msgs.msg import JointState
 
 import sys, select, termios, tty, math
@@ -106,10 +106,10 @@ if __name__=="__main__":
 	settings = termios.tcgetattr(sys.stdin)
 	
 	pub = rospy.Publisher('cmd_vel', Twist)
-	pubArm = rospy.Publisher('movePosition', idAndFloat)
+	pubArm = rospy.Publisher('schunk/move_position', IDAndFloat)
 	rospy.init_node('teleop_twist_keyboard')
 
-	subArm = rospy.Subscriber('/schunk/position/joint_states', JointState, jointStateUpdate)
+	subArm = rospy.Subscriber('joint_states', JointState, jointStateUpdate)
 
 	x = 0
 	th = 0
@@ -135,7 +135,7 @@ if __name__=="__main__":
 					newAngle = oldAngle + DEG_TO_RAD(armBindingsDelta[key][1])
 					print msg
 					print "id: %s old angle: %s new angle: %s" % (id, RAD_TO_DEG(oldAngle), RAD_TO_DEG(newAngle))
-					armMsg = idAndFloat()
+					armMsg = IDAndFloat()
 					armMsg.id = id
 					armMsg.value = newAngle
 					pubArm.publish(armMsg)
@@ -144,7 +144,7 @@ if __name__=="__main__":
 			elif key in armBindingsAbs.keys():
 				id = armBindingsAbs[key][0]
 				newAngle = DEG_TO_RAD(armBindingsAbs[key][1])
-				armMsg = idAndFloat()
+				armMsg = IDAndFloat()
 				armMsg.id = id
 				armMsg.value = newAngle
 				pubArm.publish(armMsg)

@@ -6,14 +6,14 @@
 #[ INFO] [1318861698.593048541]: 4 is mapping to DH_5_6
 
 
-rostopic echo -n 1 /schunk/trajectory/state
+rostopic echo -n 1 /schunk/trajectory_state
 
 
-rostopic pub --once /schunk/trajectory/command trajectory_msgs/JointTrajectory -f trajectory_vel.yaml
+rostopic pub --once /schunk/trajectory_command trajectory_msgs/JointTrajectory -f trajectory_vel.yaml
 
-#rostopic pub --once /schunk/trajectory/command trajectory_msgs/JointTrajectory -f trajectory_pos.yaml
+#rostopic pub --once /schunk/trajectory_command trajectory_msgs/JointTrajectory -f trajectory_pos.yaml
 
-rostopic echo -n 5 /schunk/trajectory/state
+rostopic echo -n 5 /schunk/trajectory_state
 
 
 #$ rosmsg show trajectory_msgs/JointTrajectory
