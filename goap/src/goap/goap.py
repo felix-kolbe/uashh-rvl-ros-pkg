@@ -5,17 +5,15 @@ Created on Jul 2, 2013
 '''
 from numpy.core.numeric import NaN
 
-import roslib; roslib.load_manifest('goap')
-import rospy
-
-from std_msgs.msg import Empty
-
 
 
 class Memory(object):
 
     def __init__(self):
         self._memory = {}
+
+    def __repr__(self):
+        return '<Memory: %s>' % self._memory
 
     def declare_variable(self, name, value=None):
         if name not in self._memory:
@@ -26,9 +24,6 @@ class Memory(object):
 
     def set_value(self, name, value):
         self._memory[name] = value
-
-    def __repr__(self):
-        return '<Memory: %s>' % self._memory
 
     def matches(self, memory):
         for (k, v) in self._memory.iteritems():
@@ -43,6 +38,37 @@ class Memory(object):
 # Memory = Memory()
 
 
+#class WorldState(object):
+#
+#    def __init__(self, memory=Memory()):
+#        self._memory = memory
+#
+#    def __repr__(self):
+#        return '<WorldState memory=%s>' % self._memory
+#
+#
+#    def declare_variable(self, name, value=None):
+#        if name not in self._memory:
+#            self._memory[name] = value
+#
+#    def get_value(self, name):
+#        return self._memory[name]
+#
+#    def set_value(self, name, value):
+#        self._memory[name] = value
+#
+#
+#    def matches(self, worldstate):
+#        return self.memory.matches(worldstate.memory)
+#
+#        for (k, v) in self._memory.iteritems():
+#            if k in worldstate._memory and worldstate._memory[k] != v:
+#                return False
+#        return True
+#
+#    def apply_effects(self, action):
+#        action.apply_effects(self)
+
 
 class WorldState(object):
 
@@ -55,9 +81,8 @@ class WorldState(object):
     def matches(self, worldstate):
         return self.memory.matches(worldstate.memory)
 
-    def apply_effects(self, action):
-        action.apply_effects(self)
-
+#    def apply_effects(self, action): # TODO: replace by direct calls to action.apply_effects()
+# delete me       action.apply_effects(self)
 
 
 class Action(object):
@@ -86,11 +111,15 @@ class Action(object):
 
     ## following two for backward planner
 
-    def has_matching_effects(self, node_worldstate, unsatisfied_states_key_set): # TODO add difference subset
+    def check_freeform_context(self):
+        """Override to add context checks required to run this action but cannot be satisfied by the planner."""
+        return True
+
+    def has_matching_effects(self, worldstate, unsatisfied_states_key_set): # TODO: add difference subset
         # TODO
         for effect in self._effects:
             if effect._condition._state_name in unsatisfied_states_key_set:
-                if effect.matches_condition(node_worldstate):
+                if effect.matches_condition(worldstate):
                     return True
         return False
 
@@ -98,15 +127,6 @@ class Action(object):
         for precondition in self._preconditions:
             precondition.apply(worldstate)
 
-
-class ResetBumperAction(Action):
-
-    def __init__(self):
-        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],
-                            [Effect(Condition.get('robot.bumpered'), False)])
-
-    def run(self):
-        rospy.Publisher('/bumper_reset', Empty).publish()
 
 
 class MemorySetVarAction(Action):
@@ -118,13 +138,14 @@ class MemorySetVarAction(Action):
         self._state_name = 'memory.' + self._variable
 
     def run(self):
+        # TODO: check memory vs worldstate access
         Memory().set_value(self._state_name, self._new_value)
 
 
 class MemoryChangeVarAction(MemorySetVarAction):
 
     def __init__(self, variable, old_value, new_value):
-        """Note that atm. variable is used both for memory variable and for _condition name.""" # TODO check comment
+        """Note that atm. variable is used both for memory variable and for _condition name.""" # TODO: check comment
         MemorySetVarAction.__init__(self, variable, new_value,
                 [Precondition(Condition.get('memory.' + variable), old_value)],
                 [Effect(Condition.get('memory.' + variable), new_value)]
@@ -137,21 +158,39 @@ class MemoryChangeVarAction(MemorySetVarAction):
 
 class MemoryIncrementerAction(Action):
 
-    def __init__(self, variable):
-        Action.__init__(self, [], [])
-        self._condition = variable
+    def __init__(self, variable, increment=1):
+        self._condition = Condition.get('memory.' + variable)
+        Action.__init__(self, [], [VariableEffect(self._condition)])
+        self._variable = variable
+        self._increment = increment
         Memory().declare_variable(self._condition)
 
     def __repr__(self):
-        return '<MemoryIncrementerAction var=%s>' % (self._condition)
+        return '<MemoryIncrementerAction var=%s incr=%s>' % (self._condition, self._increment)
 
     def run(self):
+        # TODO
         Memory().set_value(self._condition, NaN)
+
+    def apply_preconditions(self, worldstate):
+        # calculate an otf precondition for our variable effect
+        effect_value = self._condition.get_value(worldstate)
+        precond_value = self._calc_preconditional_value(worldstate, effect_value)
+
+        # we could instantiate a precondition and apply it
+        Precondition(self._condition, precond_value, None).apply(worldstate)
+        # or do it manually, but that is duplicate code
+        # self._condition.set_value(worldstate, precond_value)
+
+
+    def _calc_preconditional_value(self, worldstate, effect_value):
+        return effect_value - self._increment
 
 
 ## known as WorldState
 class Condition(object):
 
+    # TODO: maybe convert to singleton
     def __init__(self, state_name):
         self._state_name = state_name
 
@@ -198,20 +237,6 @@ class MemoryCondition(Condition):
 
 
 
-class ROSTopicCondition(Condition):
-
-    def __init__(self, topic, field, state_name):
-        Condition.__init__(self, state_name)
-        self._topic = topic
-        self._field = field
-
-    def __repr__(self):
-        return '<ROSTopicCondition: _topic=%s _field=%s>' % self._topic, self._field
-
-    def get_value(self, worldstate):
-        return NaN
-
-
 
 class Precondition(object):
 
@@ -250,24 +275,22 @@ class Effect(object):
         return self._condition.get_value(worldstate) == self._new_value
 
 
-# class VariableEffect(Effect):
+
+class VariableEffect(object):
+
+    def __init__(self, condition):
+#        Effect.__init__(self, condition, None)
+        self._condition = condition
+
+#     def apply_to(self, worldstate):
+#         worldstate.memory.set_value(self._condition, self._new_value)
+
+    def matches_condition(self, worldstate):
+        return True # as it's variable assume it can match. TODO: implement failing VarEffects
+#        return self._is_reachable(self._condition.get_value(worldstate))
 #
-#     def __init__(self, variable):
-#         Effect.__init__(self, variable, None)
-# class VariableEffect(object):
-#
-#     def __init__(self, condition):
-#         self._condition = condition
-# #         self._new_value = new_value
-#
-# #     def apply_to(self, worldstate):
-# #         worldstate.memory.set_value(self._condition, self._new_value)
-#
-#     def matches_condition(self, worldstate):
-#         return self._is_reachable(self._condition.get_value(worldstate))
-#
-#     def _is_reachable(self, value):
-#         raise NotImplementedError
+#    def _is_reachable(self, value):
+#        raise NotImplementedError
 
 
 class Goal(object):
@@ -318,7 +341,7 @@ class ActionBag(object):
                 unsatisfied_states_key_set.add(key)
             else:
                 print 'state equal: ', key
-        # TODO move that to worldstate
+        # TODO: move that to worldstate
 
         for action in self._actions:
             if action.has_matching_effects(node_worldstate, unsatisfied_states_key_set):

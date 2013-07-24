@@ -8,7 +8,7 @@ import unittest
 from goap.goap import Condition
 
 
-class Test(unittest.TestCase):
+class ConditionTest(unittest.TestCase):
 
 
     def setUp(self):
