@@ -11,17 +11,10 @@ import rostopic
 
 from std_msgs.msg import Empty
 
-from goap import Action, Condition, Precondition, Effect
+from goap import Action, Condition, Precondition, Effect, VariableEffect
 
 
-class ResetBumperAction(Action):
-
-    def __init__(self):
-        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],
-                            [Effect(Condition.get('robot.bumpered'), False)])
-
-    def run(self):
-        rospy.Publisher('/bumper_reset', Empty).publish()
+## ROS specific class specializations
 
 
 class ROSTopicCondition(Condition):
@@ -50,6 +43,35 @@ class ROSTopicCondition(Condition):
     def get_value(self, worldstate):
         return self._value
 
-    def set_value(self, worldstate):
-        # TODO
-        self._publisher.publish(None)
+    def set_value(self, worldstate, value):
+        # TODO: mem vs real
+        self._publisher.publish(value)
+
+
+## concrete usable classes (no constructor parameters anymore)
+
+class ResetBumperAction(Action):
+
+    def __init__(self):
+        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],
+                            [Effect(Condition.get('robot.bumpered'), False)])
+
+    def run(self):
+        rospy.Publisher('/bumper_reset', Empty).publish()
+
+
+class MoveBaseAction(Action):
+
+    class PositionEffect(VariableEffect):
+        def __init__(self):
+            VariableEffect.__init__(Condition.get('robot.position'))
+        def _is_reachable(self, value):
+            return True # TODO: change reachability from boolean to float
+
+    def __init__(self):
+        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), False)],
+                        [MoveBaseAction.PositionEffect()])
+
+    def run(self):
+#        MoveBaseState() TODO
+        pass

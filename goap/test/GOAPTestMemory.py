@@ -6,6 +6,7 @@ Created on Jul 5, 2013
 import unittest
 
 from goap.goap import *
+from goap.inheriting import *
 from goap.planning import Planner
 
 
