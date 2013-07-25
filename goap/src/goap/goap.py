@@ -169,25 +169,20 @@ class MemoryIncrementerAction(Action):
         return '<MemoryIncrementerAction var=%s incr=%s>' % (self._condition, self._increment)
 
     def run(self):
-        # TODO
+        # TODO worldstate needed
         Memory().set_value(self._condition, NaN)
 
     def apply_preconditions(self, worldstate):
-        # calculate an otf precondition for our variable effect
+        # calculate an ad hoc precondition for our variable effect and apply it
         effect_value = self._condition.get_value(worldstate)
         precond_value = self._calc_preconditional_value(worldstate, effect_value)
-
-        # we could instantiate a precondition and apply it
         Precondition(self._condition, precond_value, None).apply(worldstate)
-        # or do it manually, but that is duplicate code
-        # self._condition.set_value(worldstate, precond_value)
-
 
     def _calc_preconditional_value(self, worldstate, effect_value):
         return effect_value - self._increment
 
 
-## known as WorldState
+## known as state
 class Condition(object):
 
     # TODO: maybe convert to singleton
