@@ -83,51 +83,6 @@ class WorldState(object):
 # delete me       action.apply_effects(self)
 
 
-class Action(object):
-
-    def __init__(self, preconditions, effects):
-        self._preconditions = preconditions
-        self._effects = effects
-
-    def __repr__(self):
-        return '<Action type=%s>' % self.__class__.__name__
-
-    def run(self):
-        raise NotImplementedError
-
-    ## following two for forward planner
-
-    def is_valid(self, worldstate):
-        for precondition in self._preconditions:
-            if not precondition.is_valid(worldstate):
-                return False
-        return True
-
-    def apply_effects(self, worldstate):
-        for effect in self._effects:
-            effect.apply_to(worldstate)
-
-    ## following two for backward planner
-
-    def check_freeform_context(self):
-        """Override to add context checks required to run this action but cannot be satisfied by the planner."""
-        return True
-
-    def has_matching_effects(self, worldstate, unsatisfied_states_key_set): # TODO: add difference subset
-        # TODO
-        for effect in self._effects:
-            if effect._condition._state_name in unsatisfied_states_key_set:
-                if effect.matches_condition(worldstate):
-                    return True
-        return False
-
-    def apply_preconditions(self, worldstate):
-        # TODO: make required derivation of variable actions more obvious and fail-safe
-        for precondition in self._preconditions:
-            precondition.apply(worldstate)
-
-
-
 
 
 ## known as state
@@ -233,6 +188,52 @@ class Goal(object):
     def apply_preconditions(self, worldstate):
         for precondition in self._preconditions:
             precondition.apply(worldstate)
+
+
+
+class Action(object):
+
+    def __init__(self, preconditions, effects):
+        self._preconditions = preconditions
+        self._effects = effects
+
+    def __repr__(self):
+        return '<Action type=%s>' % self.__class__.__name__
+
+    def run(self):
+        raise NotImplementedError
+
+    ## following two for forward planner
+
+    def is_valid(self, worldstate):
+        for precondition in self._preconditions:
+            if not precondition.is_valid(worldstate):
+                return False
+        return True
+
+    def apply_effects(self, worldstate):
+        for effect in self._effects:
+            effect.apply_to(worldstate)
+
+    ## following two for backward planner
+
+    def check_freeform_context(self):
+        """Override to add context checks required to run this action but cannot be satisfied by the planner."""
+        return True
+
+    def has_matching_effects(self, worldstate, unsatisfied_states_key_set): # TODO: add difference subset
+        # TODO
+        for effect in self._effects:
+            if effect._condition._state_name in unsatisfied_states_key_set:
+                if effect.matches_condition(worldstate):
+                    return True
+        return False
+
+    def apply_preconditions(self, worldstate):
+        # TODO: make required derivation of variable actions more obvious and fail-safe
+        for precondition in self._preconditions:
+            precondition.apply(worldstate)
+
 
 
 class ActionBag(object):
