@@ -6,7 +6,6 @@ Created on Jul 5, 2013
 
 from goap import ActionBag, WorldState
 
-from copy import deepcopy
 
 
 class Node(object):
@@ -16,10 +15,10 @@ class Node(object):
         self.parent_nodes_path_list = parent_nodes_path_list
         self.parent_actions_path_list = parent_actions_path_list
 
-        self.valid_actionbag = ActionBag()
+#        self.valid_actionbag = ActionBag()
 
     def __repr__(self):
-        return '<Node worldstate=%s valid_actions=%s>' % (self.worldstate, self.valid_actionbag)
+        return '<Node worldstate=%s>' % (self.worldstate)
 
 #     def _check_and_add_actions(self, actionbag):
 #         for action in actionbag.generate_matching_actions():
@@ -33,14 +32,14 @@ class Node(object):
 
     def get_child_nodes_for_valid_actions(self, actionbag):
 #         self._check_and_add_actions(actionbag)
-        self.valid_actionbag = actionbag
+#        self.valid_actionbag = actionbag
         nodes = []
-        for action in self.valid_actionbag:
+        for action in actionbag:
             nodes_path_list = self.parent_nodes_path_list[:]
             nodes_path_list.append(self)
             actions_path_list = self.parent_actions_path_list[:]
             actions_path_list.append(action)
-            worldstatecopy = deepcopy(self.worldstate)
+            worldstatecopy = WorldState(self.worldstate)
             action.apply_preconditions(worldstatecopy)
             node = Node(worldstatecopy, nodes_path_list, actions_path_list) # copy worldstate
             nodes.append(node)

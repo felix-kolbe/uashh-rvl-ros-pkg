@@ -12,8 +12,8 @@ class ConditionTest(unittest.TestCase):
 
 
     def setUp(self):
-        self.condition1 = Condition()
-        self.condition2 = Condition()
+        self.condition1 = Condition('c1')
+        self.condition2 = Condition('c1')
         Condition._conditions_dict = {}
 
 
