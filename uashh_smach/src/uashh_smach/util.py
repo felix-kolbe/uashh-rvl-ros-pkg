@@ -164,20 +164,24 @@ class CheckSmachEnabledState(WaitForMsgState):
 
 
 
-'''As it makes no sense to have more than one transform listener, 
-here is a global one that has to be initialized via init_transform_listener() 
-and accessed via get_transform_listener().'''
-_transform_listener = None
+class TransformListenerSingleton(object):
+    """To avoid running multiple transform listeners, this singleton class
+    provides one transform listener that is initialised and retrieved via
+    class methods init() and get().
+    """
+    _transform_listener = None
 
-def get_transform_listener():
-    return _transform_listener
+    @classmethod
+    def init(cls):
+        """Ignores multiple calls."""
+        if cls._transform_listener is None:
+            cls._transform_listener = tf.TransformListener()
 
-def init_transform_listener():
-    '''Can safely be called multiple times.'''
-    global _transform_listener
-    if _transform_listener == None:
-        _transform_listener = tf.TransformListener();
-
+    @classmethod
+    def get(cls):
+        """Does initialise if needed, too."""
+        cls.init()
+        return cls._transform_listener
 
 
 
@@ -189,7 +193,7 @@ def get_current_robot_position(frame='/map'):
     frame: defaults to /map
     """
     try:
-        trans,rot = get_transform_listener().lookupTransform(frame, '/base_link', rospy.Time(0))
+        trans,rot = TransformListenerSingleton.get().lookupTransform(frame, '/base_link', rospy.Time(0))
         (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(rot)
         return trans[0], trans[1], yaw
     except (tf.LookupException, tf.ConnectivityException) as e:
