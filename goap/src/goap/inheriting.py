@@ -7,6 +7,38 @@ Created on Jul 25, 2013
 from goap import *
 
 
+class Memory(object):
+    """ATM a class to store condition data not representing real world."""
+
+    def __init__(self):
+        self._memory = {}
+
+    def __repr__(self):
+        return '<Memory %s>' % self._memory
+
+    def declare_variable(self, name, value=None):
+        if name not in self._memory:
+            self._memory[name] = value
+
+    def get_value(self, name):
+        return self._memory[name]
+
+    def set_value(self, name, value):
+        self._memory[name] = value
+
+#    def matches(self, memory):
+#        for (k, v) in self._memory.iteritems():
+#            if k in memory._memory and memory._memory[k] != v:
+#                return False
+#        return True
+
+
+#     def __call__(self):
+#         return self
+# NOTE: cleanup Memory singleton
+# Memory = Memory()
+
+
 #class MemoryAction(Action):
 #
 #    def __init(self, memory, preconditions, effects):
@@ -83,7 +115,7 @@ class MemoryCondition(Condition):
         memory.declare_variable(self._state_name)
 
     def __repr__(self):
-        return '<MemoryCondition: var=%s>' % self._variable
+        return '<MemoryCondition var=%s>' % self._variable
 
     def get_value(self):
         return self._memory.get_value(self._state_name)

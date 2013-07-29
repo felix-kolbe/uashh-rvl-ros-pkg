@@ -127,7 +127,7 @@ class TestIncrementer(unittest.TestCase):
         self.assertIsNone(plan, 'There should be no plan')
 
     def testPlannerNegPos(self):
-        """Atm this happens to fail easily as the planner randomly follows up and downs
+        """Atm this happens to fail easily as the planner randomly follows up and down actions.
         action benefits needed..
         """
         print '==', self.testPlannerPos.__name__

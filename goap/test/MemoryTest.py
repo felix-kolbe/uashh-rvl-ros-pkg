@@ -5,7 +5,7 @@ Created on Jul 4, 2013
 '''
 import unittest
 
-from goap.goap import Memory
+from goap.inheriting import Memory
 
 
 class MemoryTest(unittest.TestCase):
@@ -35,6 +35,7 @@ class MemoryTest(unittest.TestCase):
         self.assertEqual(self.mem.get_value(name), value, 'Memory variable not consistent')
 
 
+@unittest.skip('removed feature')
 class MemoryTestSingletons(unittest.TestCase):
 
     def setUp(self):

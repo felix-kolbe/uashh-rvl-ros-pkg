@@ -5,36 +5,6 @@ Created on Jul 2, 2013
 '''
 
 
-class Memory(object):
-
-    def __init__(self):
-        self._memory = {}
-
-    def __repr__(self):
-        return '<Memory %s>' % self._memory
-
-    def declare_variable(self, name, value=None):
-        if name not in self._memory:
-            self._memory[name] = value
-
-    def get_value(self, name):
-        return self._memory[name]
-
-    def set_value(self, name, value):
-        self._memory[name] = value
-
-#    def matches(self, memory):
-#        for (k, v) in self._memory.iteritems():
-#            if k in memory._memory and memory._memory[k] != v:
-#                return False
-#        return True
-
-
-#     def __call__(self):
-#         return self
-# NOTE: cleanup Memory singleton
-# Memory = Memory()
-
 
 
 class WorldState(object):
@@ -106,10 +76,11 @@ class Condition(object):
 
     @classmethod
     def print_dict(cls):
-        return '<Conditions: %s>' % cls._conditions_dict
+        return '<Conditions %s>' % cls._conditions_dict
 
     @classmethod
     def initialize_worldstate(cls, worldstate):
+        """Initialize the given worldstate with all known conditions and their current values."""
         for condition in cls._conditions_dict.values():
             condition.update_value(worldstate)
 
