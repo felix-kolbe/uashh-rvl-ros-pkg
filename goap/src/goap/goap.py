@@ -171,12 +171,16 @@ class Action(object):
     def __repr__(self):
         return '<Action type=%s>' % self.__class__.__name__
 
-    def run(self):
+    def run(self, next_worldstate):
+        """
+        next_worldstate: the worldstate that this action should lead to when run
+        """
         raise NotImplementedError
 
     ## following two for forward planner
 
     def is_valid(self, worldstate):
+        """Return whether this action is applicable from the given worldstate on, i.e. all preconditions are."""
         for precondition in self._preconditions:
             if not precondition.is_valid(worldstate):
                 return False

@@ -1,6 +1,8 @@
 '''
 Created on Jul 5, 2013
 
+Regressive A* planner with Node, Planner and PlanExecutor
+
 @author: felix
 '''
 
@@ -10,15 +12,22 @@ from goap import ActionBag, WorldState
 
 class Node(object):
 
-    def __init__(self, worldstate, parent_nodes_path_list, parent_actions_path_list):
+    def __init__(self, worldstate, action, parent_nodes_path_list, parent_actions_path_list):
+        """
+        worldstate: states at this node
+        action: action that led (regressively) to this node (and that should be run when executing this path forwards)
+        parent_nodes_path_list: nodes that led (from the goal) to this node
+        parent_actions_path_list: actions that led (from the goal) to this node
+        """
         self.worldstate = worldstate
+        self.action = action
         self.parent_nodes_path_list = parent_nodes_path_list
         self.parent_actions_path_list = parent_actions_path_list
 
 #        self.valid_actionbag = ActionBag()
 
     def __repr__(self):
-        return '<Node worldstate=%s>' % (self.worldstate)
+        return '<Node %X action=%s worldstate=%s>' % (id(self), self.action, self.worldstate)
 
 #     def _check_and_add_actions(self, actionbag):
 #         for action in actionbag.generate_matching_actions():
@@ -41,7 +50,7 @@ class Node(object):
             actions_path_list.append(action)
             worldstatecopy = WorldState(self.worldstate)
             action.apply_preconditions(worldstatecopy)
-            node = Node(worldstatecopy, nodes_path_list, actions_path_list) # copy worldstate
+            node = Node(worldstatecopy, action, nodes_path_list, actions_path_list)
             nodes.append(node)
         return nodes
 
@@ -55,6 +64,10 @@ class Planner(object):
         self._goal = goal
 
     def plan(self):
+        """Plan ...
+        Return the node that matches the given start worldstate and 
+        is the start node for a plan reaching the given goal.
+        """
         print 'start_worldstate: ', self._start_worldstate
 
         print 'goal: ', self._goal
@@ -64,7 +77,7 @@ class Planner(object):
         self._goal.apply_preconditions(goal_worldstate)
         print 'goal_worldstate: ', goal_worldstate
 
-        goal_node = Node(goal_worldstate, [], [])
+        goal_node = Node(goal_worldstate, None, [], [])
         print 'goal_node: ', goal_node
 
 #         worldstate = self._start_worldstate
@@ -91,7 +104,7 @@ class Planner(object):
                 print "Found plan!"
                 print 'plan nodes: ', current_node.parent_nodes_path_list
                 print 'plan actions: ', current_node.parent_actions_path_list
-                return current_node.parent_actions_path_list
+                return current_node
 
             #current_node.check_and_add_actions(self._actionbag)
             print "Current node: ", current_node
@@ -104,4 +117,38 @@ class Planner(object):
 
 
         return None
+
+
+class PlanExecutor(object):
+
+    def __init__(self):
+        pass
+
+    def execute(self, start_node):
+        assert len(start_node.parent_nodes_path_list) == len(start_node.parent_actions_path_list)
+
+        print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)
+
+        if len(start_node.parent_nodes_path_list) == 0:
+            print 'Sole node left must be goal node, stopping executor'
+            return
+
+        current_worldstate = start_node.worldstate
+        action = start_node.action # or: parent_actions_path_list[-1]
+        next_node = start_node.parent_nodes_path_list[-1]
+        next_worldstate = next_node.worldstate
+
+        if action.is_valid(current_worldstate):
+            if action.check_freeform_context():
+                print 'PlanExecutor now executing: ', action
+                action.run(next_worldstate)
+#                print 'Memory is now: ', action._memory   # only for mem actions
+                self.execute(next_node)
+            else:
+                print 'Action\'s freeform context isn\'t valid! Aborting executor'
+                print 'Action: ', action
+        else:
+            print 'Action isn\'t valid to workspace! Aborting executor'
+            print 'Action: ', action
+            print 'worldstate: ', current_worldstate
 

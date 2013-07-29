@@ -7,7 +7,7 @@ import unittest
 
 from goap.goap import *
 from goap.inheriting import *
-from goap.planning import Planner
+from goap.planning import Planner, Node, PlanExecutor
 
 
 #@unittest.skip
@@ -51,17 +51,22 @@ class TestSimple(unittest.TestCase):
     def testPlannerPos(self):
         print '==', self.testPlannerPos.__name__
         planner = Planner(self.actionbag, self.worldstate, self.goal)
-        plan = planner.plan()
-        print 'plan found: ', plan
-        self.assertIsNotNone(plan, 'There should be a plan')
-        self.assertEqual(len(plan), 3, 'Plan should have three actions')
+        start_node = planner.plan()
+        print 'start_node found: ', start_node
+        self.assertIsNotNone(start_node, 'There should be a plan')
+        self.assertIsInstance(start_node, Node, 'Plan should be a Node')
+        self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Start Node should have three actions')
+        self.assertEqual(len(start_node.parent_nodes_path_list), 3, 'Start Node should have three parent nodes')
+
+        PlanExecutor().execute(start_node)
+
 
     def testPlannerNeg(self):
         print '==', self.testPlannerNeg.__name__
         planner = Planner(self.actionbag, self.worldstate, self.goal_inaccessible)
-        plan = planner.plan()
-        print 'plan found: ', plan
-        self.assertIsNone(plan, 'There should be no plan')
+        start_node = planner.plan()
+        print 'start_node found: ', start_node
+        self.assertIsNone(start_node, 'There should be no plan')
 
 
     def tearDown(self):
@@ -106,10 +111,11 @@ class TestIncrementer(unittest.TestCase):
     def testPlannerPos(self):
         print '==', self.testPlannerPos.__name__
         planner = Planner(self.actionbag, self.worldstate, self.goal)
-        plan = planner.plan()
-        print 'plan found: ', plan
-        self.assertIsNotNone(plan, 'There should be a plan')
-        self.assertEqual(len(plan), 3, 'Plan should have three actions')
+        start_node = planner.plan()
+        print 'start_node found: ', start_node
+        self.assertIsNotNone(start_node, 'There should be a plan')
+        self.assertIsInstance(start_node, Node, 'Plan should be a Node')
+        self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Plan should have three actions')
 
 
     def testPlannerPosUnneededCondition(self):
@@ -122,9 +128,9 @@ class TestIncrementer(unittest.TestCase):
     def testPlannerNeg(self):
         print '==', self.testPlannerNeg.__name__
         planner = Planner(self.actionbag, self.worldstate, self.goal_inaccessible)
-        plan = planner.plan()
-        print 'plan found: ', plan
-        self.assertIsNone(plan, 'There should be no plan')
+        start_node = planner.plan()
+        print 'start_node found: ', start_node
+        self.assertIsNone(start_node, 'There should be no plan')
 
     def testPlannerNegPos(self):
         """Atm this happens to fail easily as the planner randomly follows up and down actions.
@@ -133,10 +139,11 @@ class TestIncrementer(unittest.TestCase):
         print '==', self.testPlannerPos.__name__
         self.actionbag.add(MemoryIncrementerAction(self.memory, 'counter', -4))
         planner = Planner(self.actionbag, self.worldstate, self.goal_inaccessible)
-        plan = planner.plan()
-        print 'plan found: ', plan
-        self.assertIsNotNone(plan, 'There should be a plan')
-        self.assertEqual(len(plan), 3, 'Plan should have three actions')
+        start_node = planner.plan()
+        print 'start_node found: ', start_node
+        self.assertIsNotNone(start_node, 'There should be a plan')
+        self.assertIsInstance(start_node, Node, 'Plan should be a Node')
+        self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Plan should have three actions')
 
 
     def tearDown(self):

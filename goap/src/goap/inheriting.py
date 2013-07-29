@@ -55,7 +55,7 @@ class MemorySetVarAction(Action):
         self._state_name = 'memory.' + self._variable
         self._memory.declare_variable(self._variable)
 
-    def run(self):
+    def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._new_value)
 
 
@@ -92,7 +92,7 @@ class MemoryIncrementerAction(Action):
     def __repr__(self):
         return '<MemoryIncrementerAction var=%s incr=%s>' % (self._condition, self._increment)
 
-    def run(self):
+    def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)
 
     def apply_preconditions(self, worldstate):
