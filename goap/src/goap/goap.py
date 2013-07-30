@@ -171,6 +171,9 @@ class Action(object):
     def __repr__(self):
         return '<Action type=%s>' % self.__class__.__name__
 
+    def cost(self):
+        return 1
+
     def run(self, next_worldstate):
         """
         next_worldstate: the worldstate that this action should lead to when run

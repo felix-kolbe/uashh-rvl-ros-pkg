@@ -90,7 +90,10 @@ class MemoryIncrementerAction(Action):
         self._memory.declare_variable(self._variable)
 
     def __repr__(self):
-        return '<MemoryIncrementerAction var=%s incr=%s>' % (self._condition, self._increment)
+        return '<MemoryIncrementerAction var=%s incr=%s>' % (self._variable, self._increment)
+
+    def cost(self):
+        return abs(self._increment)
 
     def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)

@@ -6,6 +6,8 @@ Regressive A* planner with Node, Planner and PlanExecutor
 @author: felix
 '''
 
+from collections import deque
+
 from goap import ActionBag, WorldState
 
 
@@ -24,24 +26,15 @@ class Node(object):
         self.parent_nodes_path_list = parent_nodes_path_list
         self.parent_actions_path_list = parent_actions_path_list
 
-#        self.valid_actionbag = ActionBag()
-
     def __repr__(self):
-        return '<Node %X action=%s worldstate=%s>' % (id(self), self.action, self.worldstate)
+        return '<Node %X cost=%s action=%s worldstate=%s>' % \
+            (id(self), self.cost(), self.action, self.worldstate)
 
-#     def _check_and_add_actions(self, actionbag):
-#         for action in actionbag.generate_matching_actions():
-#              # TODO use difference subset
-# #         for action in actionbag.get():
-# #             if action.has_matching_effects(self.worldstate):
-# #                 print 'helping action: ', action
-#             self.valid_actionbag.add(action)
-# #             else:
-# #                 print 'helpless action: ', action
+    def cost(self):
+        return len(self.parent_nodes_path_list) + \
+                self.action.cost() if self.action is not None else 0
 
     def get_child_nodes_for_valid_actions(self, actionbag):
-#         self._check_and_add_actions(actionbag)
-#        self.valid_actionbag = actionbag
         nodes = []
         for action in actionbag:
             nodes_path_list = self.parent_nodes_path_list[:]
@@ -82,7 +75,7 @@ class Planner(object):
 
 #         worldstate = self._start_worldstate
 
-        child_nodes = {goal_node}
+        child_nodes = deque([goal_node])
 
 #         while not self._goal.is_valid(worldstate):
         count = 0
@@ -94,7 +87,7 @@ class Planner(object):
             print "=Doing another planning loop="
             print 'nodes: ', child_nodes
 
-            current_node = child_nodes.pop()
+            current_node = child_nodes.popleft()
             print 'popping this: ', current_node
 #             print 'nodes: ', child_nodes, len(child_nodes)
 
@@ -113,9 +106,12 @@ class Planner(object):
                     self._actionbag.generate_matching_actions(self._start_worldstate, current_node.worldstate))
             print 'new child nodes: ', new_child_nodes
 
-            child_nodes.update(new_child_nodes)
+            # add new nodes and sort. this is stable, so old nodes stay
+            # more left in the deque than new nodes with same weight
+            child_nodes.extend(new_child_nodes)
+            child_nodes = deque(sorted(child_nodes, key=Node.cost))
 
-
+        print 'No plan found.'
         return None
 
 
