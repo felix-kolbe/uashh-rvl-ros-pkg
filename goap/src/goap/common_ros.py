@@ -51,9 +51,10 @@ class ResetBumperAction(Action):
     def __init__(self):
         Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],  # TODO: Precondition fails if message wasn't received yet
                             [Effect(Condition.get('robot.bumpered'), False)])
+        self._publisher = rospy.Publisher('/bumper_reset', Empty)
 
     def run(self, next_worldstate):
-        rospy.Publisher('/bumper_reset', Empty).publish()
+        self._publisher.publish(Empty())
 
 # TODO: implement denial of trivial actions (not changing conditions)
 
@@ -74,7 +75,7 @@ class MoveBaseAction(Action):
 
     def check_freeform_context(self):
         # TODO: cache freeform context?
-        return not self._client.wait_for_server(rospy.Duration(0.1))
+        return self._client.wait_for_server(rospy.Duration(0.1))
 
     def apply_preconditions(self, worldstate): # TODO: move this to new class VariableAction?
         Action.apply_preconditions(self, worldstate) # apply fix preconditions

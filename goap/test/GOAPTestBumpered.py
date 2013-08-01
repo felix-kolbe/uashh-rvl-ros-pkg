@@ -38,14 +38,14 @@ if __name__ == "__main__":
 #    unittest.main()
 
 
-    rospy.init_node('goap_bumper_test')
+    rospy.init_node('goap_bumper_test', log_level=rospy.INFO)
 
     memory = Memory()
 
     Condition.add(ROSTopicCondition(
                     'robot.pose', '/odom', Odometry, '/pose/pose'))
     Condition.add(ROSTopicCondition(
-                    'robot.bumpered', '/bumper_state', ScitosG5Bumper, '/bumper_pressed'))
+                    'robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'))
     Condition.add(MemoryCondition(memory, 'reminded_myself'))
 
     worldstate = WorldState()
@@ -69,11 +69,10 @@ if __name__ == "__main__":
 
     print 'start_node: ', start_node
 
+    rospy.sleep(10)
+
     PlanExecutor().execute(start_node)
 
 
-    ## init / spin to let conditions know reality
-
-
-
+    rospy.sleep(20)
 
