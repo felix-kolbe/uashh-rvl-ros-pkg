@@ -35,7 +35,7 @@ class Node(object):
                 self.action.cost() if self.action is not None else 0
 
     # regressive planning
-    def get_child_nodes_for_valid_actions(self, actionbag):
+    def get_child_nodes_for_valid_actions(self, actionbag, start_worldstate):
         nodes = []
         for action in actionbag:
             nodes_path_list = self.parent_nodes_path_list[:]
@@ -43,7 +43,7 @@ class Node(object):
             actions_path_list = self.parent_actions_path_list[:]
             actions_path_list.append(action)
             worldstatecopy = WorldState(self.worldstate)
-            action.apply_preconditions(worldstatecopy)
+            action.apply_preconditions(worldstatecopy, start_worldstate)
             node = Node(worldstatecopy, action, nodes_path_list, actions_path_list)
             nodes.append(node)
         return nodes
@@ -104,7 +104,8 @@ class Planner(object):
             print "Current node: ", current_node
 
             new_child_nodes = current_node.get_child_nodes_for_valid_actions(
-                    self._actionbag.generate_matching_actions(self._start_worldstate, current_node.worldstate))
+                    self._actionbag.generate_matching_actions(self._start_worldstate, current_node.worldstate),
+                    self._start_worldstate)
             print 'new child nodes: ', new_child_nodes
 
             # add new nodes and sort. this is stable, so old nodes stay

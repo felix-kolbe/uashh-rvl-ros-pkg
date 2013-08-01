@@ -219,7 +219,10 @@ class Action(object):
                     return True
         return False
 
-    def apply_preconditions(self, worldstate):
+    def apply_preconditions(self, worldstate, start_worldstate):
+        """
+        start_worldstate: needed to let actions optimize their variable precondition parameters
+        """
         # TODO: make required derivation of variable actions more obvious and fail-safe
         for precondition in self._preconditions:
             precondition.apply(worldstate)

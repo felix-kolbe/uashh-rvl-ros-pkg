@@ -98,13 +98,13 @@ class MemoryIncrementerAction(Action):
     def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)
 
-    def apply_preconditions(self, worldstate):
+    def apply_preconditions(self, worldstate, start_worldstate):
         # calculate an ad hoc precondition for our variable effect and apply it
         effect_value = worldstate.get_condition_value(self._condition)
-        precond_value = self._calc_preconditional_value(worldstate, effect_value)
+        precond_value = self._calc_preconditional_value(worldstate, start_worldstate, effect_value)
         Precondition(self._condition, precond_value, None).apply(worldstate)
 
-    def _calc_preconditional_value(self, worldstate, effect_value):
+    def _calc_preconditional_value(self, worldstate, start_worldstate, effect_value):
         return effect_value - self._increment
 
 

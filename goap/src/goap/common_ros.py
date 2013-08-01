@@ -77,15 +77,15 @@ class MoveBaseAction(Action):
         # TODO: cache freeform context?
         return self._client.wait_for_server(rospy.Duration(0.1))
 
-    def apply_preconditions(self, worldstate): # TODO: move this to new class VariableAction?
-        Action.apply_preconditions(self, worldstate) # apply fix preconditions
+    def apply_preconditions(self, worldstate, start_worldstate): # TODO: move this to new class VariableAction?
+        Action.apply_preconditions(self, worldstate, start_worldstate) # apply fix preconditions
         # calculate an ad hoc precondition for our variable effect and apply it
         effect_value = worldstate.get_condition_value(self._condition)
-        precond_value = self._calc_preconditional_value(worldstate, effect_value)
+        precond_value = self._calc_preconditional_value(worldstate, start_worldstate, effect_value)
         Precondition(self._condition, precond_value, None).apply(worldstate)
 
-    def _calc_preconditional_value(self, worldstate, effect_value):
-        start_pose = Pose(Point(0, 0, 0), Quaternion(0, 0, 0, 1)) # TODO: need to access the start worldstate here
+    def _calc_preconditional_value(self, worldstate, start_worldstate, effect_value):
+        start_pose = start_worldstate.get_condition_value(Condition.get('robot.pose'))
         return start_pose
 
     def run(self, next_worldstate):
