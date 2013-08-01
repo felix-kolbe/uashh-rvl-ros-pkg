@@ -34,6 +34,7 @@ class Node(object):
         return len(self.parent_nodes_path_list) + \
                 self.action.cost() if self.action is not None else 0
 
+    # regressive planning
     def get_child_nodes_for_valid_actions(self, actionbag):
         nodes = []
         for action in actionbag:

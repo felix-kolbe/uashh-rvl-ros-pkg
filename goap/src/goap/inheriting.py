@@ -110,6 +110,7 @@ class MemoryIncrementerAction(Action):
 
 
 class MemoryCondition(Condition):
+    """The state_name of a memory condition is memory.<variable>"""
 
     def __init__(self, memory, variable):
         Condition.__init__(self, 'memory.' + variable)

@@ -29,7 +29,7 @@ def calc_Pose(x, y, yaw):
     quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
     orientation = Quaternion(*quat)
     position = Point(x, y, 0)
-    return Pose(orientation, position)
+    return Pose(position, orientation)
 
 
 
@@ -42,24 +42,26 @@ if __name__ == "__main__":
 
     memory = Memory()
 
-    Condition.add('robot.pose', ROSTopicCondition(
+    Condition.add(ROSTopicCondition(
                     'robot.pose', '/odom', Odometry, '/pose/pose'))
-    Condition.add('robot.bumpered', ROSTopicCondition(
+    Condition.add(ROSTopicCondition(
                     'robot.bumpered', '/bumper_state', ScitosG5Bumper, '/bumper_pressed'))
-    Condition.add('memory.reminded_myself', MemoryCondition(memory, 'reminded_myself'))
+    Condition.add(MemoryCondition(memory, 'reminded_myself'))
 
     worldstate = WorldState()
 
     print 'Waiting to let conditions represent reality...'
+    print 'Remember to start topic publishers so conditions make sense instead of None!'
     rospy.sleep(2)
     Condition.initialize_worldstate(worldstate)
+    print 'worldstate now is: ', worldstate
 
     actionbag = ActionBag()
     actionbag.add(ResetBumperAction())
     actionbag.add(MoveBaseAction())
 
 
-    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(3, 2, 1))])
+    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])
 
     planner = Planner(actionbag, worldstate, goal)
 

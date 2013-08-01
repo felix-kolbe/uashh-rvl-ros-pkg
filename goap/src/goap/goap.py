@@ -34,8 +34,8 @@ class WorldState(object):
                     matches = False
                     break
         print 'comparing worldstates: ', matches
-        print 'mine: ', self._condition_values
-        print 'other: ', start_ws_dict
+        print 'mine:  ', self._condition_values
+        print 'start: ', start_ws_dict
         return matches
 
 #    def apply_effects(self, action): # TODO: replace by direct calls to action.apply_effects()
@@ -46,11 +46,22 @@ class WorldState(object):
 
 ## known as state
 class Condition(object):
-    """The object that makes any kind of robot or system state available."""
+    """The object that makes any kind of robot or system state available.
+    
+    This class, at least its static part, is a multiton:
+    * For each state_name only one instance is allowed to be in the 
+      _conditions_dict mapping.
+    * If there is no mapping for a get(state_name) call an assertion is
+      triggered, as creating a new instance makes no sense here.
+    
+    self._state_name: id name of condition, must not be changed
+    """
 
-    # TODO: maybe convert to singleton
     def __init__(self, state_name):
         self._state_name = state_name
+
+    def __str__(self):
+        return "Condition:%s" % self._state_name
 
     def get_value(self):
         """Returns the current value, hopefully not blocking."""
@@ -65,14 +76,15 @@ class Condition(object):
     _conditions_dict = {}
 
     @classmethod
-    def add(cls, name, condition):
-        assert name not in cls._conditions_dict, "Condition '" + name + "' had already been added previously!"
-        cls._conditions_dict[name] = condition
+    def add(cls, condition):
+        assert condition._state_name not in cls._conditions_dict, \
+            "Condition '" + condition._state_name + "' had already been added previously!"
+        cls._conditions_dict[condition._state_name] = condition
 
     @classmethod
-    def get(cls, name):
-        assert name in cls._conditions_dict, "Condition '" + name + "' has not yet been added!"
-        return cls._conditions_dict[name]
+    def get(cls, state_name):
+        assert state_name in cls._conditions_dict, "Condition '" + state_name + "' has not yet been added!"
+        return cls._conditions_dict[state_name]
 
     @classmethod
     def print_dict(cls):
@@ -243,7 +255,7 @@ class ActionBag(object):
         common_conditions = start_worldstate._condition_values.viewkeys() & node_worldstate._condition_values.viewkeys()
         unsatisfied_conditions = set()
         for condition in common_conditions:
-            if start_worldstate._condition_values[condition] != node_worldstate._condition_values[condition]:
+            if start_worldstate.get_condition_value(condition) != node_worldstate.get_condition_value(condition):
                 print 'state different: ', condition
                 unsatisfied_conditions.add(condition)
             else:

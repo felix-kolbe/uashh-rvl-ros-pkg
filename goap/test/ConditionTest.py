@@ -12,8 +12,8 @@ class ConditionTest(unittest.TestCase):
 
 
     def setUp(self):
-        self.condition1 = Condition('c1')
-        self.condition2 = Condition('c1')
+        self.condition1 = Condition('name1')
+        self.condition2 = Condition('name2')
         Condition._conditions_dict = {}
 
 
@@ -22,19 +22,19 @@ class ConditionTest(unittest.TestCase):
 
 
     def testAdd(self):
-        self.assertIs(Condition.add('name1', self.condition1), None, 'Could not add new condition')
-        self.assertIs(Condition.add('name2', self.condition2), None, 'Could not add another new condition')
+        self.assertIs(Condition.add(self.condition1), None, 'Could not add new condition')
+        self.assertIs(Condition.add(self.condition2), None, 'Could not add another new condition')
 
     def testAddSame(self):
-        self.assertIs(Condition.add('name1', self.condition1), None, 'Could not add new condition')
+        self.assertIs(Condition.add(self.condition1), None, 'Could not add new condition')
 #         self.assertRaises(AssertionError, Condition.add, 'name2', self.condition1) #'Could not add another new condition')
 
     def testGet(self):
         self.assertRaises(AssertionError, Condition.get, 'name_inexistent') # 'Does not fail on getting inexistent condition')
 
     def testGetSame(self):
-        self.assertIs(Condition.add('name', self.condition1), None, 'Could not add new condition')
-        self.assertIs(Condition.get('name'), self.condition1, 'Could not get that same condition')
+        self.assertIs(Condition.add(self.condition1), None, 'Could not add new condition')
+        self.assertIs(Condition.get('name1'), self.condition1, 'Could not get that same condition')
 
 
 
