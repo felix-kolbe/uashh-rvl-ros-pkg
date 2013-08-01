@@ -51,7 +51,8 @@ alias amcl='rosrun amcl amcl'
 # interaction nodes
 alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
-alias rviz_felix='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.vcg'
+alias rviz_felix='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.rviz'
+alias rviz_felix_vcg='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.vcg'
 alias rosgui='rosrun rqt_gui rqt_gui'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
