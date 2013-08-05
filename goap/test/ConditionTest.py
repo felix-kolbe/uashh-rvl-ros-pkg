@@ -27,7 +27,7 @@ class ConditionTest(unittest.TestCase):
 
     def testAddSame(self):
         self.assertIs(Condition.add(self.condition1), None, 'Could not add new condition')
-#         self.assertRaises(AssertionError, Condition.add, 'name2', self.condition1) #'Could not add another new condition')
+        self.assertRaises(AssertionError, Condition.add, self.condition1) # 'Could not add another new condition')
 
     def testGet(self):
         self.assertRaises(AssertionError, Condition.get, 'name_inexistent') # 'Does not fail on getting inexistent condition')
