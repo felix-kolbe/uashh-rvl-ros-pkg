@@ -5,8 +5,8 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Image Kinect RGB1/Status1
-        - /Image Kinect Depth1/Status1
+        - /move_base costs1
+        - /move_base costs1/Status1
       Splitter Ratio: 0.636585
     Tree Height: 839
   - Class: rviz/Selection
@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: OctoMapPointCloud
+    SyncSource: LaserScan
 Visualization Manager:
   Class: ""
   Displays:
@@ -35,7 +35,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz/Grid
       Color: 160; 160; 164
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.03
         Value: Lines
@@ -48,104 +48,20 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
-        /CameraMount:
-          Value: true
-        /ConnBase:
-          Value: true
-        /ConnLong1:
-          Value: true
-        /ConnLong2:
-          Value: true
-        /DH1:
-          Value: true
-        /DH2:
-          Value: true
-        /DH3:
-          Value: true
-        /DH4:
-          Value: true
-        /DH5:
-          Value: true
-        /DH6:
-          Value: true
-        /GFneg:
-          Value: true
-        /GFpos:
-          Value: true
-        /Gripper:
-          Value: true
-        /Kinect:
-          Value: true
         /base_link:
           Value: true
-        /kinect1_depth_frame:
-          Value: true
-        /kinect1_depth_optical_frame:
-          Value: true
-        /kinect1_link:
-          Value: true
-        /kinect1_rgb_frame:
-          Value: true
-        /kinect1_rgb_optical_frame:
-          Value: true
         /laser:
+          Value: true
+        /laser_rear:
           Value: true
         /map:
           Value: true
         /odom:
-          Value: true
-        /sonar/sonar_00:
-          Value: true
-        /sonar/sonar_01:
-          Value: true
-        /sonar/sonar_02:
-          Value: true
-        /sonar/sonar_03:
-          Value: true
-        /sonar/sonar_04:
-          Value: true
-        /sonar/sonar_05:
-          Value: true
-        /sonar/sonar_06:
-          Value: true
-        /sonar/sonar_07:
-          Value: true
-        /sonar/sonar_08:
-          Value: true
-        /sonar/sonar_09:
-          Value: true
-        /sonar/sonar_10:
-          Value: true
-        /sonar/sonar_11:
-          Value: true
-        /sonar/sonar_12:
-          Value: true
-        /sonar/sonar_13:
-          Value: true
-        /sonar/sonar_14:
-          Value: true
-        /sonar/sonar_15:
-          Value: true
-        /sonar/sonar_16:
-          Value: true
-        /sonar/sonar_17:
-          Value: true
-        /sonar/sonar_18:
-          Value: true
-        /sonar/sonar_19:
-          Value: true
-        /sonar/sonar_20:
-          Value: true
-        /sonar/sonar_21:
-          Value: true
-        /sonar/sonar_22:
-          Value: true
-        /sonar/sonar_23:
           Value: true
         /tail:
           Value: true
@@ -159,33 +75,9 @@ Visualization Manager:
         /map:
           /odom:
             /base_link:
-              /DH1:
-                /ConnBase:
-                  {}
-                /DH2:
-                  /DH3:
-                    /ConnLong1:
-                      {}
-                    /DH4:
-                      /ConnLong2:
-                        {}
-                      /DH5:
-                        /DH6:
-                          /Gripper:
-                            /CameraMount:
-                              /Kinect:
-                                {}
-                              /kinect1_link:
-                                /kinect1_depth_frame:
-                                  /kinect1_depth_optical_frame:
-                                    {}
-                                /kinect1_rgb_frame:
-                                  /kinect1_rgb_optical_frame:
-                                    {}
-                            /GFneg:
-                              /GFpos:
-                                {}
               /laser:
+                {}
+              /laser_rear:
                 {}
               /tail:
                 {}
@@ -197,78 +89,9 @@ Visualization Manager:
       Enabled: true
       Links:
         All Links Enabled: true
-        CameraMount:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        ConnBase:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        ConnLong1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        ConnLong2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        DH1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        DH2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        DH3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        DH4:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        DH5:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        DH6:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
-        GFneg:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        GFpos:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        Gripper:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        Kinect:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         Link Tree Style: Links in Alphabetic Order
         base_link:
           Alpha: 1
@@ -311,23 +134,23 @@ Visualization Manager:
         Min Value: -10
         Value: true
       Axis: Z
-      Channel Name: intensity
+      Channel Name: x
       Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color: 0; 0; 255
+      Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 6.85402
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: -0.0475702
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.01
-      Style: Flat Squares
+      Style: Points
       Topic: /scan
       Use Fixed Frame: true
       Use rainbow: true
@@ -341,8 +164,8 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz/LaserScan
-      Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color: 0; 0; 255
+      Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
       Max Color: 255; 255; 255
@@ -355,7 +178,7 @@ Visualization Manager:
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.01
-      Style: Flat Squares
+      Style: Points
       Topic: /scan_rear
       Use Fixed Frame: true
       Use rainbow: true
@@ -426,30 +249,30 @@ Visualization Manager:
       Topic: ""
       Value: true
       Visual Enabled: true
-    - Alpha: 0.3
+    - Alpha: 0.7
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
         Min Value: -10
         Value: true
       Axis: Z
-      Channel Name: intensity
+      Channel Name: path_cost
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
       Max Color: 255; 255; 255
-      Max Intensity: 4096
+      Max Intensity: 225
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 14
       Name: move_base costs
-      Position Transformer: ""
+      Position Transformer: XYZ
       Queue Size: 1
       Selectable: false
       Size (Pixels): 3
-      Size (m): 0.01
-      Style: Points
+      Size (m): 0.02
+      Style: Spheres
       Topic: /move_base/TrajectoryPlannerROS/cost_cloud
       Use Fixed Frame: true
       Use rainbow: true
@@ -478,14 +301,14 @@ Visualization Manager:
       Name: Navfn Path
       Topic: /move_base/NavfnROS/plan
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Class: rviz/GridCells
       Color: 114; 70; 56
-      Enabled: true
+      Enabled: false
       Name: glob_cm/obstacles
       Topic: /move_base/global_costmap/obstacles
-      Value: true
-    - Alpha: 1
+      Value: false
+    - Alpha: 0.5
       Class: rviz/GridCells
       Color: 165; 121; 66
       Enabled: true
@@ -494,35 +317,35 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
-      Color: 25; 255; 0
+      Color: 11; 161; 255
       Enabled: true
       Name: glob_cm/footprint
       Topic: /move_base/global_costmap/robot_footprint
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Class: rviz/GridCells
-      Color: 25; 255; 0
+      Color: 225; 24; 20
       Enabled: true
       Name: loc_cm/obstacles
       Topic: /move_base/local_costmap/obstacles
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Class: rviz/GridCells
-      Color: 25; 255; 0
+      Color: 255; 147; 20
       Enabled: true
       Name: loc_cm/inflated_obstacles
       Topic: /move_base/local_costmap/inflated_obstacles
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Class: rviz/GridCells
-      Color: 25; 255; 0
+      Color: 24; 249; 249
       Enabled: true
       Name: loc_cm/unknown_space
       Topic: /move_base/local_costmap/unknown_space
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
-      Color: 25; 255; 0
+      Color: 170; 0; 255
       Enabled: true
       Name: loc_cm/footprint
       Topic: /move_base/local_costmap/robot_footprint
@@ -530,31 +353,31 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/GridCells
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: navfn_cm/obstacles
       Topic: /move_base/NavfnROS/NavfnROS_costmap/obstacles
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/GridCells
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: navfn_cm/inflated_obstacles
       Topic: /move_base/NavfnROS/NavfnROS_costmap/inflated_obstacles
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/GridCells
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: navfn_cm/unknown_space
       Topic: /move_base/NavfnROS/NavfnROS_costmap/unknown_space
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/Polygon
       Color: 25; 255; 0
-      Enabled: true
+      Enabled: false
       Name: navfn_cm/footprint
       Topic: /move_base/NavfnROS/NavfnROS_costmap/robot_footprint
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -651,29 +474,29 @@ Visualization Manager:
       Topic: /particlecloud
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /visualization_marker
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /free_cells
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: visualization_marker
       Name: Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -696,18 +519,18 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 7.77871
+      Class: rviz/XYOrbit
+      Distance: 5.29828
       Focal Point:
-        X: -2.29719
-        Y: -1.49372
-        Z: 1.51949
+        X: -0.1656
+        Y: -0.607959
+        Z: -1.30598e-06
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.264797
+      Pitch: 1.1998
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.685
+      Value: XYOrbit (rviz)
+      Yaw: 2.8404
     Saved: ~
 Window Geometry:
   Displays:
