@@ -143,7 +143,7 @@ class HasMovedState(State):
     
     def __init__(self, minimumDistance, frame='/map'):
         smach.State.__init__(self, outcomes=['movement_exceeds_distance', 'movement_within_distance'])
-        util.init_transform_listener()
+        util.TransformListenerSingleton.init()
         self.minimumDistance = minimumDistance
         self.frame = frame
         self.lastX, self.lastY = self._getXY()
@@ -169,7 +169,7 @@ class ReadRobotPositionState(State):
     def __init__(self, frame='/map'):
         smach.State.__init__(self, outcomes=['succeeded'], output_keys=['x', 'y', 'yaw'])
         self.frame = frame
-        util.init_transform_listener();
+        util.TransformListenerSingleton.init()
 
     def execute(self, userdata):
         userdata.x, userdata.y, userdata.yaw = util.get_current_robot_position(self.frame)
