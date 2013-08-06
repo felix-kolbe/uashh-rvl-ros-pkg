@@ -12,7 +12,7 @@ alias ros_local='export ROS_MASTER_URI=http://localhost:11311 ; export PS1="'$(e
 
 # all
 alias uashh_all='roslaunch '$HELPER_PKG' uashh_all.launch'
-
+alias scitos_all='mla & telearm & ps3 & rs & lsr & kinect & cm & diag_agg & jms & kmf & gmapp & mbnew & octomap & collmap & armnav &'
 
 # hardware nodes
 alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
@@ -33,7 +33,7 @@ alias diag_agg='rosrun diagnostic_aggregator aggregator_node'
 
 # computing nodes
 alias gmapp='roslaunch '$HELPER_PKG' slam_gmapping_haw.launch'
-alias gmapp_rear='roslaunch '$HELPER_PKG' slam_gmapping_haw_rear.launch'
+alias gmapp_rear='roslaunch '$HELPER_PKG' slam_gmapping_haw_hokuyo_rear.launch'
 alias mb='roslaunch '$HELPER_PKG' move_base_haw.launch'
 alias mbnew='roslaunch scitos_2dnav move_base.launch'
 
@@ -59,11 +59,13 @@ alias camera_small_compressed='rosrun image_view image_view image:=/camera/image
 alias camera_small_theora='rosrun image_view image_view image:=/camera/image_small theora'
 alias view_kinect_compressed='rosrun image_view image_view image:=/kinect1/rgb/image_color compressed'
 
+alias tf='cd /var/tmp && rosrun tf view_frames && evince frames.pdf &'
+
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
-alias ps3='roslaunch teleop_ps3 teleop_ps3.launch'
-alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
-alias ps3_full='ps3_bt & ps3 & telearm'
+alias ps3_teleop='roslaunch teleop_ps3 teleop_ps3.launch'
+alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/groovy/lib/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
+alias ps3='ps3_bt & ps3_teleop & telearm'
 
 
 # small tools
