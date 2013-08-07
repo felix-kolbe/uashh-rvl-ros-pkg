@@ -34,7 +34,7 @@ class ROSTopicCondition(Condition):
         self._value = None
 
     def __repr__(self):
-        return '<ROSTopicCondition topic=%s field=%s>' % (self._topic, self._field)
+        return '<%s topic=%s field=%s>' % (self.__class__.__name__, self._topic, self._field)
 
     def _callback(self, msg):
         self._value = self._msgeval(msg)

@@ -27,8 +27,10 @@ class Node(object):
         self.parent_actions_path_list = parent_actions_path_list
 
     def __repr__(self):
-        return '<Node %X cost=%s action=%s worldstate=%s>' % \
-            (id(self), self.cost(), self.action, self.worldstate)
+#        return '<Node %X cost=%s action=%s worldstate=%s>' % \
+#            (id(self), self.cost(), self.action, self.worldstate)
+        return '<Node %X cost=%s action=%s>' % \
+            (id(self), self.cost(), self.action)
 
     def cost(self):
         return len(self.parent_nodes_path_list) + \

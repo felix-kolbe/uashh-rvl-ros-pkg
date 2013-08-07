@@ -55,6 +55,9 @@ class MemorySetVarAction(Action):
         self._state_name = 'memory.' + self._variable
         self._memory.declare_variable(self._variable)
 
+    def __repr__(self):
+        return '<%s var=%s new=%s>' % (self.__class__.__name__, self._variable, self._new_value)
+
     def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._new_value)
 
@@ -68,8 +71,13 @@ class MemoryChangeVarAction(MemorySetVarAction):
             )
         self._old_value = old_value
 
+    def __str__(self):
+        return '%s:%s=%s->%s' % (self.__class__.__name__,
+                    self._variable, self._old_value, self._new_value)
+
     def __repr__(self):
-        return '<MemoryChangeVarAction var=%s old=%s new=%s>' % (self._variable, self._old_value, self._new_value)
+        return '<%s var=%s old=%s new=%s>' % (self.__class__.__name__,
+                    self._variable, self._old_value, self._new_value)
 
 
 class MemoryIncrementerAction(Action):
@@ -89,8 +97,13 @@ class MemoryIncrementerAction(Action):
         self._increment = increment
         self._memory.declare_variable(self._variable)
 
+    def __str__(self):
+        return '%s:%s+=%s' % (self.__class__.__name__,
+                            self._variable, self._increment)
+
     def __repr__(self):
-        return '<MemoryIncrementerAction var=%s incr=%s>' % (self._variable, self._increment)
+        return '<%s var=%s incr=%s>' % (self.__class__.__name__,
+                            self._variable, self._increment)
 
     def cost(self):
         return abs(self._increment)
@@ -117,9 +130,6 @@ class MemoryCondition(Condition):
         self._memory = memory
         self._variable = variable
         memory.declare_variable(self._state_name)
-
-    def __repr__(self):
-        return '<MemoryCondition var=%s>' % self._variable
 
     def get_value(self):
         return self._memory.get_value(self._state_name)
