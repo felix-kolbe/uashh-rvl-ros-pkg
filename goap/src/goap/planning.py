@@ -57,11 +57,17 @@ class Planner(object):
         self._start_worldstate = worldstate
         self._goal = goal
 
-    def plan(self):
+    def plan(self, goal=None):
         """Plan ...
-        Return the node that matches the given start worldstate and 
-        is the start node for a plan reaching the given goal.
+        Return the node that matches the given start WorldState and
+        is the start node for a plan reaching the given Goal.
+
+        If any parameter is not given the data given at initialisation is used.
         """
+
+        if goal is not None:
+            self._goal = goal
+
         print 'start_worldstate: ', self._start_worldstate
 
         print 'goal: ', self._goal
