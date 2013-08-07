@@ -8,6 +8,7 @@ import unittest
 from goap.goap import *
 from goap.inheriting import *
 from goap.planning import Planner, Node, PlanExecutor
+from goap.introspection import GOAPIntrospection
 
 
 #@unittest.skip
@@ -59,6 +60,11 @@ class TestSimple(unittest.TestCase):
         self.assertEqual(len(start_node.parent_nodes_path_list), 3, 'Start Node should have three parent nodes')
 
         PlanExecutor().execute(start_node)
+
+        import rospy
+        rospy.init_node('goaptestmemory')
+        GOAPIntrospection().publish(start_node)
+        rospy.sleep(25)
 
 
     def testPlannerNeg(self):

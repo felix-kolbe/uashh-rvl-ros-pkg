@@ -41,6 +41,12 @@ class WorldState(object):
 #    def apply_effects(self, action): # TODO: replace by direct calls to action.apply_effects()
 # delete me       action.apply_effects(self)
 
+    def get_state_name_dict(self):
+        """Returns a dictionary with not the conditions themselves but their state_names as keys."""
+        d = {}
+        for c, v in self._condition_values.viewitems():
+            d[c._state_name] = v
+        return d
 
 
 
