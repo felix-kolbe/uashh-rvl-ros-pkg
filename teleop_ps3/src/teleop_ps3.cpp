@@ -1,12 +1,16 @@
 
 #include <math.h>
 
+#include <boost/thread.hpp>
+
 #include <ros/ros.h>
 
 #include <std_msgs/Empty.h>
 #include <std_msgs/Bool.h>
 #include <metralabs_msgs/IDAndFloat.h>
+#include <metralabs_msgs/ScitosG5Bumper.h>
 #include <sensor_msgs/Joy.h>
+#include <sensor_msgs/JoyFeedbackArray.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Twist.h>
 #include <actionlib_msgs/GoalID.h>
@@ -64,10 +68,10 @@
 #define RAD_TO_DEG(r)	((r)*180.0/M_PI)
 
 
-class teleop_ps3
+class TeleopPS3
 {
 public:
-	teleop_ps3();
+	TeleopPS3();
 
 private:
 	void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
@@ -124,10 +128,10 @@ private:
 };
 
 
-teleop_ps3::teleop_ps3() :
+TeleopPS3::TeleopPS3() :
 		nh_schunk_("schunk")
 {
-	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 1, &teleop_ps3::joyCallback, this);
+	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 1, &TeleopPS3::joyCallback, this);
 
 	base_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 3);
 	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("enable_smach", 1, true);
@@ -141,7 +145,7 @@ teleop_ps3::teleop_ps3() :
 	gripper_pub_ = nh_schunk_.advertise<metralabs_msgs::IDAndFloat>("move_position", 1);
 }
 
-void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
+void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 	/// DEBUGGING
 
@@ -326,10 +330,199 @@ void teleop_ps3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 }
 
 
+
+class TeleopPS3Feedback
+{
+public:
+	typedef sensor_msgs::JoyFeedback::_id_type ID;
+	typedef sensor_msgs::JoyFeedback::_intensity_type INTENSITY;
+
+	struct LED
+	{
+		ID id;
+		INTENSITY intensity;
+	};
+
+
+	TeleopPS3Feedback()
+	{
+		feedback_pub_ = nh_.advertise<sensor_msgs::JoyFeedbackArray>("/joy/set_feedback", 5);
+
+		bumper_sub_ = nh_.subscribe("/bumper", 3, &TeleopPS3Feedback::bumperCallback, this);
+
+		sendLEDs(false, true, false, true);
+		sendRumble(0, 0);
+
+		boost::thread(&TeleopPS3Feedback::knightRiderThread, this);
+
+	}
+
+protected:
+	void bumperCallback(const metralabs_msgs::ScitosG5BumperConstPtr& bumper)
+	{
+		static bool last_state = false;
+		bool current_state = bumper->bumper_pressed;
+
+		if(!last_state && current_state)
+		{
+			sendRumble(1, 1);
+			ros::WallDuration duration;
+			duration.fromSec(0.2);
+			duration.sleep();
+			sendRumble(0, 0);
+		}
+
+		last_state = current_state;
+	}
+
+	void rumbleDemo()
+	{
+		ros::WallDuration duration;
+		duration.fromSec(0.4);
+
+		sendRumble(0.5, 0);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(0, 0.5);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(1, 0);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(0, 1);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+
+		sendRumble(0.5, 0.5);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(0.5, 1);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(1, 0.5);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+
+		sendRumble(1, 1);
+		duration.sleep();
+		sendRumble(0, 0);
+		duration.sleep();
+	}
+
+
+	void sendRumble(INTENSITY rumble_low_freq, INTENSITY rumble_high_freq)
+	{
+		sensor_msgs::JoyFeedbackArray feedback_array;
+		feedback_array.array.push_back(*getFeedbackRumble(0, rumble_low_freq));
+		feedback_array.array.push_back(*getFeedbackRumble(1, rumble_high_freq));
+		feedback_pub_.publish(feedback_array);
+	}
+
+
+	void sendLEDs(bool led0, bool led1, bool led2, bool led3)
+	{
+		sensor_msgs::JoyFeedbackArray feedback_array;
+		feedback_array.array.push_back(*getFeedbackLED(0, led0));
+		feedback_array.array.push_back(*getFeedbackLED(1, led1));
+		feedback_array.array.push_back(*getFeedbackLED(2, led2));
+		feedback_array.array.push_back(*getFeedbackLED(3, led3));
+		feedback_pub_.publish(feedback_array);
+	}
+
+	void sendLEDs(LED leds[4])
+	{
+		sensor_msgs::JoyFeedbackArray feedback_array;
+		for(int i=0; i<4; i++)
+			feedback_array.array.push_back(*getFeedbackLED(leds[i].id, leds[i].intensity));
+		feedback_pub_.publish(feedback_array);
+	}
+
+	sensor_msgs::JoyFeedbackPtr getFeedbackLED(LED led)
+	{
+		return getFeedbackLED(led.id, led.intensity);
+	}
+
+	/* id is 0-3 */
+	sensor_msgs::JoyFeedbackPtr getFeedbackLED(ID id, INTENSITY intensity)
+	{
+		sensor_msgs::JoyFeedbackPtr feedback(new sensor_msgs::JoyFeedback());
+		feedback->type = sensor_msgs::JoyFeedback::TYPE_LED;
+		feedback->id = id;
+		feedback->intensity = intensity;
+		return feedback;
+	}
+
+	/* id is 0-1 */
+	sensor_msgs::JoyFeedbackPtr getFeedbackRumble(ID id, INTENSITY intensity)
+	{
+		sensor_msgs::JoyFeedbackPtr feedback(new sensor_msgs::JoyFeedback());
+		feedback->type = sensor_msgs::JoyFeedback::TYPE_RUMBLE;
+		feedback->id = id;
+		feedback->intensity = intensity;
+		return feedback;
+	}
+
+	void knightRiderThread()
+	{
+		ros::WallDuration step;
+		step.fromSec(0.1);
+
+		ID id = 0;
+		ID inc = +1;
+		LED leds[4];
+		for(int id=0; id<4; id++)
+		{
+			leds[id].id = id;
+			leds[id].intensity = 0;
+		}
+
+		while(ros::ok())
+		{
+			// at this point every leds[i] is off
+
+			leds[id].intensity = 1;
+			sendLEDs(leds);
+			leds[id].intensity = 0;
+
+			// at this point every leds[i] is off
+
+			if(id == 0)
+				inc = +1;
+			else if(id == 3)
+				inc = -1;
+
+			id += inc;
+
+			step.sleep();
+		}
+	}
+
+
+private:
+	ros::NodeHandle nh_;
+	ros::Publisher feedback_pub_;
+	ros::Subscriber bumper_sub_;
+};
+
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "teleop_ps3");
 	ROS_INFO("Starting ps3 teleop converter, take care of your controller now...");
-	teleop_ps3 teleop_ps3;
+	TeleopPS3 teleop_ps3;
+	TeleopPS3Feedback teleop_ps3_feedback;
 	ros::spin();
 }
