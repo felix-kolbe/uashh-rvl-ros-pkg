@@ -16,6 +16,7 @@ from goap.goap import *
 from goap.inheriting import *
 from goap.common_ros import *
 from goap.planning import Planner, PlanExecutor
+from goap.runner import Runner
 
 
 class Test(unittest.TestCase):
@@ -40,38 +41,37 @@ if __name__ == "__main__":
 
     rospy.init_node('goap_bumper_test', log_level=rospy.INFO)
 
-    memory = Memory()
+    runner = Runner()
 
     Condition.add(ROSTopicCondition(
                     'robot.pose', '/odom', Odometry, '/pose/pose'))
     Condition.add(ROSTopicCondition(
                     'robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'))
-    Condition.add(MemoryCondition(memory, 'reminded_myself'))
+    Condition.add(MemoryCondition(runner.memory, 'reminded_myself'))
 
-    worldstate = WorldState()
 
     print 'Waiting to let conditions represent reality...'
     print 'Remember to start topic publishers so conditions make sense instead of None!'
     rospy.sleep(2)
-    Condition.initialize_worldstate(worldstate)
-    print 'worldstate now is: ', worldstate
+    Condition.initialize_worldstate(runner.worldstate)
+    print 'worldstate now is: ', runner.worldstate
 
-    actionbag = ActionBag()
-    actionbag.add(ResetBumperAction())
-    actionbag.add(MoveBaseAction())
+    runner.actionbag.add(ResetBumperAction())
+    runner.actionbag.add(MoveBaseAction())
 
 
     goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])
 
-    planner = Planner(actionbag, worldstate, goal)
-
-    start_node = planner.plan()
+    start_node = runner.update_and_plan(goal)
 
     print 'start_node: ', start_node
 
     rospy.sleep(10)
 
-    PlanExecutor().execute(start_node)
+    if start_node is None:
+        print 'No plan found! Check you ROS graph!'
+    else:
+        PlanExecutor().execute(start_node)
 
 
     rospy.sleep(20)

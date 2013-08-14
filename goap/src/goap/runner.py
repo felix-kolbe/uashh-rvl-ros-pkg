@@ -60,7 +60,7 @@ class Runner(object):
                 self.actionbag.add(action)
 
         print 'letting conditions receive reality...'
-        rospy.sleep(2)
+        rospy.sleep(2)  # TODO: avoid sleeping if no ROS reality is used
 
         Condition.initialize_worldstate(self.worldstate)
 
@@ -80,6 +80,7 @@ class Runner(object):
             start_node = self.planner.plan(goal)
             if start_node is not None:
                 return start_node
+        return None
 
     def update_and_plan_and_execute(self, goal, tries=1):
         start_node = self.update_and_plan(goal, tries)
