@@ -35,31 +35,54 @@ def calc_Pose(x, y, yaw):
 
 
 class Runner(object):
+    """
+    self.memory: memory to be used for conditions and actions
+    self.worldstate: the default/start worldstate
+    self.actionbag: the actions this runner uses
+    self.planner: the planner this runner uses
+    """
 
-    def __init__(self):
+    def __init__(self, config_module=None):
+        """
+        param:config_module: a scenario/robot specific module to prepare setup,
+                that has the following members:
+                    get_all_conditions() -> return a list of conditions
+                    get_all_actions() -> return a list of actions
+        """
         self.memory = Memory()
         self.worldstate = WorldState()
         self.actionbag = ActionBag()
 
-        for condition in config_scitos.get_all_conditions():
-            Condition.add(condition)
+        if config_module is not None:
+            for condition in config_module.get_all_conditions():
+                Condition.add(condition)
+            for action in config_module.get_all_actions():
+                self.actionbag.add(action)
 
-        for action in config_scitos.get_all_actions():
-            self.actionbag.add(action)
-
-        rospy.sleep(2) # let conditions receive reality
+        print 'letting conditions receive reality...'
+        rospy.sleep(2)
 
         Condition.initialize_worldstate(self.worldstate)
 
         self.planner = Planner(self.actionbag, self.worldstate, None)
 
-    def start(self, goal):
-        self.current_goal = goal
 
+    def __repr__(self):
+        return '<%s memory=%s worldstate=%s actions=%s planner=%s>' % (self.__class__.__name__,
+                                self.memory, self.worldstate, self.actionbag, self.planner)
+
+    def update_and_plan(self, goal, tries=1):
+        # update to reality
         Condition.initialize_worldstate(self.worldstate)
 
-        start_node = self.planner.plan(self.current_goal)
+        while tries > 0:
+            tries -= 1
+            start_node = self.planner.plan(goal)
+            if start_node is not None:
+                return start_node
 
+    def update_and_plan_and_execute(self, goal, tries=1):
+        start_node = self.update_and_plan(goal, tries)
         if start_node is not None:
             PlanExecutor().execute(start_node)
 
@@ -80,7 +103,7 @@ class MoveState(State):
     def execute(self, ud):
         pose = calc_Pose(ud.x, ud.y, ud.yaw)
         goal = Goal([Precondition(Condition.get('robot.pose'), pose)])
-        self.runner.start(goal)
+        self.runner.update_and_plan_and_execute(goal)
         return 'succeeded'
 
 
@@ -100,8 +123,7 @@ def test():
 #                                 })
 
         Sequence.add('WAIT_FOR_GOAL', wfg,
-                     transitions={'aborted':'SLEEP'}
-                     )
+                     transitions={'aborted':'SLEEP'})
 
         Sequence.add('MOVE', MoveState(),
                      transitions={'succeeded':'SLEEP'})
