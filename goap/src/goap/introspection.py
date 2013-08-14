@@ -84,4 +84,4 @@ class GOAPIntrospection(object):
             node_action_name = 'GOAL'
         else:
             node_action_name = str(node.action) #.__class__.__name__
-        return node_action_name + '_' + str(id(node))
+        return node_action_name + ' %X' % id(node)

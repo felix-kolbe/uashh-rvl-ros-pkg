@@ -96,4 +96,5 @@ class MoveBaseAction(Action):
         goal.target_pose.pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
 
         print 'Waiting for base to reach goal...'
-        self._client.send_goal_and_wait(goal)
+        goalstatus = self._client.send_goal_and_wait(goal)
+        print 'Goal status: ', goalstatus

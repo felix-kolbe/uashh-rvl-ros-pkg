@@ -37,8 +37,8 @@ class WorldState(object):
                     matches = False
                     break
         print 'comparing worldstates: ', matches
-        print 'mine:  ', self._condition_values
-        print 'start: ', start_ws_dict
+#        print 'mine:  ', self._condition_values
+#        print 'start: ', start_ws_dict
         return matches
 
 #    def apply_effects(self, action): # TODO: replace by direct calls to action.apply_effects()
@@ -73,7 +73,7 @@ class Condition(object):
         return '%s:%s' % (self.__class__.__name__, self._state_name)
 
     def __repr__(self):
-        return '<%s name=%s>' % (self.__class__.__name__, self._state_name)
+        return '<%s state_name=%s>' % (self.__class__.__name__, self._state_name)
 
     def get_value(self):
         """Returns the current value, hopefully not blocking."""
