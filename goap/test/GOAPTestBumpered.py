@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])
 
-    start_node = runner.update_and_plan(goal)
+    start_node = runner.update_and_plan(goal, introspection=True)
 
     print 'start_node: ', start_node
 

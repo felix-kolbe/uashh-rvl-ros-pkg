@@ -18,11 +18,13 @@ class Node(object):
         """
         worldstate: states at this node
         action: action that led (regressively) to this node (and that should be run when executing this path forwards)
+        possible_prev_nodes: nodes with actions that the planner found possible to help reach this node (empty until planner ran)
         parent_nodes_path_list: nodes that led (from the goal) to this node
         parent_actions_path_list: actions that led (from the goal) to this node
         """
         self.worldstate = worldstate
         self.action = action
+        self.possible_prev_nodes = []
         self.parent_nodes_path_list = parent_nodes_path_list
         self.parent_actions_path_list = parent_actions_path_list
 
@@ -33,13 +35,18 @@ class Node(object):
             (id(self), self.cost(), self.action)
 
     def cost(self):
-        return len(self.parent_nodes_path_list) + \
-                self.action.cost() if self.action is not None else 0
+        if self.action is not None:
+            cost = (self.action.cost() + # own action's cost
+                    self.parent_nodes_path_list[-1].cost()) # parent node's cost (therefore recursive)
+        else:
+            cost = 0
+        return cost + 1 # effectively adds 1 for each node in path to favour short paths
 
     # regressive planning
-    def get_child_nodes_for_valid_actions(self, actionbag, start_worldstate):
+    def get_child_nodes_for_valid_actions(self, actions_generator, start_worldstate):
+        assert len(self.possible_prev_nodes) is 0, "Node.get_child_nodes_for_valid_actions is probably not safe to be called twice"
         nodes = []
-        for action in actionbag:
+        for action in actions_generator:
             nodes_path_list = self.parent_nodes_path_list[:]
             nodes_path_list.append(self)
             actions_path_list = self.parent_actions_path_list[:]
@@ -48,6 +55,7 @@ class Node(object):
             action.apply_preconditions(worldstatecopy, start_worldstate)
             node = Node(worldstatecopy, action, nodes_path_list, actions_path_list)
             nodes.append(node)
+            self.possible_prev_nodes.append(node)
         return nodes
 
 
@@ -58,6 +66,8 @@ class Planner(object):
         self._actionbag = actionbag
         self._start_worldstate = worldstate
         self._goal = goal
+
+        self.last_goal_node = None
 
     def plan(self, goal=None):
         """Plan ...
@@ -81,6 +91,7 @@ class Planner(object):
 
         goal_node = Node(goal_worldstate, None, [], [])
         print 'goal_node: ', goal_node
+        self.last_goal_node = goal_node
 
 #         worldstate = self._start_worldstate
 

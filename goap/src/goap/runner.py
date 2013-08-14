@@ -4,6 +4,8 @@ Created on Aug 5, 2013
 @author: felix
 '''
 
+import thread
+
 import rospy
 from smach import Sequence, State
 
@@ -22,6 +24,7 @@ from geometry_msgs.msg._PoseStamped import PoseStamped
 from goap import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
 from planning import Planner, PlanExecutor
+from introspection import GOAPIntrospection
 
 import config_scitos
 
@@ -66,23 +69,46 @@ class Runner(object):
 
         self.planner = Planner(self.actionbag, self.worldstate, None)
 
+        self._introspector = None
+
 
     def __repr__(self):
         return '<%s memory=%s worldstate=%s actions=%s planner=%s>' % (self.__class__.__name__,
                                 self.memory, self.worldstate, self.actionbag, self.planner)
 
-    def update_and_plan(self, goal, tries=1):
+    def _setup_introspection(self):
+        # init what could have been initialized externally
+        if not rospy.core.is_initialized():
+            rospy.init_node('goap_runner_introspector')
+        # init everything else but only once
+        if self._introspector is None:
+            self._introspector = GOAPIntrospection()
+            thread.start_new_thread(rospy.spin, ())
+            print "introspection spinner started"
+
+
+    def update_and_plan(self, goal, tries=1, introspection=False):
         # update to reality
         Condition.initialize_worldstate(self.worldstate)
+
+        if introspection:
+            self._setup_introspection()
 
         while tries > 0:
             tries -= 1
             start_node = self.planner.plan(goal)
             if start_node is not None:
-                return start_node
-        return None
+                break;
 
-    def update_and_plan_and_execute(self, goal, tries=1):
+        if introspection and start_node is not None:
+            self._introspector.publish(start_node)
+            self._introspector.publish_net(start_node,
+                           self.planner.last_goal_node)
+
+        return start_node
+
+
+    def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
         start_node = self.update_and_plan(goal, tries)
         if start_node is not None:
             PlanExecutor().execute(start_node)
