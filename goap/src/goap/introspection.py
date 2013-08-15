@@ -77,16 +77,19 @@ class GOAPIntrospection(object):
 #        structure.container_outcomes = ['succeeded', 'aborted']
         self._add_nodes_recursively_net(goal_node, structure)
         self._publisher_structure_net.publish(structure)
+        print 'published net has ~%s nodes' % len(structure.children)
 
         status = SmachContainerStatus()
         status.header.stamp = rospy.Time.now()
         status.path = self._pathprefix_net
-        status.initial_states = [self._nodeid(start_node)]
+        status.initial_states = [self._nodeid(start_node) if start_node is not None else 'No plan found']
         #status.active_states = ['None']
         status.active_states = [self._nodeid(goal_node)]
         status.local_data = pickle.dumps(goal_node.worldstate.get_state_name_dict(), 2)
         status.info = 'initial state'
         self._publisher_status_net.publish(status)
+
+        rospy.sleep(5)
 
     def publish(self, start_node):
         structure = SmachContainerStructure()
@@ -95,6 +98,7 @@ class GOAPIntrospection(object):
 #        structure.container_outcomes = ['succeeded', 'aborted']
         self._add_nodes_recursively(start_node, structure)
         self._publisher_structure.publish(structure)
+        print 'published plan has ~%s nodes' % len(structure.children)
 
         status = SmachContainerStatus()
         status.header.stamp = rospy.Time.now()
@@ -125,8 +129,8 @@ class GOAPIntrospection(object):
     def _nodeid(self, node):
         if node.action is None:
             node_action_name = 'GOAL'
-            node_action_cost = '-'
+            node_action_cost = '0'
         else:
             node_action_name = str(node.action) #.__class__.__name__
             node_action_cost = node.action.cost()
-        return node_action_name + ' %x' % id(node) + ' ' + str(node_action_cost) + ' ' + str(node.cost())
+        return node_action_name + ' %X' % id(node) + ' n' + str(node_action_cost) + ' t' + str(node.cost())

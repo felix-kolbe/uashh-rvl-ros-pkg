@@ -98,15 +98,17 @@ class MemoryIncrementerAction(Action):
         self._memory.declare_variable(self._variable)
 
     def __str__(self):
-        return '%s:%s+=%s' % (self.__class__.__name__,
-                            self._variable, self._increment)
+        return '%s:%s%s=%s' % (self.__class__.__name__,
+                               self._variable,
+                               ('-' if self._increment < 0 else '+'),
+                               abs(self._increment))
 
     def __repr__(self):
         return '<%s var=%s incr=%s>' % (self.__class__.__name__,
                             self._variable, self._increment)
 
     def cost(self):
-        return abs(self._increment)
+        return abs(2 - float(1) / abs(self._increment))
 
     def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)

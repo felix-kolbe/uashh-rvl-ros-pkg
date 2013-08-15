@@ -63,7 +63,7 @@ class TestSimple(unittest.TestCase):
         PlanExecutor().execute(start_node)
 
         import rospy
-        rospy.sleep(25) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
 
 
     def testPlannerNeg(self):
@@ -139,9 +139,6 @@ class TestIncrementer(unittest.TestCase):
         self.assertIsNone(start_node, 'There should be no plan')
 
     def testPlannerNegPos(self):
-        """Atm this happens to fail easily as the planner randomly follows up and down actions.
-        action benefits needed..
-        """
         print '==', self.testPlannerNegPos.__name__
         self.actionbag.add(MemoryIncrementerAction(self.memory, 'counter', -4))
         start_node = self.runner.update_and_plan(self.goal_inaccessible, introspection=True)
@@ -151,7 +148,34 @@ class TestIncrementer(unittest.TestCase):
         self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Plan should have three actions')
 
         import rospy
-        rospy.sleep(25) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+
+
+    def testPlannerDeviation(self):
+        print '==', self.testPlannerDeviation.__name__
+        goal_dev = Goal([Precondition(Condition.get('memory.counter'), 2.05, 0.1)])
+        start_node = self.runner.update_and_plan(goal_dev)
+        print 'start_node found: ', start_node
+        self.assertIsNotNone(start_node, 'There should be a plan')
+        self.assertIsInstance(start_node, Node, 'Plan should be a Node')
+        self.assertEqual(len(start_node.parent_actions_path_list), 2, 'Plan should have two actions')
+
+
+    def testPlannerBig(self):
+        print '==', self.testPlannerBig.__name__
+        self.actionbag.add(MemoryIncrementerAction(self.memory, 'counter', -4))
+        self.actionbag.add(MemoryIncrementerAction(self.memory, 'counter', 11))
+        self.actionbag.add(MemoryIncrementerAction(self.memory, 'counter', 3))
+        goal_big = Goal([Precondition(Condition.get('memory.counter'), 42)])
+        start_node = self.runner.update_and_plan(goal_big, introspection=True)
+        print 'start_node found: ', start_node
+
+        import rospy
+        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+
+        self.assertIsNotNone(start_node, 'There should be a plan')
+        self.assertIsInstance(start_node, Node, 'Plan should be a Node')
+
 
     def tearDown(self):
         print 'memory was:', self.memory

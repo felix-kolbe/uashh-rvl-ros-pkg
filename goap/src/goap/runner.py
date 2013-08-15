@@ -100,8 +100,9 @@ class Runner(object):
             if start_node is not None:
                 break;
 
-        if introspection and start_node is not None:
-            self._introspector.publish(start_node)
+        if introspection:
+            if start_node is not None:
+                self._introspector.publish(start_node)
             self._introspector.publish_net(start_node,
                            self.planner.last_goal_node)
 

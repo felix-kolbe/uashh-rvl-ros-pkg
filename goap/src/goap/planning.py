@@ -36,11 +36,13 @@ class Node(object):
 
     def cost(self):
         if self.action is not None:
-            cost = (self.action.cost() + # own action's cost
-                    self.parent_nodes_path_list[-1].cost()) # parent node's cost (therefore recursive)
+            # goal node
+            cost = (1 # effectively adds 1 for each node in path to favour short paths
+                    + self.action.cost() # own action's cost
+                    + self.parent_nodes_path_list[-1].cost()) # parent node's cost (therefore recursive)
         else:
             cost = 0
-        return cost + 1 # effectively adds 1 for each node in path to favour short paths
+        return cost
 
     # regressive planning
     def get_child_nodes_for_valid_actions(self, actions_generator, start_worldstate):
@@ -98,13 +100,14 @@ class Planner(object):
         child_nodes = deque([goal_node])
 
 #         while not self._goal.is_valid(worldstate):
-        count = 0
+        loopcount = 0
         while len(child_nodes) != 0:
-            count += 1
-            if count >= 20:
+            loopcount += 1
+            if loopcount > 2000: # loop limit
+                print "Warning: planner stops because loop limit (%s) hit!" % (loopcount - 1)
                 break
 
-            print "=Doing another planning loop="
+            print "=Doing another planning loop #%s=" % loopcount
             print 'nodes: ', child_nodes
 
             current_node = child_nodes.popleft()
@@ -114,7 +117,7 @@ class Planner(object):
             print 'current_node.worldstate: ', current_node.worldstate
 
             if self._start_worldstate.matches(current_node.worldstate):
-                print "Found plan!"
+                print "Found plan! Considered nodes: %s; nodes left: %s" % (loopcount, len(child_nodes))
                 print 'plan nodes: ', current_node.parent_nodes_path_list
                 print 'plan actions: ', current_node.parent_actions_path_list
                 return current_node

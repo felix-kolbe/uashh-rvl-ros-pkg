@@ -148,7 +148,7 @@ class Effect(object):
         return '%s:%s=%s' % (self.__class__.__name__, self._condition._state_name, self._new_value)
 
     def __repr__(self):
-        return '<%s cond=%s new_val=%s>' % (self.__class__.__name__, self._condition, self._new_value)
+        return '<%s cond=%s new_val=%s>' % (self.__class__.__name__, self._condition._state_name, self._new_value)
 
     def apply_to(self, worldstate):
         # TODO: remove me as I'm only for forward planning?
@@ -169,7 +169,7 @@ class VariableEffect(object):
         return '%s:%s' % (self.__class__.__name__, self._condition._state_name)
 
     def __repr__(self):
-        return '<%s cond=%s>' % (self.__class__.__name__, self._condition)
+        return '<%s cond=%s>' % (self.__class__.__name__, self._condition._state_name)
 
 #     def apply_to(self, worldstate):
 #         worldstate.memory.set_value(self._condition, self._new_value)
