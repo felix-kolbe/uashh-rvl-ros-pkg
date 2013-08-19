@@ -12,19 +12,14 @@ from smach import Sequence, State
 import tf
 
 from geometry_msgs.msg import Pose, Point, Quaternion
-from nav_msgs.msg import Odometry
 
-import uashh_smach
 from uashh_smach.util import WaitForMsgState, CheckSmachEnabledState, SleepState, execute_smach_container
 from uashh_smach.platform.move_base import WaitForGoalState
-
-from geometry_msgs.msg._PoseStamped import PoseStamped
-
 
 from goap import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
 from planning import Planner, PlanExecutor
-from introspection import GOAPIntrospection
+from introspection import Introspector
 
 import config_scitos
 
@@ -62,11 +57,6 @@ class Runner(object):
             for action in config_module.get_all_actions():
                 self.actionbag.add(action)
 
-        print 'letting conditions receive reality...'
-        rospy.sleep(2)  # TODO: avoid sleeping if no ROS reality is used
-
-        Condition.initialize_worldstate(self.worldstate)
-
         self.planner = Planner(self.actionbag, self.worldstate, None)
 
         self._introspector = None
@@ -82,7 +72,7 @@ class Runner(object):
             rospy.init_node('goap_runner_introspector')
         # init everything else but only once
         if self._introspector is None:
-            self._introspector = GOAPIntrospection()
+            self._introspector = Introspector()
             thread.start_new_thread(rospy.spin, ())
             print "introspection spinner started"
 
@@ -96,9 +86,9 @@ class Runner(object):
 
         while tries > 0:
             tries -= 1
-            start_node = self.planner.plan(goal)
+            start_node = self.planner.plan(goal=goal)
             if start_node is not None:
-                break;
+                break
 
         if introspection:
             if start_node is not None:
@@ -110,7 +100,7 @@ class Runner(object):
 
 
     def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
-        start_node = self.update_and_plan(goal, tries)
+        start_node = self.update_and_plan(goal, tries, introspection)
         if start_node is not None:
             PlanExecutor().execute(start_node)
 
@@ -126,12 +116,13 @@ class MoveState(State):
     def __init__(self):
         State.__init__(self, outcomes=['succeeded', 'aborted'], input_keys=['x', 'y', 'yaw'], output_keys=['user_input'])
 
-        self.runner = Runner()
+        self.runner = Runner(config_scitos)
+
 
     def execute(self, ud):
         pose = calc_Pose(ud.x, ud.y, ud.yaw)
         goal = Goal([Precondition(Condition.get('robot.pose'), pose)])
-        self.runner.update_and_plan_and_execute(goal)
+        self.runner.update_and_plan_and_execute(goal, introspection=True)
         return 'succeeded'
 
 
@@ -146,14 +137,12 @@ def test():
         Sequence.add('SLEEP', SleepState(5))
 
 #        Sequence.add('CHECK', CheckSmachEnabledState(),
-#                    transitions={'aborted':'SLEEP'#,
-#                                 #'succeeded':'MOVE'
-#                                 })
+#                    transitions={'aborted':'SLEEP'})
 
         Sequence.add('WAIT_FOR_GOAL', wfg,
                      transitions={'aborted':'SLEEP'})
 
-        Sequence.add('MOVE', MoveState(),
+        Sequence.add('MOVE_GOAP', MoveState(),
                      transitions={'succeeded':'SLEEP'})
 
 

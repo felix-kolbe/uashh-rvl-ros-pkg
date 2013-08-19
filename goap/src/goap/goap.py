@@ -20,6 +20,7 @@ class WorldState(object):
 
     def __repr__(self):
         return '<WorldState %X values=%s>' % (id(self), self._condition_values)
+#        return '<WorldState>'
 
     def get_condition_value(self, condition):
         return self._condition_values[condition]
@@ -41,28 +42,22 @@ class WorldState(object):
 #        print 'start: ', start_ws_dict
         return matches
 
-#    def apply_effects(self, action): # TODO: replace by direct calls to action.apply_effects()
-# delete me       action.apply_effects(self)
-
     def get_state_name_dict(self):
         """Returns a dictionary with not the conditions themselves but their state_names as keys."""
-        d = {}
-        for c, v in self._condition_values.viewitems():
-            d[c._state_name] = v
-        return d
+        return {cond._state_name: val for cond, val in self._condition_values.viewitems()}
 
 
 
 ## known as state
 class Condition(object):
     """The object that makes any kind of robot or system state available.
-    
+
     This class, at least its static part, is a multiton:
-    * For each state_name only one instance is allowed to be in the 
+    * For each state_name only one instance is allowed to be in the
       _conditions_dict mapping.
     * If there is no mapping for a get(state_name) call an assertion is
       triggered, as creating a new instance makes no sense here.
-    
+
     self._state_name: id name of condition, must not be changed
     """
 
@@ -178,6 +173,8 @@ class VariableEffect(object):
         return self._is_reachable(worldstate.get_condition_value(self._condition))
 
     def _is_reachable(self, value):
+        """Returns a Boolean whether this variable effect can reach the given value"""
+        # TODO: change reachability from boolean to float
         raise NotImplementedError
 
 
@@ -252,11 +249,24 @@ class Action(object):
 
     def apply_preconditions(self, worldstate, start_worldstate):
         """
+        worldstate: worldstate to apply this action's preconditions to
         start_worldstate: needed to let actions optimize their variable precondition parameters
         """
         # TODO: make required derivation of variable actions more obvious and fail-safe
         for precondition in self._preconditions:
             precondition.apply(worldstate)
+        # let the action apply ad hoc preconditions for its variable effects
+        var_effects = [effect for effect in self._effects if isinstance(effect, VariableEffect)]
+        if len(var_effects) > 0:
+            self.apply_adhoc_preconditions_for_vareffects(var_effects, worldstate, start_worldstate)
+
+    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+        """
+        Let the action itself apply preconditions for its variable effects.
+
+        Must be implemented if the action contains variable effects.
+        """
+        raise NotImplementedError
 
 
 

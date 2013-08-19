@@ -9,13 +9,11 @@ import pickle
 from smach_msgs.msg import SmachContainerStatus, SmachContainerStructure
 from smach_ros.introspection import STATUS_TOPIC, STRUCTURE_TOPIC
 
-from planning import Node
 
-class GOAPIntrospection(object):
-    '''
-    classdocs
-    '''
-
+class Introspector(object):
+    """Gives insight to a planner's plan and GOAP net by publishing prepared
+    information to a smach_viewer.
+    """
     def __init__(self):
         self._pathprefix = '/GOAP_PLAN'
         self._pathprefix_net = '/GOAP_NET'
@@ -25,57 +23,35 @@ class GOAPIntrospection(object):
         self._publisher_status_net = rospy.Publisher(self._pathprefix_net + STATUS_TOPIC, SmachContainerStatus, latch=True)
 
 
-    def _add_nodes_recursively(self, node, structure):
-        """node: beginning with the start node"""
-        structure.children.append(self._nodeid(node))
-
-        if len(node.parent_nodes_path_list) > 0:
-            next_node = node.parent_nodes_path_list[-1]
-
-            structure.internal_outcomes.append(str(node.action._effects))
-            structure.outcomes_from.append(self._nodeid(node))
-            structure.outcomes_to.append(self._nodeid(next_node))
-#
-#            structure.internal_outcomes.append('aborted')
-#            structure.outcomes_from.append(self._nodeid(node))
-#            structure.outcomes_to.append('None')
-
-            self._add_nodes_recursively(next_node, structure)
-#        else: # goal node
-#            structure.internal_outcomes.append('succeeded')
-#            structure.outcomes_from.append(self._nodeid(node))
-#            structure.outcomes_to.append('None')
-
-
-    def _add_nodes_recursively_net(self, node, structure):
-        """node: beginning with the goal node"""
-        structure.children.append(self._nodeid(node))
-
-        if len(node.possible_prev_nodes) > 0: # goal or inner node
-            for prev_node in node.possible_prev_nodes:
-                structure.internal_outcomes.append(str(prev_node.action._effects))
-                structure.outcomes_from.append(self._nodeid(prev_node))
-                structure.outcomes_to.append(self._nodeid(node))
-                self._add_nodes_recursively_net(prev_node, structure)
-        else: # start or dead-end node
-            pass
-
-#        if len(node.parent_nodes_path_list) == 0: # goal node
-#            structure.internal_outcomes.append('succeeded')
-#            structure.outcomes_from.append(self._nodeid(node))
-#            structure.outcomes_to.append('None')
-#        else:
-#            structure.internal_outcomes.append('aborted')
-#            structure.outcomes_from.append(self._nodeid(node))
-#            structure.outcomes_to.append('None')
-
-
     def publish_net(self, start_node, goal_node):
+        """Publishes a GOAP planning net"""
+        def _add_nodes_recursively(node, structure):
+            """node: beginning with the goal node"""
+            structure.children.append(self._nodeid(node))
+
+            if len(node.possible_prev_nodes) > 0: # goal or inner node
+                for prev_node in node.possible_prev_nodes:
+                    structure.internal_outcomes.append(str(prev_node.action._effects))
+                    structure.outcomes_from.append(self._nodeid(prev_node))
+                    structure.outcomes_to.append(self._nodeid(node))
+                    _add_nodes_recursively(prev_node, structure)
+            else: # start or dead-end node
+                pass
+
+#            if len(node.parent_nodes_path_list) == 0: # goal node
+#                structure.internal_outcomes.append('succeeded')
+#                structure.outcomes_from.append(self._nodeid(node))
+#                structure.outcomes_to.append('None')
+#            else:
+#                structure.internal_outcomes.append('aborted')
+#                structure.outcomes_from.append(self._nodeid(node))
+#                structure.outcomes_to.append('None')
+
         structure = SmachContainerStructure()
         structure.header.stamp = rospy.Time.now()
         structure.path = self._pathprefix_net
 #        structure.container_outcomes = ['succeeded', 'aborted']
-        self._add_nodes_recursively_net(goal_node, structure)
+        _add_nodes_recursively(goal_node, structure)
         self._publisher_structure_net.publish(structure)
         print 'published net has ~%s nodes' % len(structure.children)
 
@@ -85,18 +61,42 @@ class GOAPIntrospection(object):
         status.initial_states = [self._nodeid(start_node) if start_node is not None else 'No plan found']
         #status.active_states = ['None']
         status.active_states = [self._nodeid(goal_node)]
-        status.local_data = pickle.dumps(goal_node.worldstate.get_state_name_dict(), 2)
-        status.info = 'initial state'
+        goal_states_dict = goal_node.worldstate.get_state_name_dict()
+        goal_states_dict['WORLDSTATE'] = 'GOAL'
+        status.local_data = pickle.dumps(goal_states_dict, 2)
+        status.info = 'goal state'
         self._publisher_status_net.publish(status)
 
         rospy.sleep(5)
 
     def publish(self, start_node):
+        """Publishes a planned GOAP plan"""
+        def _add_nodes_recursively(node, structure):
+            """node: beginning with the start node"""
+            structure.children.append(self._nodeid(node))
+
+            if len(node.parent_nodes_path_list) > 0:
+                next_node = node.parent_nodes_path_list[-1]
+
+                structure.internal_outcomes.append(str(node.action._effects))
+                structure.outcomes_from.append(self._nodeid(node))
+                structure.outcomes_to.append(self._nodeid(next_node))
+#
+#                structure.internal_outcomes.append('aborted')
+#                structure.outcomes_from.append(self._nodeid(node))
+#                structure.outcomes_to.append('None')
+
+                _add_nodes_recursively(next_node, structure)
+#            else: # goal node
+#                structure.internal_outcomes.append('succeeded')
+#                structure.outcomes_from.append(self._nodeid(node))
+#                structure.outcomes_to.append('None')
+
         structure = SmachContainerStructure()
         structure.header.stamp = rospy.Time.now()
         structure.path = self._pathprefix
 #        structure.container_outcomes = ['succeeded', 'aborted']
-        self._add_nodes_recursively(start_node, structure)
+        _add_nodes_recursively(start_node, structure)
         self._publisher_structure.publish(structure)
         print 'published plan has ~%s nodes' % len(structure.children)
 
@@ -105,7 +105,9 @@ class GOAPIntrospection(object):
         status.path = self._pathprefix
         status.initial_states = [self._nodeid(start_node)]
         status.active_states = ['None']
-        status.local_data = pickle.dumps(start_node.worldstate.get_state_name_dict(), 2)
+        start_states_dict = start_node.worldstate.get_state_name_dict()
+        start_states_dict['WORLDSTATE'] = 'START'
+        status.local_data = pickle.dumps(start_states_dict, 2)
         status.info = 'initial state'
         self._publisher_status.publish(status)
 
@@ -120,8 +122,9 @@ class GOAPIntrospection(object):
         status.path = self._pathprefix
         status.initial_states = []
         status.active_states = [nodeid]
-#        status.local_data = pickle.dumps(self._worldstate_to_userdata(start_node.worldstate)._data, 2)
-        status.local_data = pickle.dumps(node.worldstate.get_state_name_dict(), 2)
+        start_states_dict = node.worldstate.get_state_name_dict()
+        start_states_dict['WORLDSTATE'] = str(node)
+        status.local_data = pickle.dumps(start_states_dict, 2)
         status.info = 'node state'
         self._publisher_status.publish(status)
 

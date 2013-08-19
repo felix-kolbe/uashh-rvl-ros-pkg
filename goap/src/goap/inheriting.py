@@ -86,7 +86,7 @@ class MemoryIncrementerAction(Action):
         def __init__(self, condition):
             VariableEffect.__init__(self, condition)
         def _is_reachable(self, value):
-            return True # TODO: change reachability from boolean to float
+            return True
 
 
     def __init__(self, memory, variable, increment=1):
@@ -113,14 +113,13 @@ class MemoryIncrementerAction(Action):
     def run(self, next_worldstate):
         self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)
 
-    def apply_preconditions(self, worldstate, start_worldstate):
-        # calculate an ad hoc precondition for our variable effect and apply it
-        effect_value = worldstate.get_condition_value(self._condition)
-        precond_value = self._calc_preconditional_value(worldstate, start_worldstate, effect_value)
-        Precondition(self._condition, precond_value, None).apply(worldstate)
+    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+        effect = var_effects.pop()  # this action has one variable effect
+        assert effect.__class__ == MemoryIncrementerAction.IncEffect
+        precond_value = worldstate.get_condition_value(effect._condition) - self._increment
+        Precondition(effect._condition, precond_value, None).apply(worldstate)
 
-    def _calc_preconditional_value(self, worldstate, start_worldstate, effect_value):
-        return effect_value - self._increment
+
 
 
 

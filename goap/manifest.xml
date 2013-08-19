@@ -16,6 +16,7 @@
   <depend package="metralabs_msgs"/>
   <depend package="actionlib"/>
   <depend package="smach_ros"/>
+  <depend package="uashh_smach"/>
 
 </package>
 

@@ -53,23 +53,29 @@ class ResetBumperAction(Action):
                             [Effect(Condition.get('robot.bumpered'), False)])
         self._publisher = rospy.Publisher('/bumper_reset', Empty)
 
+    def check_freeform_context(self):
+        return self._publisher.get_num_connections() > 0  # unsafe
+
     def run(self, next_worldstate):
+        print 'num of subscribers: ', self._publisher.get_num_connections()
+        print 'sending bumper_reset message..'
         self._publisher.publish(Empty())
+        rospy.sleep(1)  # TODO: find solution without sleep
 
 # TODO: implement denial of trivial actions (not changing conditions)
 
 class MoveBaseAction(Action):
 
-    class PositionEffect(VariableEffect):
+    class PositionVarEffect(VariableEffect):
         def __init__(self, condition):
             VariableEffect.__init__(self, condition)
         def _is_reachable(self, value):
-            return True # TODO: change reachability from boolean to float
+            return True
 
     def __init__(self):
         self._condition = Condition.get('robot.pose')
         Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), False)],
-                        [MoveBaseAction.PositionEffect(self._condition)])
+                        [MoveBaseAction.PositionVarEffect(self._condition)])
 
         self._client = actionlib.SimpleActionClient('move_base', move_base_msgs.msg.MoveBaseAction)
 
@@ -77,16 +83,11 @@ class MoveBaseAction(Action):
         # TODO: cache freeform context?
         return self._client.wait_for_server(rospy.Duration(0.1))
 
-    def apply_preconditions(self, worldstate, start_worldstate): # TODO: move this to new class VariableAction?
-        Action.apply_preconditions(self, worldstate, start_worldstate) # apply fix preconditions
-        # calculate an ad hoc precondition for our variable effect and apply it
-        effect_value = worldstate.get_condition_value(self._condition)
-        precond_value = self._calc_preconditional_value(worldstate, start_worldstate, effect_value)
-        Precondition(self._condition, precond_value, None).apply(worldstate)
-
-    def _calc_preconditional_value(self, worldstate, start_worldstate, effect_value):
-        start_pose = start_worldstate.get_condition_value(Condition.get('robot.pose'))
-        return start_pose
+    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+        effect = var_effects.pop()  # this action has one variable effect
+        assert effect.__class__ == MoveBaseAction.PositionVarEffect
+        precond_value = start_worldstate.get_condition_value(Condition.get('robot.pose'))
+        Precondition(effect._condition, precond_value, None).apply(worldstate)
 
     def run(self, next_worldstate):
         goal = MoveBaseGoal()
