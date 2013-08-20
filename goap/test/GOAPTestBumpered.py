@@ -49,6 +49,7 @@ if __name__ == "__main__":
                     'robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'))
     Condition.add(MemoryCondition(runner.memory, 'reminded_myself'))
 
+    runner.memory.set_value('memory.reminded_myself', 333)
 
     print 'Waiting to let conditions represent reality...'
     print 'Remember to start topic publishers so conditions make sense instead of None!'
@@ -58,9 +59,11 @@ if __name__ == "__main__":
 
     runner.actionbag.add(ResetBumperAction())
     runner.actionbag.add(MoveBaseAction())
+    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'reminded_myself', 333, 555))
 
 
-    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])
+    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0)),
+                 Precondition(Condition.get('memory.reminded_myself'), 555)])
 
     start_node = runner.update_and_plan(goal, introspection=True)
 
@@ -69,7 +72,7 @@ if __name__ == "__main__":
     rospy.sleep(10)
 
     if start_node is None:
-        print 'No plan found! Check you ROS graph!'
+        print 'No plan found! Check your ROS graph!'
     else:
         PlanExecutor().execute(start_node)
 

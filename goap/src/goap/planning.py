@@ -28,26 +28,73 @@ class Node(object):
         self.parent_nodes_path_list = parent_nodes_path_list
         self.parent_actions_path_list = parent_actions_path_list
 
+        self.heuristic_distance = None
+
     def __repr__(self):
 #        return '<Node %X cost=%s action=%s worldstate=%s>' % \
 #            (id(self), self.cost(), self.action, self.worldstate)
-        return '<Node %X cost=%s action=%s>' % \
-            (id(self), self.cost(), self.action)
+        return '<Node %X cost=%s heur_dist=%s action=%s>' % \
+            (id(self), self.cost(), self.heuristic_distance, self.action)
 
     def cost(self):
         if self.action is not None:
             # goal node
-            cost = (1 # effectively adds 1 for each node in path to favour short paths
+            cost = (0 * 1 # effectively adds 1 for each node in path to favour short paths
                     + self.action.cost() # own action's cost
+                  #  + self.heuristic_distance # own heuristic cost
                     + self.parent_nodes_path_list[-1].cost()) # parent node's cost (therefore recursive)
         else:
             cost = 0
         return cost
 
+    def _calc_heuristic_distance_for_node(self, start_worldstate):
+        # TODO: integrate heuristic calculation nicely
+        """Set self.heuristic_distance, a value representing the difference
+        between this node's worldstate and the given start worldstate."""
+        assert self.heuristic_distance is None, "Node heuristic should be calculated only once"
+        # check which conditions differ between start and current node
+        unsatisfied_conditions_set = self.worldstate.get_unsatisfied_conditions(start_worldstate)
+
+        if len(self.parent_nodes_path_list) == 0:
+            # goal node: default distance 1 for each known unsatisfied condition
+            self.heuristic_distance = len(unsatisfied_conditions_set)
+        else:
+            goal_worldstate = self.parent_nodes_path_list[0].worldstate
+            print "ID GOAL_WORLDSTATE = ", id(goal_worldstate)
+            self.heuristic_distance = 0
+
+            for condition in unsatisfied_conditions_set:
+                try:
+                    goal_value = goal_worldstate.get_condition_value(condition)
+                except KeyError:
+                    # conditions that weren't part of the goal worldstate but
+                    # were involved through actions cannot be compared and get
+                    # a default distance
+                    self.heuristic_distance += 1
+                else:
+                    node_value = self.worldstate.get_condition_value(condition)
+                    start_value = start_worldstate.get_condition_value(condition)
+                    try:
+                        distance_total = abs(goal_value - start_value)
+                        distance_remaining = abs(node_value - start_value)
+                        relative_distance = float(distance_remaining) / distance_total
+                        # relative_distance will be 1 at the goal node,
+                        # be > 1 if a action moves in the wrong direction or
+                        # tend to 0 with the condition being fullfilled gradually
+                        assert relative_distance > 0, "If the relative progress" \
+                                " results to zero, why is it considered unsatisfied?"
+                    except TypeError:
+                        # non-numeric conditions get a default distance
+                        self.heuristic_distance += 1
+                    else:
+                        print "comparing condition %s: relative_distance = " \
+                                "distance_left / distance_total = %s / %s = %s" \
+                                % (condition._state_name, distance_remaining, distance_total, relative_distance)
+                        self.heuristic_distance += relative_distance
+
     # regressive planning
     def get_child_nodes_for_valid_actions(self, actions_generator, start_worldstate):
         assert len(self.possible_prev_nodes) is 0, "Node.get_child_nodes_for_valid_actions is probably not safe to be called twice"
-        nodes = []
         for action in actions_generator:
             nodes_path_list = self.parent_nodes_path_list[:]
             nodes_path_list.append(self)
@@ -56,9 +103,9 @@ class Node(object):
             worldstatecopy = WorldState(self.worldstate)
             action.apply_preconditions(worldstatecopy, start_worldstate)
             node = Node(worldstatecopy, action, nodes_path_list, actions_path_list)
-            nodes.append(node)
+            node._calc_heuristic_distance_for_node(start_worldstate)
             self.possible_prev_nodes.append(node)
-        return nodes
+        return self.possible_prev_nodes
 
 
 
@@ -93,6 +140,7 @@ class Planner(object):
         print 'goal_worldstate: ', goal_worldstate
 
         goal_node = Node(goal_worldstate, None, [], [])
+        goal_node._calc_heuristic_distance_for_node(self._start_worldstate)
         print 'goal_node: ', goal_node
         self.last_goal_node = goal_node
 
@@ -130,7 +178,10 @@ class Planner(object):
             # add new nodes and sort. this is stable, so old nodes stay
             # more left in the deque than new nodes with same weight
             child_nodes.extend(new_child_nodes)
-            child_nodes = deque(sorted(child_nodes, key=Node.cost))
+            # TODO: will the planner be optimal, if a too high heuristic will favor
+            # another node, which reaches the start, but with more total cost than
+            # what the first node and a matching lower cost action will cost?
+            child_nodes = deque(sorted(child_nodes, key=lambda node: node.cost() + node.heuristic_distance))
 
         print 'No plan found.'
         return None

@@ -31,7 +31,7 @@ class Introspector(object):
 
             if len(node.possible_prev_nodes) > 0: # goal or inner node
                 for prev_node in node.possible_prev_nodes:
-                    structure.internal_outcomes.append(str(prev_node.action._effects))
+                    structure.internal_outcomes.append('\n'.join(str(e) for e in prev_node.action._effects))
                     structure.outcomes_from.append(self._nodeid(prev_node))
                     structure.outcomes_to.append(self._nodeid(node))
                     _add_nodes_recursively(prev_node, structure)
@@ -78,7 +78,7 @@ class Introspector(object):
             if len(node.parent_nodes_path_list) > 0:
                 next_node = node.parent_nodes_path_list[-1]
 
-                structure.internal_outcomes.append(str(node.action._effects))
+                structure.internal_outcomes.append('\n'.join(str(e) for e in node.action._effects))
                 structure.outcomes_from.append(self._nodeid(node))
                 structure.outcomes_to.append(self._nodeid(next_node))
 #
@@ -136,4 +136,4 @@ class Introspector(object):
         else:
             node_action_name = str(node.action) #.__class__.__name__
             node_action_cost = node.action.cost()
-        return node_action_name + ' %X' % id(node) + ' n' + str(node_action_cost) + ' t' + str(node.cost())
+        return node_action_name + ' %X' % id(node) + ' h' + str(node.heuristic_distance) + ' n' + str(node_action_cost) + ' t' + str(node.cost())
