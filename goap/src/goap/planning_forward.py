@@ -21,7 +21,7 @@ class Node(object):
         return '<Node worldstate=%s valid_actions=%s>' % (self.worldstate, self.valid_actionbag)
 
     def _check_and_add_actions(self, actionbag):
-        for action in actionbag.get():
+        for action in actionbag._actions:
             if action.is_valid(self.worldstate):
                 print 'valid action: ', action
                 self.valid_actionbag.add(action)

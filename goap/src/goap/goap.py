@@ -46,6 +46,19 @@ class WorldState(object):
         """Returns a dictionary with not the conditions themselves but their state_names as keys."""
         return {cond._state_name: val for cond, val in self._condition_values.viewitems()}
 
+    def get_unsatisfied_conditions(self, worldstate):
+        """Return a set of conditions that are in both the given and this
+        worldstate but have unequal values. By now this is symmetric."""
+        unsatisfied_conditions = set()
+        common_conditions_set = self._condition_values.viewkeys() & worldstate._condition_values.viewkeys()
+        for condition in common_conditions_set:
+            if self.get_condition_value(condition) != worldstate.get_condition_value(condition):
+                print 'state different: ', condition
+                unsatisfied_conditions.add(condition)
+            else:
+                print 'state equal: ', condition
+
+        return unsatisfied_conditions
 
 
 ## known as state
@@ -281,34 +294,17 @@ class ActionBag(object):
     def add(self, action):
         self._actions.add(action)
 
-    def get(self):
-        return self._actions
-
-    def get_sorted(self): # TODO: sort by costs
-#         self._actions.sort(cmp=None, key=None, reverse=False)
-        return self.get()
-
     # regressive planning
     def generate_matching_actions(self, start_worldstate, node_worldstate):
         """Generator providing actions that might help between start_worldstate and current node_worldstate."""
-        # TODO
         # TODO: This solution does not work when there are actions that produce an empty common_states_set and no valid action is considered - is this actually possible? the start_worldstate should contain every condition ever needed by an action or condition
 
         # check which conditions differ between start and current node
-                    # TODO: rename to common_conditions_set and key to condition
-        common_conditions = start_worldstate._condition_values.viewkeys() & node_worldstate._condition_values.viewkeys()
-        unsatisfied_conditions = set()
-        for condition in common_conditions:
-            if start_worldstate.get_condition_value(condition) != node_worldstate.get_condition_value(condition):
-                print 'state different: ', condition
-                unsatisfied_conditions.add(condition)
-            else:
-                print 'state equal: ', condition
-        # TODO: move that to worldstate
+        unsatisfied_conditions_set = node_worldstate.get_unsatisfied_conditions(start_worldstate)
 
         # check which action might satisfy those conditions
         for action in self._actions:
-            if action.has_satisfying_effects(node_worldstate, unsatisfied_conditions):
+            if action.has_satisfying_effects(node_worldstate, unsatisfied_conditions_set):
                 print 'helping action: ', action
                 yield action
             else:
