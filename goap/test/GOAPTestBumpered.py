@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     'robot.pose', '/odom', Odometry, '/pose/pose'))
     Condition.add(ROSTopicCondition(
                     'robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'))
-    Condition.add(MemoryCondition(runner.memory, 'reminded_myself'))
+    Condition.add(MemoryCondition(runner.memory, 'memory.reminded_myself'))
 
     runner.memory.set_value('memory.reminded_myself', 333)
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     runner.actionbag.add(ResetBumperAction())
     runner.actionbag.add(MoveBaseAction())
-    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'reminded_myself', 333, 555))
+    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 
     goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0)),

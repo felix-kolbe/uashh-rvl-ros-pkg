@@ -8,7 +8,7 @@ from goap import *
 
 
 class Memory(object):
-    """ATM a class to store condition data not representing real world."""
+    """Store condition data not representing (or mocking) real world."""
 
     def __init__(self):
         self._memory = {}
@@ -16,15 +16,15 @@ class Memory(object):
     def __repr__(self):
         return '<Memory %s>' % self._memory
 
-    def declare_variable(self, name, value=None):
-        if name not in self._memory:
-            self._memory[name] = value
+    def declare_state(self, state_name, value=None):
+        if state_name not in self._memory:
+            self._memory[state_name] = value
 
-    def get_value(self, name):
-        return self._memory[name]
+    def get_value(self, state_name):
+        return self._memory[state_name]
 
-    def set_value(self, name, value):
-        self._memory[name] = value
+    def set_value(self, state_name, value):
+        self._memory[state_name] = value
 
 #    def matches(self, memory):
 #        for (k, v) in self._memory.iteritems():
@@ -33,51 +33,46 @@ class Memory(object):
 #        return True
 
 
-#     def __call__(self):
-#         return self
-# NOTE: cleanup Memory singleton
-# Memory = Memory()
-
-
 #class MemoryAction(Action):
 #
 #    def __init(self, memory, preconditions, effects):
 #        Action.__init__(self, preconditions, effects)
 #        self._memory = memory
 
+
 class MemorySetVarAction(Action):
 
-    def __init__(self, memory, variable, new_value, preconditions, effects):
+    def __init__(self, memory, state_name, new_value, preconditions, effects):
         Action.__init__(self, preconditions, effects)
         self._memory = memory
-        self._variable = variable
+        self._state_name = state_name
         self._new_value = new_value
-        self._state_name = 'memory.' + self._variable
-        self._memory.declare_variable(self._variable)
+
+        self._memory.declare_state(self._state_name)
 
     def __repr__(self):
-        return '<%s var=%s new=%s>' % (self.__class__.__name__, self._variable, self._new_value)
+        return '<%s state_name=%s new=%s>' % (self.__class__.__name__, self._state_name, self._new_value)
 
     def run(self, next_worldstate):
-        self._memory.set_value(self._variable, self._new_value)
+        self._memory.set_value(self._state_name, self._new_value)
 
 
 class MemoryChangeVarAction(MemorySetVarAction):
 
-    def __init__(self, memory, variable, old_value, new_value):
-        MemorySetVarAction.__init__(self, memory, variable, new_value,
-                [Precondition(Condition.get('memory.' + variable), old_value)],
-                [Effect(Condition.get('memory.' + variable), new_value)]
+    def __init__(self, memory, state_name, old_value, new_value):
+        MemorySetVarAction.__init__(self, memory, state_name, new_value,
+                [Precondition(Condition.get(state_name), old_value)],
+                [Effect(Condition.get(state_name), new_value)]
             )
         self._old_value = old_value
 
     def __str__(self):
         return '%s:%s=%s->%s' % (self.__class__.__name__,
-                    self._variable, self._old_value, self._new_value)
+                    self._state_name, self._old_value, self._new_value)
 
     def __repr__(self):
-        return '<%s var=%s old=%s new=%s>' % (self.__class__.__name__,
-                    self._variable, self._old_value, self._new_value)
+        return '<%s state_name=%s old=%s new=%s>' % (self.__class__.__name__,
+                    self._state_name, self._old_value, self._new_value)
 
 
 class MemoryIncrementerAction(Action):
@@ -89,29 +84,29 @@ class MemoryIncrementerAction(Action):
             return True
 
 
-    def __init__(self, memory, variable, increment=1):
-        self._condition = Condition.get('memory.' + variable)
+    def __init__(self, memory, state_name, increment=1):
+        self._condition = Condition.get(state_name)
         Action.__init__(self, [], [MemoryIncrementerAction.IncEffect(self._condition)])
         self._memory = memory
-        self._variable = variable
+        self._state_name = state_name
         self._increment = increment
-        self._memory.declare_variable(self._variable)
+        self._memory.declare_state(self._state_name)
 
     def __str__(self):
         return '%s:%s%s=%s' % (self.__class__.__name__,
-                               self._variable,
+                               self._state_name,
                                ('-' if self._increment < 0 else '+'),
                                abs(self._increment))
 
     def __repr__(self):
-        return '<%s var=%s incr=%s>' % (self.__class__.__name__,
-                            self._variable, self._increment)
+        return '<%s state_name=%s incr=%s>' % (self.__class__.__name__,
+                            self._state_name, self._increment)
 
     def cost(self):
         return abs(2 - float(1) / abs(self._increment))
 
     def run(self, next_worldstate):
-        self._memory.set_value(self._variable, self._memory.get_value(self._variable) + self._increment)
+        self._memory.set_value(self._state_name, self._memory.get_value(self._state_name) + self._increment)
 
     def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
@@ -124,13 +119,12 @@ class MemoryIncrementerAction(Action):
 
 
 class MemoryCondition(Condition):
-    """The state_name of a memory condition is memory.<variable>"""
 
-    def __init__(self, memory, variable):
-        Condition.__init__(self, 'memory.' + variable)
+    def __init__(self, memory, state_name):
+        Condition.__init__(self, state_name)
         self._memory = memory
-        self._variable = variable
-        memory.declare_variable(self._state_name)
+        self._state_name = state_name
+        memory.declare_state(self._state_name)
 
     def get_value(self):
         return self._memory.get_value(self._state_name)

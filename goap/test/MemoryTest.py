@@ -18,21 +18,21 @@ class MemoryTest(unittest.TestCase):
 
     def test_unset_var(self):
         name = 'declared_only'
-        self.mem.declare_variable(name)
-        self.assertIsNone(self.mem.get_value(name), 'Undeclared variable should give None?')
+        self.mem.declare_state(name)
+        self.assertIsNone(self.mem.get_value(name), 'Undeclared state should give None?')
 
     def test_consistency(self):
         name = "var_GHJKKL"
         value = "val_ASDFGHJ"
-        self.mem.declare_variable(name, value)
-        self.assertEqual(self.mem.get_value(name), value, 'Memory variable not consistent')
+        self.mem.declare_state(name, value)
+        self.assertEqual(self.mem.get_value(name), value, 'Memory state not consistent')
 
     def test_declare_none_after_value(self):
         name = "var_GHJKKL"
         value = "val_ASDFGHJ"
-        self.mem.declare_variable(name, value)
-        self.mem.declare_variable(name)
-        self.assertEqual(self.mem.get_value(name), value, 'Memory variable not consistent')
+        self.mem.declare_state(name, value)
+        self.mem.declare_state(name)
+        self.assertEqual(self.mem.get_value(name), value, 'Memory state not consistent')
 
 
 @unittest.skip('removed feature')
@@ -51,14 +51,14 @@ class MemoryTestSingletons(unittest.TestCase):
     def test_Memory_singleton_values(self):
         name = "var_GHJKKL"
         value = "val_ASDFGHJ"
-        self.mem1.declare_variable(name, value)
+        self.mem1.declare_state(name, value)
         self.assertEqual(self.mem2.get_value(name), value, 'Nonempty Memory objects not equal')
 
     def test_Memory_singleton_itm_equ(self):
-        self.mem1.declare_variable('a', '1')
-        self.mem1.declare_variable('b', '2')
-        self.mem2.declare_variable('c', '3')
-        self.mem2.declare_variable('d', '4')
+        self.mem1.declare_state('a', '1')
+        self.mem1.declare_state('b', '2')
+        self.mem2.declare_state('c', '3')
+        self.mem2.declare_state('d', '4')
         self.assertDictEqual(self.mem1._memory, self.mem2._memory, 'Nonempty Memory objects not equal')
 
 
