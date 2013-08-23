@@ -140,6 +140,8 @@ class WaitForMsgState(smach.State):
         '''Default simplest execute(), see class description.'''
         msg = self.waitForMsg()
         if msg is not None:
+            if msg == 'preempted':
+                return 'preempted'
             # call callback if there is one
             if self.msg_cb is not None:
                 cb_result = self.msg_cb(msg, ud)
