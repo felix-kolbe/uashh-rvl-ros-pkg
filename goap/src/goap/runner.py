@@ -7,14 +7,16 @@ Created on Aug 5, 2013
 import thread
 
 import rospy
-from smach import Sequence, State
+from smach import Sequence, State, StateMachine
 
 import tf
 
+from std_msgs.msg import String
 from geometry_msgs.msg import Pose, Point, Quaternion
 
-from uashh_smach.util import WaitForMsgState, CheckSmachEnabledState, SleepState, execute_smach_container
-from uashh_smach.platform.move_base import WaitForGoalState
+from uashh_smach.util import WaitForMsgState, CheckSmachEnabledState, TopicToOutcomeState, SleepState, execute_smach_container
+from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach
+from uashh_smach.manipulator.look_around import get_lookaround_smach
 
 from goap import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
@@ -127,6 +129,8 @@ class MoveState(State):
 
 
 def test():
+    rospy.init_node('runner_test')
+
     sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                   connector_outcome='succeeded')
 
@@ -150,6 +154,58 @@ def test():
 
 
 
+def test_tasker():
+
+    rospy.init_node('tasker_test')
+
+    wfg = WaitForGoalState() # We don't want multiple subscribers so we need one WaitForGoal state
+
+    sq_move_to_new_goal = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                                   connector_outcome='succeeded')
+    with sq_move_to_new_goal:
+        Sequence.add('WAIT_FOR_GOAL', wfg)
+        Sequence.add('MOVE_GOAP', MoveState())
+
+
+    sm_tasker = StateMachine(outcomes=['field_error'])
+
+    with sm_tasker:
+        ## add all tasks to be available
+        StateMachine.add('MOVE_TO_NEW_GOAL', sq_move_to_new_goal,
+                         transitions={'succeeded':'TASK_RECEIVER',
+                                      'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
+        StateMachine.add('LOOK_AROUND', get_lookaround_smach(glimpse=True),
+                         transitions={'succeeded':'TASK_RECEIVER',
+                                      'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
+        StateMachine.add('MOVE_TO_RANDOM_GOAL', get_random_goal_smach(),
+                         transitions={'succeeded':'TASK_RECEIVER',
+                                      'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
+        ## now the task receiver is created and automatically links to
+        ##   all task states added above
+        task_states_labels = sm_tasker.get_children().keys()
+        task_receiver_transitions = {'timeout':'TASK_RECEIVER',
+                                     'undefined_outcome':'TASK_RECEIVER'}
+        task_receiver_transitions.update({l:l for l in task_states_labels})
+        StateMachine.add('TASK_RECEIVER',
+                         TopicToOutcomeState(task_states_labels, '/task', String, '/data', timeout=200),
+                         task_receiver_transitions)
+
+    sm_tasker.set_initial_state(['TASK_RECEIVER'])
+
+    print 'tasker starting, available tasks:', ', '.join(task_states_labels)
+    rospy.Publisher('/task/available_tasks', String, latch=True).publish(', '.join(task_states_labels))
+
+    execute_smach_container(sm_tasker, enable_introspection=True)
+
+
+
 if __name__ == '__main__':
 
-    test()
+    #test()
+    test_tasker()
