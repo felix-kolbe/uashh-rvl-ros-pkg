@@ -10,13 +10,13 @@ import rospy
 import tf
 import math
 
-import smach
-import smach_ros
-from smach import State, StateMachine, Sequence
-from smach_ros import ServiceState, SimpleActionState
+from smach import Sequence
+from smach_ros import SimpleActionState
 
 from geometry_msgs.msg import Pose, Quaternion
-from arm_navigation_msgs.msg import MoveArmGoal, MoveArmAction, MotionPlanRequest, PositionConstraint, OrientationConstraint, JointConstraint, SimplePoseConstraint
+from arm_navigation_msgs.msg import (MoveArmGoal, MoveArmAction,
+         MotionPlanRequest, PositionConstraint, OrientationConstraint,
+         JointConstraint, SimplePoseConstraint)
 
 import move_joints
 
@@ -65,9 +65,11 @@ def add_goal_constraint_to_move_arm_goal(pose_constraint, move_arm_goal):
 
 
 class MoveArmVerticalGrabState(SimpleActionState):
-    """State that moves the gripper to a vertical position regarding x, y, z, phi and parent_frame from userdata."""
+    """State that moves the gripper to a vertical position regarding
+    x, y, z, phi and parent_frame from userdata."""
     def __init__(self):
-        SimpleActionState.__init__(self, 'move_SchunkArm', MoveArmAction, input_keys=['x','y','z','phi','parent_frame'])
+        SimpleActionState.__init__(self, 'move_SchunkArm', MoveArmAction,
+                                   input_keys=['x', 'y', 'z', 'phi', 'parent_frame'])
     
     def execute(self, userdata):
         self._goal.planner_service_name = "ompl_planning/plan_kinematic_path"
@@ -109,7 +111,6 @@ def get_vertical_drop_sequence(x, y, z, phi, grab_width, parent_frame):
     return _get_vertical_sequence('drop', x, y, z, phi, grab_width, parent_frame)
     
 def _get_vertical_sequence(task, x, y, z, phi, grab_width, parent_frame):
-    
     sq = Sequence(
     outcomes = ['succeeded','aborted','preempted'],
     connector_outcome = 'succeeded')
@@ -123,41 +124,41 @@ def _get_vertical_sequence(task, x, y, z, phi, grab_width, parent_frame):
     
     with sq:
         Sequence.add('MOVE_ARM_GRAB_PRE',
-                       MoveArmVerticalGrabState(),
-                        remapping={ 'x':'x',
-                                    'y':'y',
-                                    'z':'z_pre',
-                                    'phi':'phi',
-                                    'parent_frame':'parent_frame'}
-                      )
+                     MoveArmVerticalGrabState(),
+                     remapping={'x':'x',
+                                'y':'y',
+                                'z':'z_pre',
+                                'phi':'phi',
+                                'parent_frame':'parent_frame'}
+                     )
         
         if(task == 'grab'):
             Sequence.add('MOVE_GRIPPER_OPEN', 
-                           move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
+                         move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
             
         Sequence.add('MOVE_ARM_GRAB',
-                       MoveArmVerticalGrabState(),
-                        remapping={ 'x':'x',
-                                    'y':'y',
-                                    'z':'z',
-                                    'phi':'phi',
-                                    'parent_frame':'parent_frame'}
-                      )
+                     MoveArmVerticalGrabState(),
+                     remapping={'x':'x',
+                                'y':'y',
+                                'z':'z',
+                                'phi':'phi',
+                                'parent_frame':'parent_frame'}
+                     )
         
         if(task == 'grab'):
-            Sequence.add('MOVE_GRIPPER_CLOSE', 
-                           move_joints.get_move_gripper_state(grab_width))
+            Sequence.add('MOVE_GRIPPER_CLOSE',
+                         move_joints.get_move_gripper_state(grab_width))
         else:
             Sequence.add('MOVE_GRIPPER_OPEN',
-                           move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
-            
+                         move_joints.get_move_gripper_state(GRIPPER_MAX_WIDTH))
+
         Sequence.add('MOVE_ARM_GRAB_POST',
-                       MoveArmVerticalGrabState(),
-                        remapping={ 'x':'x',
-                                    'y':'y',
-                                    'z':'z_pre',
-                                    'phi':'phi',
-                                    'parent_frame':'parent_frame'}
-                      )
+                     MoveArmVerticalGrabState(),
+                     remapping={'x':'x',
+                                'y':'y',
+                                'z':'z_pre',
+                                'phi':'phi',
+                                'parent_frame':'parent_frame'}
+                     )
 
     return sq

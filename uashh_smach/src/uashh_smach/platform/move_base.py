@@ -11,9 +11,8 @@ import math
 import random
 
 import smach
-import smach_ros
 from smach import State, Sequence
-from smach_ros import ServiceState, SimpleActionState
+from smach_ros import SimpleActionState
 
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion 
@@ -36,14 +35,14 @@ def get_move_base_in_odom_state(x, y):
     return get_move_base_state("/odom", x, y)
 
 def get_move_base_random_state():
-    '''Note: each state returned is only randomized once at initialization and then static.'''
+    """Note: each state returned is only randomized once at initialization and then static."""
     radius = random.random()*2 + 1  # 1-3 m
     yaw = random.random()*util.TAU*3/4 - util.TAU*3/8    # +-135 deg
     
     return get_move_base_state("/base_link", math.cos(yaw)*radius, math.sin(yaw)*radius, yaw)
     
 def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
-    '''Return a MoveBaseGoal state which goal parameters are given via parameters at setup time.'''
+    """Return a MoveBaseGoal state which goal parameters are given via parameters at setup time."""
     print "new goal: ", x, y, yaw
     base_goal = MoveBaseGoal()
     base_goal.target_pose.header.frame_id = frame
