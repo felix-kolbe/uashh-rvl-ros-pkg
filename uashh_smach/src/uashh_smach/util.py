@@ -14,6 +14,7 @@ import threading
 import smach
 import smach_ros
 
+import rostopic
 
 
 TAU = math.pi*2   # one tau is one turn. simply as that.
@@ -163,6 +164,34 @@ class CheckSmachEnabledState(WaitForMsgState):
 
     def _msg_cb(self, msg, ud):
         return msg is not None and msg.data
+
+
+
+class TopicToOutcomeState(smach.State):
+    """This state returns the message value for given topic/field received from
+    the wrapped WaitForMsgState as its outcome.
+    """
+    def __init__(self, outcomes, topic, topic_class, field, **kwargs):
+        outcomes = outcomes[:] # copy needed to extend list
+        outcomes.extend(['timeout', 'field_error', 'undefined_outcome'])
+        smach.State.__init__(self, outcomes)
+        self._wait_for_msg_state = WaitForMsgState(topic, topic_class, output_keys=outcomes, **kwargs)
+        self._outcomes = outcomes
+        self._msgeval = rostopic.msgevalgen(field)
+
+    def execute(self, ud):
+        msg = self._wait_for_msg_state.waitForMsg()
+        if msg is not None:
+            field = self._msgeval(msg)
+            print "got field as: ", field
+            if field is None:
+                return 'field_error'
+            elif field in self._outcomes:
+                return field
+            else:
+                return 'undefined_outcome'
+        else:
+            return 'timeout'
 
 
 
