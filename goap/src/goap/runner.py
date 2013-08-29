@@ -1,8 +1,11 @@
+#!/usr/bin/env python
+
 '''
 Created on Aug 5, 2013
 
 @author: felix
 '''
+import roslib; roslib.load_manifest('goap')
 
 import thread
 
@@ -17,6 +20,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from uashh_smach.util import WaitForMsgState, CheckSmachEnabledState, TopicToOutcomeState, SleepState, execute_smach_container
 from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach
 from uashh_smach.manipulator.look_around import get_lookaround_smach
+from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
 
 from common import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
@@ -185,6 +189,21 @@ def test_tasker():
                          transitions={'succeeded':'TASK_RECEIVER',
                                       'aborted':'TASK_RECEIVER',
                                       'preempted':'TASK_RECEIVER'})
+
+        StateMachine.add('MOVE_TO_NEW_GOAL_AND_RETURN', task_go_and_return.get_go_and_return_smach(),
+                         transitions={'succeeded':'TASK_RECEIVER',
+                                      'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
+        StateMachine.add('PATROL_TO_NEW_GOAL', task_patrol.get_patrol_smach(),
+                         transitions={'succeeded':'TASK_RECEIVER',
+                                      'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
+        StateMachine.add('MOVE_AROUND', task_move_around.get_move_around_smach(),
+                         transitions={'aborted':'TASK_RECEIVER',
+                                      'preempted':'TASK_RECEIVER'})
+
 
         ## now the task receiver is created and automatically links to
         ##   all task states added above
