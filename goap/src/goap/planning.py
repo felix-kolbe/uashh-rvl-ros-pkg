@@ -8,7 +8,7 @@ Regressive A* planner with Node, Planner and PlanExecutor
 
 from collections import deque
 
-from goap import ActionBag, WorldState
+from common import ActionBag, WorldState
 
 
 

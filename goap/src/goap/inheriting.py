@@ -4,7 +4,7 @@ Created on Jul 25, 2013
 @author: felix
 '''
 
-from goap import *
+from common import *
 
 
 class Memory(object):

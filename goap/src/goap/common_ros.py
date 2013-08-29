@@ -18,7 +18,7 @@ from move_base_msgs.msg import MoveBaseGoal
 import move_base_msgs.msg # for MoveBaseAction, preventing name duplicates
 from geometry_msgs.msg import Pose, Point, Quaternion
 
-from goap import Action, Condition, Precondition, Effect, VariableEffect
+from common import Action, Condition, Precondition, Effect, VariableEffect
 
 
 ## ROS specific class specializations

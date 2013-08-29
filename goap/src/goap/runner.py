@@ -18,7 +18,7 @@ from uashh_smach.util import WaitForMsgState, CheckSmachEnabledState, TopicToOut
 from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 
-from goap import ActionBag, Condition, Goal, Precondition, WorldState
+from common import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
 from planning import Planner, PlanExecutor
 from introspection import Introspector

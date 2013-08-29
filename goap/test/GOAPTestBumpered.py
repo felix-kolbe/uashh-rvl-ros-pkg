@@ -12,7 +12,7 @@ from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from metralabs_msgs.msg import ScitosG5Bumper
 
-from goap.goap import *
+from goap.common import *
 from goap.inheriting import *
 from goap.common_ros import *
 from goap.planning import Planner, PlanExecutor
