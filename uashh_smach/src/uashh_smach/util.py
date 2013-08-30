@@ -196,6 +196,31 @@ class TopicToOutcomeState(smach.State):
 
 
 
+class UserDataToOutcomeState(smach.State):
+    """This state returns the userdata value for given input_key as its outcome.
+    """
+    def __init__(self, outcomes, input_key, ud_to_value_func):
+        outcomes = outcomes[:] # copy needed to extend list
+        outcomes.extend(['field_error', 'undefined_outcome'])
+        smach.State.__init__(self, outcomes, [input_key])
+        self._outcomes = outcomes
+        self._input_key = input_key
+#        self._field = 'task_id'
+        self._ud_to_value_func = ud_to_value_func
+
+    def execute(self, ud):
+        field = self._ud_to_value_func(ud[self._input_key])
+#        field = ud[self._input_key][self._field]
+        print "got field as: ", field
+        if field is None:
+            return 'field_error'
+        elif field in self._outcomes:
+            return field
+        else:
+            return 'undefined_outcome'
+
+
+
 class TransformListenerSingleton(object):
     """To avoid running multiple transform listeners, this singleton class
     provides one transform listener that is initialised and retrieved via
