@@ -8,15 +8,19 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/goap</url>
+
   <depend package="rospy"/>
   <depend package="tf"/>
+  <depend package="actionlib"/>
+
+  <depend package="smach_ros"/>
+  <depend package="uashh_smach"/>
+
   <depend package="std_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="move_base_msgs"/>
   <depend package="metralabs_msgs"/>
-  <depend package="actionlib"/>
-  <depend package="smach_ros"/>
-  <depend package="uashh_smach"/>
+  <depend package="task_msgs"/>
 
 </package>
 
