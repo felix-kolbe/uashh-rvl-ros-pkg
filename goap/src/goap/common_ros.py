@@ -74,7 +74,8 @@ class MoveBaseAction(Action):
 
     def __init__(self):
         self._condition = Condition.get('robot.pose')
-        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), False)],
+        super(MoveBaseAction, self).__init__(
+                        [Precondition(Condition.get('robot.bumpered'), False)],
                         [MoveBaseAction.PositionVarEffect(self._condition)])
 
         self._client = actionlib.SimpleActionClient('move_base', move_base_msgs.msg.MoveBaseAction)

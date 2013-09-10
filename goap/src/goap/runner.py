@@ -119,6 +119,20 @@ class Runner(object):
             PlanExecutor().execute(start_node)
 
 
+    def path_to_smach(self, start_node):
+        sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted'])
+
+        node = start_node
+        with sm:
+            while len(node.parent_nodes_path_list) > 0: # skipping the goal node at the end
+                StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
+                                      node.action, ['succeeded'])
+
+                node = node.parent_nodes_path_list[-1]
+
+        return sm
+
+
 
 #class MoveBaseGoalListener(object):
 #

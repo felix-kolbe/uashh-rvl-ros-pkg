@@ -65,7 +65,7 @@ class MoveBaseState(SimpleActionState):
     frame: defaults to /map
     """
     def __init__(self, frame='/map'):
-        SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self.__goal_cb)
+        super(MoveBaseState, self).__init__('move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self.__goal_cb)
         self.frame = frame
     
     def __goal_cb(self, userdata, old_goal):

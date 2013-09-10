@@ -12,6 +12,8 @@ from geometry_msgs.msg import Pose
 from nav_msgs.msg import Odometry
 from metralabs_msgs.msg import ScitosG5Bumper
 
+from uashh_smach.util import execute_smach_container
+
 from goap.common import *
 from goap.inheriting import *
 from goap.common_ros import *
@@ -61,17 +63,25 @@ if __name__ == "__main__":
     runner.actionbag.add(ResetBumperAction())
 #    runner.actionbag.add(MoveBaseAction())
     runner.actionbag.add(MoveBaseStateAction())
-    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
+    #runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 
-    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0)),
-                 Precondition(Condition.get('memory.reminded_myself'), 555)])
+    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])#,
+                #Precondition(Condition.get('memory.reminded_myself'), 555)])
 
     start_node = runner.update_and_plan(goal, introspection=True)
 
     print 'start_node: ', start_node
 
+    if start_node is not None:
+        sm = runner.path_to_smach(start_node)
+        execute_smach_container(sm, enable_introspection=True)
+
+
     rospy.sleep(10)
+
+    quit
+
 
     if start_node is None:
         print 'No plan found! Check your ROS graph!'

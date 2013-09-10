@@ -4,6 +4,8 @@ Created on Sep 9, 2013
 @author: felix
 '''
 
+import tf
+
 from smach import UserData
 
 from common import *
@@ -79,9 +81,11 @@ class MoveBaseStateAction(MoveBaseAction, MoveBaseState):
 
     def run(self, next_worldstate):
         goal_pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
+        (yaw, pitch, roll) = tf.transformations.euler_from_quaternion(goal_pose.orientation)
+        print 'yaw, pitch, roll =', yaw, pitch, roll
         ud = UserData()
         ud.x = goal_pose.position.x
         ud.y = goal_pose.position.y
-        ud.quat = goal_pose.orientation
+        ud.yaw = yaw
         self.execute(ud)
 
