@@ -4,8 +4,13 @@ Created on Sep 9, 2013
 @author: felix
 '''
 
+from smach import UserData
+
 from common import *
 
+from common_ros import MoveBaseAction
+
+from uashh_smach.platform.move_base import MoveBaseState
 
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_state
@@ -62,4 +67,21 @@ class FoldArm(SmachStateAction):
                                   [Precondition(Condition.get('arm_can_move'), True)],
                                   [LookAroundAction.Effect('arm_folded', True)])
 
+
+class MoveBaseStateAction(MoveBaseAction, MoveBaseState):
+
+    def __init__(self):
+        super(MoveBaseStateAction, self).__init__()
+
+
+    def check_freeform_context(self):   ## mock
+        return True
+
+    def run(self, next_worldstate):
+        goal_pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
+        ud = UserData()
+        ud.x = goal_pose.position.x
+        ud.y = goal_pose.position.y
+        ud.quat = goal_pose.orientation
+        self.execute(ud)
 
