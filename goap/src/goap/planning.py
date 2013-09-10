@@ -60,7 +60,7 @@ class Node(object):
             self.heuristic_distance = len(unsatisfied_conditions_set)
         else:
             goal_worldstate = self.parent_nodes_path_list[0].worldstate
-            print "ID GOAL_WORLDSTATE = ", id(goal_worldstate)
+            print "ID GOAL_WORLDSTATE = %x" % id(goal_worldstate)
             self.heuristic_distance = 0
 
             for condition in unsatisfied_conditions_set:

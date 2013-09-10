@@ -180,6 +180,7 @@ class VariableEffect(object):
         return '<%s cond=%s>' % (self.__class__.__name__, self._condition._state_name)
 
 #     def apply_to(self, worldstate):
+        # TODO: remove me as I'm only for forward planning?
 #         worldstate.memory.set_value(self._condition, self._new_value)
 
     def matches_condition(self, worldstate):
@@ -217,7 +218,6 @@ class Action(object):
         self._preconditions = preconditions
         self._effects = effects
 
-
     def __str__(self):
         return self.__class__.__name__
 
@@ -233,7 +233,8 @@ class Action(object):
         """
         raise NotImplementedError
 
-    ## following two for forward planner
+
+    ## following for executor
 
     def is_valid(self, worldstate):
         """Return whether this action is applicable from the given worldstate on, i.e. all preconditions are."""
@@ -242,11 +243,16 @@ class Action(object):
                 return False
         return True
 
+
+    ## following was for forward planner
+
     def apply_effects(self, worldstate):
+        # TODO: remove me as I'm only for forward planning?
         for effect in self._effects:
             effect.apply_to(worldstate)
 
-    ## following two for backward planner
+
+    ## following for backward planner
 
     def check_freeform_context(self):
         """Override to add context checks required to run this action that cannot be satisfied by the planner."""

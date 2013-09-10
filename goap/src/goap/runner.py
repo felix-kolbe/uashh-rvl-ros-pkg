@@ -93,6 +93,8 @@ class Runner(object):
         # update to reality
         Condition.initialize_worldstate(self.worldstate)
 
+        print "worldstate initialized/updated to: ", self.worldstate
+
         if introspection:
             self._setup_introspection()
 

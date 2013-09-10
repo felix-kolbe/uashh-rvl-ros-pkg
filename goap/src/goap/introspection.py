@@ -112,18 +112,18 @@ class Introspector(object):
         self._publisher_status.publish(status)
 
 #        for node in start_node.parent_nodes_path_list:
-#            print node
+#            print "publishing update for node: ", node
 #            self.publish_update(node)
 
     def publish_update(self, node):
         nodeid = self._nodeid(node)
         status = SmachContainerStatus()
         status.header.stamp = rospy.Time.now()
-        status.path = self._pathprefix
+        status.path = self._pathprefix + '/' + nodeid
         status.initial_states = []
-        status.active_states = [nodeid]
+        status.active_states = []
         start_states_dict = node.worldstate.get_state_name_dict()
-        start_states_dict['WORLDSTATE'] = str(node)
+        start_states_dict['WORLDSTATE'] = str(node) # id?
         status.local_data = pickle.dumps(start_states_dict, 2)
         status.info = 'node state'
         self._publisher_status.publish(status)
