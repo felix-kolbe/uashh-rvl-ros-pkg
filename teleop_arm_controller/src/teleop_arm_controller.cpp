@@ -213,10 +213,11 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "teleop_arm_controller");
   ros::NodeHandle nh;
+  ros::NodeHandle nh_schunk("schunk");
 
-  pubMoveVel = nh.advertise<metralabs_msgs::IDAndFloat>("/move_velocity", 1, false);
-  ros::Subscriber subJointStates = nh.subscribe("/schunk/pre_mimic_joint_states", 1, jointStatesCallback);
-  ros::Subscriber subArmTwist = nh.subscribe("/moveArmVelocity", 1, moveVelocityCallback);
+  pubMoveVel = nh_schunk.advertise<metralabs_msgs::IDAndFloat>("move_velocity", 1, false);
+  ros::Subscriber subJointStates = nh_schunk.subscribe("pre_mimic_joint_states", 1, jointStatesCallback);
+  ros::Subscriber subArmTwist = nh_schunk.subscribe("moveArmVelocity", 1, moveVelocityCallback);
 
   ROS_INFO("Teleop arm controller online.");
   while (ros::ok())
