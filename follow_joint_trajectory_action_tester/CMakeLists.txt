@@ -29,5 +29,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
+rosbuild_add_boost_directories()
+
 rosbuild_add_executable(follow_joint_trajectory_action_tester src/follow_joint_trajectory_action_tester.cpp)
 rosbuild_add_compile_flags(follow_joint_trajectory_action_tester -std=c++0x)
+
+rosbuild_link_boost(follow_joint_trajectory_action_tester thread)

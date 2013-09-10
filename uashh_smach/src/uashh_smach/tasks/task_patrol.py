@@ -67,7 +67,8 @@ def get_patrol_smach():
                                 'y':'goal_position_1_y',
                                 'yaw':'goal_position_1_yaw'
                                 },
-                     transitions={'aborted':'MOVE_BASE_RETURN'}
+#                     transitions={'aborted':'MOVE_BASE_RETURN'}
+                     transitions={'aborted':'PAUSE_AT_GOAL_1'}
                      )
 
         # wait
@@ -79,7 +80,8 @@ def get_patrol_smach():
                                 'y':'goal_position_2_y',
                                 'yaw':'goal_position_2_yaw'
                                 },
-                     transitions={'aborted':'MOVE_BASE_RETURN'}
+#                     transitions={'aborted':'MOVE_BASE_RETURN'}
+                     transitions={'aborted':'PAUSE_AT_GOAL_2'}
                      )
 
         # wait
