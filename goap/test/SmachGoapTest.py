@@ -12,7 +12,7 @@ from goap.common import Condition, Precondition, Goal
 from goap.runner import Runner
 from goap.inheriting import MemoryCondition
 
-from goap.smach_bridge import LookAroundAction, MoveBaseStateAction
+from goap.smach_bridge import LookAroundAction
 
 from goap import config_scitos
 
@@ -55,10 +55,6 @@ class Test(unittest.TestCase):
     def testStateAction(self):
         Condition.add(MemoryCondition(self.runner.memory, 'robot.pose'))
         Condition.add(MemoryCondition(self.runner.memory, 'robot.bumpered'))
-
-        stateaction = MoveBaseStateAction()
-
-        print stateaction
 
 
 

@@ -8,17 +8,15 @@ import roslib; roslib.load_manifest('goap')
 import rospy
 
 import rostopic
-import actionlib
 import tf
 
+from uashh_smach.platform.move_base import MoveBaseState, pose_orientation_to_quaternion
 
 from std_msgs.msg import Empty
 
-from move_base_msgs.msg import MoveBaseGoal
-import move_base_msgs.msg # for MoveBaseAction, preventing name duplicates
-from geometry_msgs.msg import Pose, Point, Quaternion
-
 from common import Action, Condition, Precondition, Effect, VariableEffect
+
+from smach_bridge import SmachStateAction
 
 
 ## ROS specific class specializations
@@ -64,7 +62,7 @@ class ResetBumperAction(Action):
 
 # TODO: implement denial of trivial actions (not changing conditions)
 
-class MoveBaseAction(Action):
+class MoveBaseAction(SmachStateAction):
 
     class PositionVarEffect(VariableEffect):
         def __init__(self, condition):
@@ -74,11 +72,9 @@ class MoveBaseAction(Action):
 
     def __init__(self):
         self._condition = Condition.get('robot.pose')
-        super(MoveBaseAction, self).__init__(
+        SmachStateAction.__init__(self, MoveBaseState(),
                         [Precondition(Condition.get('robot.bumpered'), False)],
                         [MoveBaseAction.PositionVarEffect(self._condition)])
-
-        self._client = actionlib.SimpleActionClient('move_base', move_base_msgs.msg.MoveBaseAction)
 
     def check_freeform_context(self):
         # TODO: cache freeform context?
@@ -90,13 +86,9 @@ class MoveBaseAction(Action):
         precond_value = start_worldstate.get_condition_value(Condition.get('robot.pose'))
         Precondition(effect._condition, precond_value, None).apply(worldstate)
 
-    def run(self, next_worldstate):
-        goal = MoveBaseGoal()
-        goal.target_pose.header.frame_id = "/map"
-        goal.target_pose.header.stamp = rospy.Time.now()
-
-        goal.target_pose.pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
-
-        print 'Waiting for base to reach goal...'
-        goalstatus = self._client.send_goal_and_wait(goal)
-        print 'Goal status: ', goalstatus
+    def translate_worldstate_to_userdata(self, next_worldstate, userdata):
+        goal_pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
+        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(pose_orientation_to_quaternion(goal_pose.orientation))
+        userdata.x = goal_pose.position.x
+        userdata.y = goal_pose.position.y
+        userdata.yaw = yaw

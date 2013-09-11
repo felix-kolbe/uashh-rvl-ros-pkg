@@ -125,10 +125,13 @@ class Runner(object):
         node = start_node
         with sm:
             while len(node.parent_nodes_path_list) > 0: # skipping the goal node at the end
+                next_node = node.parent_nodes_path_list[-1]
                 StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                      node.action, ['succeeded'])
+                                      node.action.state, ['succeeded'],
+                                      remapping=node.action.get_remapping())
+                node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
 
-                node = node.parent_nodes_path_list[-1]
+                node = next_node
 
         return sm
 
