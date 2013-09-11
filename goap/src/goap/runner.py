@@ -11,14 +11,14 @@ import thread
 
 import rospy
 import rostopic
+import tf
 
 from smach import Sequence, State, StateMachine
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
-import tf
-
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose, Point, Quaternion
+from task_msgs.msg import TaskActivationAction, TaskActivationGoal
 
 from uashh_smach.util import CheckSmachEnabledState, TopicToOutcomeState, UserDataToOutcomeState, SleepState, execute_smach_container
 from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach
@@ -29,9 +29,7 @@ from common import ActionBag, Condition, Goal, Precondition, WorldState
 from inheriting import Memory
 from planning import Planner, PlanExecutor
 from introspection import Introspector
-
-
-from task_msgs.msg import TaskActivationAction, TaskActivationGoal
+from smach_bridge import SmachStateAction, GOAPActionWrapperState
 
 import config_scitos
 
@@ -126,10 +124,17 @@ class Runner(object):
         with sm:
             while len(node.parent_nodes_path_list) > 0: # skipping the goal node at the end
                 next_node = node.parent_nodes_path_list[-1]
-                StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                      node.action.state, ['succeeded'],
-                                      remapping=node.action.get_remapping())
-                node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
+
+                if isinstance(node.action, SmachStateAction):
+                    StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
+                                          node.action.state,
+                                          ['succeeded'],
+                                          remapping=node.action.get_remapping())
+                    node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
+                else:
+                    StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
+                                          GOAPActionWrapperState(node.action, next_node.worldstate),
+                                          ['succeeded'])
 
                 node = next_node
 

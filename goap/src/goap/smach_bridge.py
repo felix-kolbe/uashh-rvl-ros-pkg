@@ -6,6 +6,8 @@ Created on Sep 9, 2013
 
 import tf
 
+from smach import State
+
 from common import *
 
 from uashh_smach.manipulator.look_around import get_lookaround_smach
@@ -13,6 +15,21 @@ from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_st
 
 
 ARM_FOLDED_POSE = [0, 0.52, 052, -1.57, 0]
+
+
+class GOAPActionWrapperState(State):
+    """Used (by the planner) to add GOAP actions to a SMACH state machine"""
+    def __init__(self, action, next_worldstate):
+        State.__init__(self, outcomes=['succeeded', 'aborted'])
+        self.action = action
+        self._next_worldstate = next_worldstate
+
+    def execute(self, userdata):
+        if not self.action.check_freeform_context():
+            print 'Action\'s freeform context isn\'t valid! Aborting wrapping state for %s', self.action
+            return 'aborted'
+        self.action.run(self._next_worldstate)
+        return 'succeeded'
 
 
 class SmachStateAction(Action):

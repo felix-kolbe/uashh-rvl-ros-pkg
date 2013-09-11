@@ -62,11 +62,11 @@ if __name__ == "__main__":
 
     runner.actionbag.add(ResetBumperAction())
     runner.actionbag.add(MoveBaseAction())
-    #runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
+    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 
-    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0))])#,
-                #Precondition(Condition.get('memory.reminded_myself'), 555)])
+    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0)),
+                 Precondition(Condition.get('memory.reminded_myself'), 555)])
 
     start_node = runner.update_and_plan(goal, introspection=True)
 
