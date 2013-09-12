@@ -62,9 +62,9 @@ class Runner(object):
         self.actionbag = ActionBag()
 
         if config_module is not None:
-            for condition in config_module.get_all_conditions():
+            for condition in config_module.get_all_conditions(self.memory):
                 Condition.add(condition)
-            for action in config_module.get_all_actions():
+            for action in config_module.get_all_actions(self.memory):
                 self.actionbag.add(action)
 
         self.planner = Planner(self.actionbag, self.worldstate, None)
@@ -91,6 +91,7 @@ class Runner(object):
         # update to reality
         Condition.initialize_worldstate(self.worldstate)
 
+        # TODO: print warning if conditions are still None
         print "worldstate initialized/updated to: ", self.worldstate
 
         if introspection:
@@ -139,6 +140,14 @@ class Runner(object):
                 node = next_node
 
         return sm
+
+    def print_worldstate_loop(self):
+        rate = rospy.Rate(0.5)
+        while not rospy.is_shutdown():
+            # update to reality
+            Condition.initialize_worldstate(self.worldstate)
+            print self.worldstate
+            rate.sleep()
 
 
 

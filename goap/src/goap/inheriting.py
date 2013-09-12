@@ -17,6 +17,8 @@ class Memory(object):
         return '<Memory %s>' % self._memory
 
     def declare_state(self, state_name, value=None):
+        """Note that the value will not be stored if the state_name already
+        exists, even if the current value is None."""
         if state_name not in self._memory:
             self._memory[state_name] = value
 

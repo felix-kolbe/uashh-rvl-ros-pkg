@@ -7,11 +7,7 @@ import unittest
 
 import tf
 
-from std_msgs.msg import Bool
-from geometry_msgs.msg import Pose
-from nav_msgs.msg import Odometry
-from metralabs_msgs.msg import ScitosG5Bumper
-from geometry_msgs.msg import Point, Quaternion
+from geometry_msgs.msg import Pose, Point, Quaternion
 
 from uashh_smach.util import execute_smach_container
 
@@ -21,11 +17,7 @@ from goap.common_ros import *
 from goap.planning import Planner, PlanExecutor
 from goap.runner import Runner
 
-
-class Test(unittest.TestCase):
-
-    def test(self):
-        pass
+import goap.config_scitos as config_scitos
 
 
 
@@ -38,20 +30,15 @@ def calc_Pose(x, y, yaw):
 
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-#    unittest.main()
-
 
     rospy.init_node('goap_bumper_test', log_level=rospy.INFO)
 
-    runner = Runner()
+    runner = Runner(config_scitos)
 
-    Condition.add(ROSTopicCondition(
-                    'robot.pose', '/odom', Odometry, '/pose/pose'))
-    Condition.add(ROSTopicCondition(
-                    'robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'))
     Condition.add(MemoryCondition(runner.memory, 'memory.reminded_myself'))
 
+    runner.memory.set_value('awareness', 0)
+    runner.memory.set_value('arm_can_move', True)
     runner.memory.set_value('memory.reminded_myself', 333)
 
     print 'Waiting to let conditions represent reality...'
@@ -60,8 +47,6 @@ if __name__ == "__main__":
     Condition.initialize_worldstate(runner.worldstate)
     print 'worldstate now is: ', runner.worldstate
 
-    runner.actionbag.add(ResetBumperAction())
-    runner.actionbag.add(MoveBaseAction())
     runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 

@@ -16,7 +16,12 @@ class WorldState(object):
             self._condition_values.update(worldstate._condition_values)
 
     def __str__(self):
-        return '%s %s' % (self.__class__.__name__, self._condition_values)
+        return '%s {%s}' % (self.__class__.__name__,
+                            ', '.join(['%s: %s' % (c, v) for (c, v)
+                                       in self._condition_values.iteritems()]
+                                      # anti-multiline workaround for message types:
+                                      ).replace('\n  ', ' ').replace(' \n', ' ').replace('\n', ' ')
+                            )
 
     def __repr__(self):
         return '<WorldState %X values=%s>' % (id(self), self._condition_values)
@@ -49,14 +54,17 @@ class WorldState(object):
     def get_unsatisfied_conditions(self, worldstate):
         """Return a set of conditions that are in both the given and this
         worldstate but have unequal values. By now this is symmetric."""
-        unsatisfied_conditions = set()
-        common_conditions_set = self._condition_values.viewkeys() & worldstate._condition_values.viewkeys()
-        for condition in common_conditions_set:
-            if self.get_condition_value(condition) != worldstate.get_condition_value(condition):
-                print 'state different: ', condition
-                unsatisfied_conditions.add(condition)
-            else:
-                print 'state equal: ', condition
+        common_conditions_set = (self._condition_values.viewkeys() &
+                                 worldstate._condition_values.viewkeys())
+        unsatisfied_conditions = {condition
+                                  for condition in common_conditions_set
+                                  if (self.get_condition_value(condition) !=
+                                      worldstate.get_condition_value(condition))
+                                  }
+
+#        print 'states different: ', ', '.join([str(c) for c in unsatisfied_conditions])
+        for condition in unsatisfied_conditions:
+            print 'state different: ', condition
 
         return unsatisfied_conditions
 
@@ -269,7 +277,7 @@ class Action(object):
 
     def apply_preconditions(self, worldstate, start_worldstate):
         """
-        worldstate: worldstate to apply this action's preconditions to
+        worldstate: the worldstate to apply this action's preconditions to
         start_worldstate: needed to let actions optimize their variable precondition parameters
         """
         # TODO: make required derivation of variable actions more obvious and fail-safe

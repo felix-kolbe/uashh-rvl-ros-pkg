@@ -15,9 +15,12 @@ from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_st
 
 
 ARM_FOLDED_POSE = [0, 0.52, 052, -1.57, 0]
+ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
+ARM_FOLDED_POSE_NAMED = dict(zip(ARM_FOLDED_POSE_NAMES, ARM_FOLDED_POSE))
 
 
 class GOAPActionWrapperState(State):
+    # FIXME: actually wraps nodes, not actions
     """Used (by the planner) to add GOAP actions to a SMACH state machine"""
     def __init__(self, action, next_worldstate):
         State.__init__(self, outcomes=['succeeded', 'aborted'])
@@ -44,7 +47,8 @@ class SmachStateAction(Action):
         return {}
 
     def translate_worldstate_to_userdata(self, next_worldstate, userdata):
-        raise NotImplementedError
+        """Overload to make worldstate data available to the state."""
+        pass
 
 
 
@@ -52,6 +56,7 @@ class SmachStateAction(Action):
 class LookAroundAction(SmachStateAction):
 
     class IncEffect(VariableEffect):
+        # TODO: simplify such var effects to a global ReachableVariableEffect
         def __init__(self, condition):
             VariableEffect.__init__(self, condition)
         def _is_reachable(self, value):
@@ -66,17 +71,20 @@ class LookAroundAction(SmachStateAction):
     def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
         assert effect.__class__ == LookAroundAction.IncEffect
+        # increase awareness by one
         precond_value = worldstate.get_condition_value(effect._condition) - 1
         Precondition(effect._condition, precond_value, None).apply(worldstate)
 
 
 
 
-class FoldArm(SmachStateAction):
+class FoldArmAction(SmachStateAction):
 
     def __init__(self):
-        SmachStateAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE)
-                                  [Precondition(Condition.get('arm_can_move'), True)],
-                                  [LookAroundAction.Effect('arm_folded', True)])
+        SmachStateAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE),
+                                  [Precondition(Condition.get('arm_can_move'), True),
+                                   # TODO: why is this anti-effect-precondition needed?
+                                   Precondition(Condition.get('robot.arm_folded'), False)],
+                                  [Effect(Condition.get('robot.arm_folded'), True)])
 
 

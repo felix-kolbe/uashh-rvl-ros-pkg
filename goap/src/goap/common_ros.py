@@ -23,12 +23,16 @@ from smach_bridge import SmachStateAction
 
 class ROSTopicCondition(Condition):
 
-    def __init__(self, state_name, topic, topic_class, field):
+    def __init__(self, state_name, topic, topic_class, field=None, msgeval=None):
         Condition.__init__(self, state_name)
         self._topic = topic
         self._field = field
         self._subscriber = rospy.Subscriber(topic, topic_class, self._callback)
-        self._msgeval = rostopic.msgevalgen(field)
+        if msgeval is None:
+            assert field is not None
+            msgeval = rostopic.msgevalgen(field)
+        self._msgeval = msgeval
+
         self._value = None
 
     def __repr__(self):
@@ -73,7 +77,8 @@ class MoveBaseAction(SmachStateAction):
     def __init__(self):
         self._condition = Condition.get('robot.pose')
         SmachStateAction.__init__(self, MoveBaseState(),
-                        [Precondition(Condition.get('robot.bumpered'), False)],
+                        [Precondition(Condition.get('robot.bumpered'), False),
+                         Precondition(Condition.get('robot.arm_folded'), True)],
                         [MoveBaseAction.PositionVarEffect(self._condition)])
 
     def check_freeform_context(self):
