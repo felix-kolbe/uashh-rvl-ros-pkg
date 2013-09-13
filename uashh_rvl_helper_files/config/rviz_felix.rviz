@@ -1,14 +1,15 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 84
+    Help Height: 85
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /move_base costs1
-        - /move_base costs1/Status1
+        - /OctoMapPointCloud1
+        - /OctoMapPointCloud1/Autocompute Value Bounds1
+        - /CM/occupied cells1
       Splitter Ratio: 0.636585
-    Tree Height: 839
+    Tree Height: 906
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -17,7 +18,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679
+    Splitter Ratio: 0.468401
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -27,7 +28,9 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: LaserScan rear
+  - Class: rviz/Help
+    Name: Help
 Visualization Manager:
   Class: ""
   Displays:
@@ -53,7 +56,45 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
+        /CameraMount:
+          Value: true
+        /ConnBase:
+          Value: true
+        /ConnLong1:
+          Value: true
+        /ConnLong2:
+          Value: true
+        /DH1:
+          Value: true
+        /DH2:
+          Value: true
+        /DH3:
+          Value: true
+        /DH4:
+          Value: true
+        /DH5:
+          Value: true
+        /DH6:
+          Value: true
+        /GFneg:
+          Value: true
+        /GFpos:
+          Value: true
+        /Gripper:
+          Value: true
+        /Kinect:
+          Value: true
         /base_link:
+          Value: true
+        /kinect1_depth_frame:
+          Value: true
+        /kinect1_depth_optical_frame:
+          Value: true
+        /kinect1_link:
+          Value: true
+        /kinect1_rgb_frame:
+          Value: true
+        /kinect1_rgb_optical_frame:
           Value: true
         /laser:
           Value: true
@@ -75,6 +116,32 @@ Visualization Manager:
         /map:
           /odom:
             /base_link:
+              /DH1:
+                /ConnBase:
+                  {}
+                /DH2:
+                  /DH3:
+                    /ConnLong1:
+                      {}
+                    /DH4:
+                      /ConnLong2:
+                        {}
+                      /DH5:
+                        /DH6:
+                          /Gripper:
+                            /CameraMount:
+                              /Kinect:
+                                {}
+                              /kinect1_link:
+                                /kinect1_depth_frame:
+                                  /kinect1_depth_optical_frame:
+                                    {}
+                                /kinect1_rgb_frame:
+                                  /kinect1_rgb_optical_frame:
+                                    {}
+                            /GFneg:
+                              /GFpos:
+                                {}
               /laser:
                 {}
               /laser_rear:
@@ -89,9 +156,78 @@ Visualization Manager:
       Enabled: true
       Links:
         All Links Enabled: true
+        CameraMount:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ConnBase:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ConnLong1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ConnLong2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        DH1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        DH2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        DH3:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        DH4:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        DH5:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        DH6:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
+        GFneg:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        GFpos:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Gripper:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        Kinect:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
         Link Tree Style: Links in Alphabetic Order
         base_link:
           Alpha: 1
@@ -216,7 +352,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.05
       Shape: Arrow
-      Topic: /move_base_task/goal
+      Topic: /move_base/current_goal
       Value: true
     - Alpha: 1
       Axes Length: 1
@@ -249,7 +385,7 @@ Visualization Manager:
       Topic: ""
       Value: true
       Visual Enabled: true
-    - Alpha: 0.7
+    - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -263,9 +399,9 @@ Visualization Manager:
       Decay Time: 0
       Enabled: true
       Max Color: 255; 255; 255
-      Max Intensity: 225
+      Max Intensity: 215
       Min Color: 0; 0; 0
-      Min Intensity: 14
+      Min Intensity: 0
       Name: move_base costs
       Position Transformer: XYZ
       Queue Size: 1
@@ -294,13 +430,13 @@ Visualization Manager:
       Topic: /move_base/TrajectoryPlannerROS/local_plan
       Value: true
     - Alpha: 1
-      Buffer Length: 1
+      Buffer Length: 5
       Class: rviz/Path
       Color: 255; 0; 0
-      Enabled: true
+      Enabled: false
       Name: Navfn Path
       Topic: /move_base/NavfnROS/plan
-      Value: true
+      Value: false
     - Alpha: 0.5
       Class: rviz/GridCells
       Color: 114; 70; 56
@@ -311,17 +447,17 @@ Visualization Manager:
     - Alpha: 0.5
       Class: rviz/GridCells
       Color: 165; 121; 66
-      Enabled: true
+      Enabled: false
       Name: glob_cm/inflated_obstacles
       Topic: /move_base/global_costmap/inflated_obstacles
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/Polygon
       Color: 11; 161; 255
-      Enabled: true
+      Enabled: false
       Name: glob_cm/footprint
       Topic: /move_base/global_costmap/robot_footprint
-      Value: true
+      Value: false
     - Alpha: 0.5
       Class: rviz/GridCells
       Color: 225; 24; 20
@@ -378,6 +514,28 @@ Visualization Manager:
       Name: navfn_cm/footprint
       Topic: /move_base/NavfnROS/NavfnROS_costmap/robot_footprint
       Value: false
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /kinect1/rgb/image_color
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image Kinect RGB
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: compressed
+      Value: false
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /kinect1/depth_registered/image
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image Kinect Depth
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: compressedDepth
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -406,34 +564,12 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Class: rviz/Image
-      Enabled: false
-      Image Topic: /kinect1/rgb/image_color
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image Kinect RGB
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: compressed
-      Value: false
-    - Class: rviz/Image
-      Enabled: false
-      Image Topic: /kinect1/depth_registered/image
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image Kinect Depth
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: compressedDepth
-      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 4.075
-        Min Value: -0.075
-        Value: true
+        Max Value: 3
+        Min Value: 0
+        Value: false
       Axis: Z
       Channel Name: x
       Class: rviz/PointCloud2
@@ -464,7 +600,23 @@ Visualization Manager:
       Override Color: false
       Point Size: 0.05
       Render Operation: Boxes
-      Topic: /collision_map_occ
+      Topic: /collision_map_out
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /free_cells
+      Name: CM/free cells
+      Namespaces:
+        {}
+      Queue Size: 1
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /occupied_cells
+      Name: CM/occupied cells
+      Namespaces:
+        {}
+      Queue Size: 1
       Value: false
     - Arrow Length: 0.3
       Class: rviz/PoseArray
@@ -474,29 +626,13 @@ Visualization Manager:
       Topic: /particlecloud
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /visualization_marker
-      Name: Marker
+      Name: Visualization Marker
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /free_cells
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: visualization_marker
-      Name: Marker
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -512,45 +648,47 @@ Visualization Manager:
     - Class: rviz/SetInitialPose
       Topic: /initialpose
     - Class: rviz/SetGoal
-      Topic: /move_base_simple/goal
+      Topic: /move_base_task/goal
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 5.29828
+      Class: rviz/Orbit
+      Distance: 6.99622
       Focal Point:
-        X: -0.1656
-        Y: -0.607959
-        Z: -1.30598e-06
+        X: 1.89665
+        Y: -1.27292
+        Z: 1.76396
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.1998
+      Pitch: 0.9398
       Target Frame: <Fixed Frame>
-      Value: XYOrbit (rviz)
-      Yaw: 2.8404
+      Value: Orbit (rviz)
+      Yaw: 4.65856
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
   Height: 1153
+  Help:
+    collapsed: false
   Hide Left Dock: false
-  Hide Right Dock: false
+  Hide Right Dock: true
   Image Kinect Depth:
     collapsed: false
   Image Kinect RGB:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000019c000003dcfc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006a00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000043000003dc000000e900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000351000000ce0000001600fffffffb000000240049006d0061006700650020004b0069006e0065006300740020004400650070007400680000000351000000ce0000001600ffffff000000010000010f000003dcfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000043000003dc000000b600fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d00650100000000000007800000026600fffffffb0000000800540069006d00650100000000000004500000000000000000000004c9000003dc00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000002000000000000015200000420fc0200000005fb000000240049006d0061006700650020004b0069006e0065006300740020004400650070007400680000000043000000160000001600fffffffb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000043000000170000001600fffffffb000000100044006900730070006c006100790073010000004300000420000000e900fffffffb0000000800540069006d006500000002370000007f0000003b00fffffffb0000000800480065006c0070000000028e000001350000007c00ffffff000000010000011100000420fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000043000000850000006a00fffffffb0000000a0056006900650077007300000000ce00000180000000b600fffffffb0000001200530065006c0065006300740069006f006e00000002540000020f0000006a00ffffff000006280000042000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
-    collapsed: false
+    collapsed: true
   Time:
     collapsed: false
   Tool Properties:
-    collapsed: false
+    collapsed: true
   Views:
-    collapsed: false
+    collapsed: true
   Width: 1920
   X: 0
   Y: 25
