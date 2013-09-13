@@ -260,13 +260,13 @@ def get_current_robot_position(frame='/map'):
 
 
 
-def execute_smach_container(smach_container, enable_introspection=False):
+def execute_smach_container(smach_container, enable_introspection=False, name='/SM_ROOT'):
     if not rospy.core.is_initialized():
         rospy.init_node('smach')
 
     if enable_introspection:
         # Create and start the introspection server
-        sis = smach_ros.IntrospectionServer('smach_executor', smach_container, '/SM_ROOT')
+        sis = smach_ros.IntrospectionServer('smach_executor', smach_container, name)
         sis.start()
 
     outcome = smach_container.execute()
@@ -276,3 +276,5 @@ def execute_smach_container(smach_container, enable_introspection=False):
         # Wait for ctrl-c to stop the application
         rospy.spin()
         sis.stop()
+
+    return outcome
