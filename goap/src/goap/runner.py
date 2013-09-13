@@ -88,11 +88,14 @@ class Runner(object):
 
 
     def update_and_plan(self, goal, tries=1, introspection=False):
+        """introspection: introspect GOAP planning via smach.introspection"""
         # update to reality
         Condition.initialize_worldstate(self.worldstate)
 
-        # TODO: print warning if conditions are still None
         print "worldstate initialized/updated to: ", self.worldstate
+        for (condition, value) in self.worldstate._condition_values.iteritems():
+            if value is None:
+                rospy.logwarn("Condition still 'None': %s", condition)
 
         if introspection:
             self._setup_introspection()
@@ -113,9 +116,19 @@ class Runner(object):
 
 
     def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
+        """introspection: introspect GOAP planning and SMACH execution via
+        smach.introspection"""
         start_node = self.update_and_plan(goal, tries, introspection)
         if start_node is not None:
-            PlanExecutor().execute(start_node)
+            #PlanExecutor().execute(start_node)
+            return self.execute_as_smach(start_node, introspection)
+        else:
+            return 'aborted'
+
+    def execute_as_smach(self, start_node, introspection=False):
+        sm = self.path_to_smach(start_node)
+        outcome = execute_smach_container(sm, introspection, name='/SM_GENERATED')
+        return outcome
 
 
     def path_to_smach(self, start_node):
@@ -159,19 +172,19 @@ class Runner(object):
 class MoveState(State):
 
     def __init__(self):
-        State.__init__(self, outcomes=['succeeded', 'aborted'], input_keys=['x', 'y', 'yaw'], output_keys=['user_input'])
-
+        State.__init__(self, outcomes=['succeeded', 'aborted', 'preempted'], input_keys=['x', 'y', 'yaw'], output_keys=['user_input'])
         self.runner = Runner(config_scitos)
-
 
     def execute(self, ud):
         pose = calc_Pose(ud.x, ud.y, ud.yaw)
         goal = Goal([Precondition(Condition.get('robot.pose'), pose)])
-        self.runner.update_and_plan_and_execute(goal, introspection=True)
-        return 'succeeded'
+        # avoid duplicate introspection:
+        outcome = self.runner.update_and_plan_and_execute(goal, introspection=False)
+        print "GOAP returns: %s" % outcome
+        return outcome
 
 
-def test():
+def test_runner():
     rospy.init_node('runner_test')
 
     sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
@@ -218,7 +231,9 @@ def test_tasker():
         ## add all tasks to be available
         StateMachine.add('MOVE_TO_NEW_GOAL', sq_move_to_new_goal)
 
-        StateMachine.add('LOOK_AROUND', get_lookaround_smach(glimpse=True))
+        StateMachine.add('LOOK_AROUND', get_lookaround_smach())
+
+        StateMachine.add('GLIMPSE_AROUND', get_lookaround_smach(glimpse=True))
 
         StateMachine.add('MOVE_TO_RANDOM_GOAL', get_random_goal_smach())
 
@@ -227,6 +242,8 @@ def test_tasker():
         StateMachine.add('PATROL_TO_NEW_GOAL', task_patrol.get_patrol_smach())
 
         StateMachine.add('MOVE_AROUND', task_move_around.get_move_around_smach())
+
+        StateMachine.add('SLEEP_FIVE_SEC', SleepState(5))
 
 
         ## now the task receiver is created and automatically links to
@@ -243,7 +260,7 @@ def test_tasker():
 
     sm_tasker.set_initial_state(['TASK_RECEIVER'])
 
-    print 'tasker starting, available tasks:', ', '.join(task_states_labels)
+    rospy.loginfo('tasker starting, available tasks: %s', ', '.join(task_states_labels))
     pub = rospy.Publisher('/task/available_tasks', String, latch=True)
     thread.start_new_thread(rostopic.publish_message, (pub, String, [', '.join(task_states_labels)], 1))
 
@@ -269,5 +286,5 @@ def test_tasker():
 
 if __name__ == '__main__':
 
-    #test()
+    #test_runner()
     test_tasker()

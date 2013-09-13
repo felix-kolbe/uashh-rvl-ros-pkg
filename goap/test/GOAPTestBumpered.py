@@ -9,8 +9,6 @@ import tf
 
 from geometry_msgs.msg import Pose, Point, Quaternion
 
-from uashh_smach.util import execute_smach_container
-
 from goap.common import *
 from goap.inheriting import *
 from goap.common_ros import *
@@ -58,8 +56,7 @@ if __name__ == "__main__":
     print 'start_node: ', start_node
 
     if start_node is not None:
-        sm = runner.path_to_smach(start_node)
-        execute_smach_container(sm, enable_introspection=True)
+        runner.execute_as_smach(start_node, introspection=True)
 
 
     rospy.sleep(10)
