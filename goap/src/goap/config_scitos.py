@@ -17,12 +17,12 @@ from smach_bridge import LookAroundAction, FoldArmAction, ARM_FOLDED_POSE_NAMED
 def get_all_conditions(memory):
     return [
         # memory
-        MemoryCondition(memory, 'arm_can_move'),
+        MemoryCondition(memory, 'arm_can_move', True),
         MemoryCondition(memory, 'awareness'),
         # ROS
         ROSTopicCondition('robot.pose', '/odom', Odometry, '/pose/pose'),
         ROSTopicCondition('robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'),
-        ROSTopicCondition('robot.arm_folded', '/schunk/joint_states', JointState,
+        ROSTopicCondition('robot.arm_folded', '/joint_states', JointState,
                           msgeval=lambda msg: all([abs(ARM_FOLDED_POSE_NAMED[name] -
                                                         position) < 0.01
                                                    for (name, position)

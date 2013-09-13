@@ -14,7 +14,7 @@ from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_state
 
 
-ARM_FOLDED_POSE = [0, 0.52, 052, -1.57, 0]
+ARM_FOLDED_POSE = [0, 0.52, 0.52, -1.57, 0]
 ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
 ARM_FOLDED_POSE_NAMED = dict(zip(ARM_FOLDED_POSE_NAMES, ARM_FOLDED_POSE))
 

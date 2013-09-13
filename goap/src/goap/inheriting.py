@@ -122,11 +122,13 @@ class MemoryIncrementerAction(Action):
 
 class MemoryCondition(Condition):
 
-    def __init__(self, memory, state_name):
+    def __init__(self, memory, state_name, value=None):
         Condition.__init__(self, state_name)
         self._memory = memory
         self._state_name = state_name
         memory.declare_state(self._state_name)
+        if value is not None:
+            memory.set_value(self._state_name, value)
 
     def get_value(self):
         return self._memory.get_value(self._state_name)
