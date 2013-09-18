@@ -235,6 +235,8 @@ def test_tasker():
 
         StateMachine.add('GLIMPSE_AROUND', get_lookaround_smach(glimpse=True))
 
+        StateMachine.add('MOVE_ARM_CRAZY', get_lookaround_smach(crazy=True))
+
         StateMachine.add('MOVE_TO_RANDOM_GOAL', get_random_goal_smach())
 
         StateMachine.add('MOVE_TO_NEW_GOAL_AND_RETURN', task_go_and_return.get_go_and_return_smach())
