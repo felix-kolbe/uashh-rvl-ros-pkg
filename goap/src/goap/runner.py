@@ -164,24 +164,40 @@ class Runner(object):
 
 
 
-#class MoveBaseGoalListener(object):
-#
-#    def __init__(self, topic, msg_type):
-#        self._subscriber = rospy.Subscriber(topic, msg_type, self._callback, queue_size=1)
 
-class MoveState(State):
 
-    def __init__(self):
-        State.__init__(self, outcomes=['succeeded', 'aborted', 'preempted'], input_keys=['x', 'y', 'yaw'], output_keys=['user_input'])
-        self.runner = Runner(config_scitos)
+class GOAPPlannerState(State):
+    """Subclass this state to activate the GOAP planner from within a
+    surrounding state machine, e.g. the ActionServerWrapper"
+    """
+    def __init__(self, config_module=None, outcomes=['succeeded', 'aborted', 'preempted'], **kwargs):
+        State.__init__(self, outcomes=outcomes, **kwargs)
+        self.runner = Runner(config_module)
 
-    def execute(self, ud):
-        pose = calc_Pose(ud.x, ud.y, ud.yaw)
-        goal = Goal([Precondition(Condition.get('robot.pose'), pose)])
+    def execute(self, userdata):
+        goal = self.build_goal(userdata)
         # avoid duplicate introspection:
         outcome = self.runner.update_and_plan_and_execute(goal, introspection=False)
-        print "GOAP returns: %s" % outcome
+        print "Generated GOAP sub state machine returns: %s" % outcome
         return outcome
+
+    def build_goal(self, userdata):
+        """Build and return a goap.Goal the planner should accomplish"""
+        raise NotImplementedError
+
+
+class MoveBaseGOAPState(GOAPPlannerState):
+    """Use GOAP to move the robot to a pose in userdata"""
+    def __init__(self):
+        GOAPPlannerState.__init__(self, config_scitos,
+                                  input_keys=['x', 'y', 'yaw'],
+                                  output_keys=['user_input'])
+
+    def build_goal(self, userdata):
+        pose = calc_Pose(userdata.x, userdata.y, userdata.yaw)
+        return Goal([Precondition(Condition.get('robot.pose'), pose)])
+
+
 
 
 def test_runner():
@@ -202,9 +218,8 @@ def test_runner():
         Sequence.add('WAIT_FOR_GOAL', wfg,
                      transitions={'aborted':'SLEEP'})
 
-        Sequence.add('MOVE_GOAP', MoveState(),
+        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState(),
                      transitions={'succeeded':'SLEEP'})
-
 
     execute_smach_container(sq, enable_introspection=True)
 
@@ -220,7 +235,7 @@ def test_tasker():
                                    connector_outcome='succeeded')
     with sq_move_to_new_goal:
         Sequence.add('WAIT_FOR_GOAL', wfg)
-        Sequence.add('MOVE_GOAP', MoveState())
+        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState())
 
 
     sm_tasker = StateMachine(outcomes=['succeeded', 'aborted', 'preempted',
