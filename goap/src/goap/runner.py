@@ -147,7 +147,7 @@ class Runner(object):
                     node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
                 else:
                     StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                          GOAPActionWrapperState(node.action, next_node.worldstate),
+                                          GOAPActionWrapperState(node),
                                           ['succeeded'])
 
                 node = next_node

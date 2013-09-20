@@ -20,18 +20,18 @@ ARM_FOLDED_POSE_NAMED = dict(zip(ARM_FOLDED_POSE_NAMES, ARM_FOLDED_POSE))
 
 
 class GOAPActionWrapperState(State):
-    # FIXME: actually wraps nodes, not actions
-    """Used (by the planner) to add GOAP actions to a SMACH state machine"""
-    def __init__(self, action, next_worldstate):
+    """Used (by the runner) to add GOAP nodes (aka instances of GOAP actions)
+    to a SMACH state machine"""
+    def __init__(self, node):
         State.__init__(self, outcomes=['succeeded', 'aborted'])
-        self.action = action
-        self._next_worldstate = next_worldstate
+        self.node = node
 
     def execute(self, userdata):
-        if not self.action.check_freeform_context():
-            print 'Action\'s freeform context isn\'t valid! Aborting wrapping state for %s', self.action
+        if not self.node.action.check_freeform_context():
+            print 'Action\'s freeform context isn\'t valid! Aborting wrapping state for %s', self.node.action
             return 'aborted'
-        self.action.run(self._next_worldstate)
+        next_node = self.node.parent_nodes_path_list[-1]
+        self.node.action.run(next_node.worldstate)
         return 'succeeded'
 
 
