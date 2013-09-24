@@ -12,7 +12,6 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from goap.common import *
 from goap.inheriting import *
 from goap.common_ros import *
-from goap.planning import Planner, PlanExecutor
 from goap.runner import Runner
 
 import goap.config_scitos as config_scitos
@@ -55,19 +54,11 @@ if __name__ == "__main__":
 
     print 'start_node: ', start_node
 
-    if start_node is not None:
-        runner.execute_as_smach(start_node, introspection=True)
-
-
-    rospy.sleep(10)
-
-    quit
-
 
     if start_node is None:
         print 'No plan found! Check your ROS graph!'
     else:
-        PlanExecutor().execute(start_node)
+        runner.execute_as_smach(start_node, introspection=True)
 
 
     rospy.sleep(20)

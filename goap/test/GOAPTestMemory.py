@@ -7,7 +7,7 @@ import unittest
 
 from goap.common import *
 from goap.inheriting import *
-from goap.planning import Planner, Node, PlanExecutor
+from goap.planning import Node
 from goap.runner import Runner
 
 
@@ -60,7 +60,7 @@ class TestSimple(unittest.TestCase):
         self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Start Node should have three actions')
         self.assertEqual(len(start_node.parent_nodes_path_list), 3, 'Start Node should have three parent nodes')
 
-        PlanExecutor().execute(start_node)
+        self.runner.execute_as_smach(start_node, introspection=True)
 
         import rospy
         rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
