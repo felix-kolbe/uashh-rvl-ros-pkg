@@ -198,7 +198,7 @@ class PlanExecutor(object):
         print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)
 
         if len(start_node.parent_nodes_path_list) == 0:
-            print 'Sole node left must be goal node, stopping executor'
+            print "Sole node left must be goal node, stopping executor"
             return
 
         current_worldstate = start_node.worldstate
@@ -213,10 +213,10 @@ class PlanExecutor(object):
 #                print 'Memory is now: ', action._memory   # only for mem actions
                 self.execute(next_node)
             else:
-                print 'Action\'s freeform context isn\'t valid! Aborting executor'
-                print 'Action: ', action
+                print "Action's freeform context isn't valid! Aborting executor"
+                print ' action: ', action
         else:
-            print 'Action isn\'t valid to workspace! Aborting executor'
-            print 'Action: ', action
-            print 'worldstate: ', current_worldstate
+            print "Action isn't valid to worldstate! Aborting executor"
+            print ' action: ', action
+            print ' worldstate: ', current_worldstate
 
