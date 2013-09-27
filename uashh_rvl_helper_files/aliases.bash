@@ -17,6 +17,7 @@ alias scitos_all='mla & telearm & ps3 & rs & lsr & kinect & cm & diag_agg & jms 
 # hardware nodes
 alias ml='roslaunch metralabs_ros scitos_haw_only_start.launch'
 alias mla='roslaunch metralabs_ros scitos_haw_schunk_start.launch'
+alias mla_mock='jsp'
 alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch & roslaunch '$HELPER_PKG' laserscan_filter.launch'
 alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw_mounted_on_extension_downright.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
@@ -53,7 +54,7 @@ alias sgui='roslaunch schunk_gui start_gui_haw.launch'
 alias rviz='rosrun rviz rviz'
 alias rviz_felix='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.rviz'
 alias rviz_felix_vcg='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.vcg'
-alias rosgui='rosrun rqt_gui rqt_gui'
+alias smach_viewer='rosrun smach_viewer smach_viewer.py'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
 alias camera_small_compressed='rosrun image_view image_view image:=/camera/image_small compressed'
@@ -68,6 +69,7 @@ alias ps3_teleop='roslaunch teleop_ps3 teleop_ps3.launch'
 alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/groovy/lib/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
 alias ps3='ps3_bt & ps3_teleop & telearm'
 
+alias jsp='roslaunch metralabs_ros scitos_haw_schunk_mockup.launch'
 
 # small tools
 alias rka='rosnode list; read -p "Kill all nodes? Press Enter or ^C:"; rosnode kill -a; rosnode list'
