@@ -6,6 +6,8 @@ These movements via move_arm.py are provided as a state machine container.
 
 import roslib; roslib.load_manifest('uashh_smach')
 
+import random
+
 import rospy
 import smach
 
@@ -18,10 +20,13 @@ import uashh_smach.util as util
 ### calculating lookaround poses
 
 #POSE_DEFAULT = [0, 0, 0, 0, 0]
-POSE_DEFAULT = [0, 0.5, 0.5, -2, 0]
+POSE_DEFAULT = [0, 0.5, 0.5, -2, 0] # TODO doc me
+
+
 POSES_LOOKAROUND_TURNINGS = [3, 2, 1, 0, -1, -2] # used for first joint
 POSES_LOOKAROUND_TURNINGS_GLIMPSE = [1, -1]
 POSES_LOOKAROUND_TURNINGS_CRAZY = [3, 2, 1, -1, -2]
+random.shuffle(POSES_LOOKAROUND_TURNINGS_CRAZY)
 
 POSES_LOOKAROUND = [ # without first joint!
                     [0.523, 1.309, -1.919, 0], # looking down
