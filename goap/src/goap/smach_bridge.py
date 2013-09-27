@@ -36,7 +36,10 @@ class GOAPActionWrapperState(State):
 
 
 class SmachStateAction(Action):
+    """A special Action to wrap a SMACH state.
 
+    Subclass this class to make a SMACH state available to GOAP planning.
+    """
     def __init__(self, state, preconditions, effects, **kwargs):
         Action.__init__(self, preconditions, effects, **kwargs)
         self.state = state
@@ -49,6 +52,10 @@ class SmachStateAction(Action):
     def translate_worldstate_to_userdata(self, next_worldstate, userdata):
         """Overload to make worldstate data available to the state."""
         pass
+
+    def run(self, next_worldstate):
+        self.state.execute()
+        raise NotImplementedError # yet
 
 
 

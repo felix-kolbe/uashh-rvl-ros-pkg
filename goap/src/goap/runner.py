@@ -170,9 +170,9 @@ class GOAPPlannerState(State):
     """Subclass this state to activate the GOAP planner from within a
     surrounding state machine, e.g. the ActionServerWrapper"
     """
-    def __init__(self, config_module=None, outcomes=['succeeded', 'aborted', 'preempted'], **kwargs):
-        State.__init__(self, outcomes=outcomes, **kwargs)
-        self.runner = Runner(config_module)
+    def __init__(self, runner, **kwargs):
+        State.__init__(self, ['succeeded', 'aborted', 'preempted'], **kwargs)
+        self.runner = runner
 
     def execute(self, userdata):
         goal = self.build_goal(userdata)
@@ -188,8 +188,8 @@ class GOAPPlannerState(State):
 
 class MoveBaseGOAPState(GOAPPlannerState):
     """Use GOAP to move the robot to a pose in userdata"""
-    def __init__(self):
-        GOAPPlannerState.__init__(self, config_scitos,
+    def __init__(self, runner):
+        GOAPPlannerState.__init__(self, runner,
                                   input_keys=['x', 'y', 'yaw'],
                                   output_keys=['user_input'])
 
@@ -198,6 +198,13 @@ class MoveBaseGOAPState(GOAPPlannerState):
         return Goal([Precondition(Condition.get('robot.pose'), pose)])
 
 
+class IncreaseAwarenessGOAPState(GOAPPlannerState):
+    """Use GOAP to increase the robot's awareness (a memory variable)"""
+    def __init__(self, runner):
+        GOAPPlannerState.__init__(self, runner)
+
+    def build_goal(self, userdata):
+        return Goal([Precondition(Condition.get('awareness'), 4)])
 
 
 def test_runner():
@@ -231,33 +238,35 @@ def test_tasker():
 
     wfg = WaitForGoalState() # We don't want multiple subscribers so we need one WaitForGoal state
 
+    runner = Runner(config_scitos)
+
+
+    ## sub machines
     sq_move_to_new_goal = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                                    connector_outcome='succeeded')
     with sq_move_to_new_goal:
         Sequence.add('WAIT_FOR_GOAL', wfg)
-        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState())
+        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState(runner))
 
 
+    ## tasker machine
     sm_tasker = StateMachine(outcomes=['succeeded', 'aborted', 'preempted',
                                        'field_error', 'undefined_task'],
                              input_keys=['task_goal'])
-
     with sm_tasker:
         ## add all tasks to be available
+        # states using goap
         StateMachine.add('MOVE_TO_NEW_GOAL', sq_move_to_new_goal)
+        StateMachine.add('INCREASE_AWARENESS', IncreaseAwarenessGOAPState(runner))
 
+        # states from uashh_smach
         StateMachine.add('LOOK_AROUND', get_lookaround_smach())
-
         StateMachine.add('GLIMPSE_AROUND', get_lookaround_smach(glimpse=True))
-
         StateMachine.add('MOVE_ARM_CRAZY', get_lookaround_smach(crazy=True))
 
         StateMachine.add('MOVE_TO_RANDOM_GOAL', get_random_goal_smach())
-
         StateMachine.add('MOVE_TO_NEW_GOAL_AND_RETURN', task_go_and_return.get_go_and_return_smach())
-
         StateMachine.add('PATROL_TO_NEW_GOAL', task_patrol.get_patrol_smach())
-
         StateMachine.add('MOVE_AROUND', task_move_around.get_move_around_smach())
 
         StateMachine.add('SLEEP_FIVE_SEC', SleepState(5))

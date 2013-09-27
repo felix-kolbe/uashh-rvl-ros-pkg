@@ -18,7 +18,7 @@ def get_all_conditions(memory):
     return [
         # memory
         MemoryCondition(memory, 'arm_can_move', True),
-        MemoryCondition(memory, 'awareness'),
+        MemoryCondition(memory, 'awareness', 0),
         # ROS
         ROSTopicCondition('robot.pose', '/odom', Odometry, '/pose/pose'),
         ROSTopicCondition('robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'),
