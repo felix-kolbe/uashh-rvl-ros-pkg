@@ -109,8 +109,7 @@ class Runner(object):
         if introspection:
             if start_node is not None:
                 self._introspector.publish(start_node)
-            self._introspector.publish_net(start_node,
-                           self.planner.last_goal_node)
+            self._introspector.publish_net(self.planner.last_goal_node, start_node)
 
         return start_node
 

@@ -23,8 +23,11 @@ class Introspector(object):
         self._publisher_status_net = rospy.Publisher(self._pathprefix_net + STATUS_TOPIC, SmachContainerStatus, latch=True)
 
 
-    def publish_net(self, start_node, goal_node):
-        """Publishes a GOAP planning net"""
+    def publish_net(self, goal_node, start_node=None):
+        """Publishes a GOAP planning net, reconstructing it from with the goal node.
+
+        The goal node will be set as the active state, as its userdata is displayed.
+        """
         def _add_nodes_recursively(node, structure):
             """node: beginning with the goal node"""
             structure.children.append(self._nodeid(node))
@@ -59,7 +62,6 @@ class Introspector(object):
         status.header.stamp = rospy.Time.now()
         status.path = self._pathprefix_net
         status.initial_states = [self._nodeid(start_node) if start_node is not None else 'No plan found']
-        #status.active_states = ['None']
         status.active_states = [self._nodeid(goal_node)]
         goal_states_dict = goal_node.worldstate.get_state_name_dict()
         goal_states_dict['WORLDSTATE'] = 'GOAL'
@@ -70,7 +72,10 @@ class Introspector(object):
         rospy.sleep(5)
 
     def publish(self, start_node):
-        """Publishes a planned GOAP plan"""
+        """Publishes a planned GOAP plan
+
+        The start node will be set as the active state, as its userdata is displayed.
+        """
         def _add_nodes_recursively(node, structure):
             """node: beginning with the start node"""
             structure.children.append(self._nodeid(node))
@@ -104,7 +109,7 @@ class Introspector(object):
         status.header.stamp = rospy.Time.now()
         status.path = self._pathprefix
         status.initial_states = [self._nodeid(start_node)]
-        status.active_states = ['None']
+        status.active_states = [self._nodeid(start_node)]
         start_states_dict = start_node.worldstate.get_state_name_dict()
         start_states_dict['WORLDSTATE'] = 'START'
         status.local_data = pickle.dumps(start_states_dict, 2)
@@ -121,7 +126,7 @@ class Introspector(object):
         status.header.stamp = rospy.Time.now()
         status.path = self._pathprefix + '/' + nodeid
         status.initial_states = []
-        status.active_states = []
+        status.active_states = [self._nodeid(node)]
         start_states_dict = node.worldstate.get_state_name_dict()
         start_states_dict['WORLDSTATE'] = str(node) # id?
         status.local_data = pickle.dumps(start_states_dict, 2)
