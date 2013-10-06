@@ -11,6 +11,8 @@
   <depend package="rospy"/>
   <depend package="smach_ros"/>
   <depend package="tf"/>
+
+  <depend package="goap"/>
   
   <depend package="std_msgs"/>
   <depend package="joint_motion_service"/>
