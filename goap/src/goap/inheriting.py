@@ -79,16 +79,9 @@ class MemoryChangeVarAction(MemorySetVarAction):
 
 class MemoryIncrementerAction(Action):
 
-    class IncEffect(VariableEffect):
-        def __init__(self, condition):
-            VariableEffect.__init__(self, condition)
-        def _is_reachable(self, value):
-            return True
-
-
     def __init__(self, memory, state_name, increment=1):
         self._condition = Condition.get(state_name)
-        Action.__init__(self, [], [MemoryIncrementerAction.IncEffect(self._condition)])
+        Action.__init__(self, [], [VariableEffect(self._condition)])
         self._memory = memory
         self._state_name = state_name
         self._increment = increment
@@ -112,7 +105,7 @@ class MemoryIncrementerAction(Action):
 
     def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
-        assert effect.__class__ == MemoryIncrementerAction.IncEffect
+        assert effect._condition is self._condition
         precond_value = worldstate.get_condition_value(effect._condition) - self._increment
         Precondition(effect._condition, precond_value, None).apply(worldstate)
 

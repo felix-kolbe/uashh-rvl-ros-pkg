@@ -176,7 +176,12 @@ class Effect(object):
 
 
 class VariableEffect(object):
+    """This variable effect can by default reach every value and therefore
+    matches every worldstate.
 
+    To make an effect reach not every possible value of its condition,
+    subclass and overload _is_reachable.
+    """
     def __init__(self, condition):
 #        Effect.__init__(self, condition, None)
         self._condition = condition
@@ -195,9 +200,12 @@ class VariableEffect(object):
         return self._is_reachable(worldstate.get_condition_value(self._condition))
 
     def _is_reachable(self, value):
-        """Returns a Boolean whether this variable effect can reach the given value"""
+        """Return a Boolean whether this variable effect can reach the given value.
+
+        Defaults to True, subclass to limit variability.
+        """
         # TODO: change reachability from boolean to float
-        raise NotImplementedError
+        return True
 
 
 class Goal(object):
@@ -270,7 +278,7 @@ class Action(object):
     def has_satisfying_effects(self, worldstate, unsatisfied_conditions):
         """Return True if at least one of own effects matches unsatisfied_conditions."""
         for effect in self._effects:
-            if effect._condition in unsatisfied_conditions: # TODO: maybe put this check into called method
+            if effect._condition in unsatisfied_conditions: # TODO: maybe put this check into called method // no, would make the return value trilateral
                 if effect.matches_condition(worldstate):
                     return True
         return False
