@@ -126,6 +126,7 @@ class Runner(object):
 
     def execute_as_smach(self, start_node, introspection=False):
         sm = self.path_to_smach(start_node)
+        # TODO: create proxies / userdata info for inner-sm introspection
         outcome = execute_smach_container(sm, introspection, name='/SM_GENERATED')
         return outcome
 
@@ -175,10 +176,13 @@ class GOAPPlannerState(State):
 
     def execute(self, userdata):
         # TODO: propagate preemption request into goap submachine
+        # TODO: maybe make this class a smach.Container and add states dynamically?
         goal = self.build_goal(userdata)
-        # avoid duplicate introspection:
-        outcome = self.runner.update_and_plan_and_execute(goal, introspection=False)
+        outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
         print "Generated GOAP sub state machine returns: %s" % outcome
+        if self.preempt_requested():
+            rospy.logwarn("Preempt request was ignored as GOAPPlannerState cannot"
+                          " yet forward it to inner generated machine.")
         return outcome
 
     def build_goal(self, userdata):
