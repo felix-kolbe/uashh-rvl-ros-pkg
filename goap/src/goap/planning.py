@@ -115,6 +115,7 @@ class Node(object):
 
 
 class Planner(object):
+    # TODO: make ordering of actions possible (e.g. move before lookaround)
 
     def __init__(self, actionbag, worldstate, goal):
         self._actionbag = actionbag

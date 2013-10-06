@@ -175,6 +175,7 @@ class GOAPPlannerState(State):
         self.runner = runner
 
     def execute(self, userdata):
+        # TODO: propagate preemption request into goap submachine
         goal = self.build_goal(userdata)
         # avoid duplicate introspection:
         outcome = self.runner.update_and_plan_and_execute(goal, introspection=False)
@@ -256,8 +257,8 @@ def test_tasker():
     with sm_tasker:
         ## add all tasks to be available
         # states using goap
-        StateMachine.add('MOVE_TO_NEW_GOAL', sq_move_to_new_goal)
-        StateMachine.add('INCREASE_AWARENESS', IncreaseAwarenessGOAPState(runner))
+        StateMachine.add('MOVE_TO_NEW_GOAL_GOAP', sq_move_to_new_goal)
+        StateMachine.add('INCREASE_AWARENESS_GOAP', IncreaseAwarenessGOAPState(runner))
 
         # states from uashh_smach
         StateMachine.add('LOOK_AROUND', get_lookaround_smach())
@@ -275,6 +276,10 @@ def test_tasker():
         ## now the task receiver is created and automatically links to
         ##   all task states added above
         task_states_labels = sm_tasker.get_children().keys()
+        task_states_labels = sorted(task_states_labels)  # sort alphabetically
+        task_states_labels = sorted(task_states_labels,  # sort by _GOAP
+                                    key=lambda label: '_GOAP' in label,
+                                    reverse=True)
         task_receiver_transitions = {'undefined_outcome':'undefined_task'}
         task_receiver_transitions.update({l:l for l in task_states_labels})
 
