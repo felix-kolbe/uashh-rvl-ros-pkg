@@ -55,8 +55,10 @@ class Node(object):
     def _calc_heuristic_distance_for_node(self, start_worldstate):
         # TODO: integrate heuristic calculation nicely
         """Set self.heuristic_distance, a value representing the difference
-        between this node's worldstate and the given start worldstate."""
+        between this node's worldstate and the given start worldstate.
+        """
         assert self.heuristic_distance is None, "Node heuristic should be calculated only once"
+
         # check which conditions differ between start and current node
         unsatisfied_conditions_set = self.worldstate.get_unsatisfied_conditions(start_worldstate)
 
@@ -200,13 +202,14 @@ class PlanExecutor(object):
         pass
 
     def execute(self, start_node):
+        """Execute a GOAP plan, return True on success, False otherwise"""
         assert len(start_node.parent_nodes_path_list) == len(start_node.parent_actions_path_list)
 
         print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)
 
         if len(start_node.parent_nodes_path_list) == 0:
             print "Sole node left must be goal node, stopping executor"
-            return
+            return True
 
         current_worldstate = start_node.worldstate
         action = start_node.action # or: parent_actions_path_list[-1]
@@ -218,7 +221,7 @@ class PlanExecutor(object):
                 print 'PlanExecutor now executing: ', action
                 action.run(next_worldstate)
 #                print 'Memory is now: ', action._memory   # only for mem actions
-                self.execute(next_node)
+                return self.execute(next_node)
             else:
                 print "Action's freeform context isn't valid! Aborting executor"
                 print ' action: ', action
@@ -226,4 +229,6 @@ class PlanExecutor(object):
             print "Action isn't valid to worldstate! Aborting executor"
             print ' action: ', action
             print ' worldstate: ', current_worldstate
+
+        return False
 
