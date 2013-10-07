@@ -16,6 +16,6 @@
   <!-- static_transform_publisher rotation parameter order: z y x -->
   
   <!-- manually calibrated to match front laserscanner -->
-  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.415 0.010 0.210  0.004 3.14159265359 0  base_link laser_rear 69"/>
+  <node name="laser_rear_tf" pkg="tf" type="static_transform_publisher" args="-0.415 0.010 0.210  0.004 3.14159265359 0  base_link laser_rear 25"/>
   
 </launch>
