@@ -1,0 +1,19 @@
+from http://www.ros.org/wiki/arm_navigation/Tutorials/tools/Planning%20Description%20Configuration%20Wizard
+# launch wizard to generate arm navigation config for our robot
+roslaunch planning_environment planning_description_configuration_wizard.launch urdf_package:=metralabs_ros urdf_path:=Models/scitos_haw_schunk.urdf
+
+# launch planning visualizer (rviz with joint planning)
+roslaunch scitos_haw_schunk_arm_navigation planning_components_visualizer.launch
+
+
+# not existent anymore..?
+#roslaunch move_arm_warehouse planning_scene_warehouse_viewer_only.launch 
+
+
+# create warehouse-.launch from wizard-output-data for our robot
+roscd scitos_haw_schunk_arm_navigation
+./scripts/create_launch_files.py scitos_haw_schunk
+cd -
+
+# which generates this warehouse-launch file:
+roslaunch scitos_haw_schunk_arm_navigation planning_scene_warehouse_viewer_scitos_haw_schunk.launch 

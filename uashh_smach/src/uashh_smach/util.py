@@ -26,16 +26,24 @@ TAU = math.pi * 2   # one tau is one turn. simply as that.
 class PromptState(smach.State):
     """Prompt and wait for user action or input on command line.
 
-    userdata input prompt: message displayed at prompt
+    prompt: String to display. If not given or None, prompt is
+                    read from userdata key 'duration'.
+
+    userdata input prompt: message displayed at prompt (not registered
+                    as input key if prompt given on initialization)
     userdata output user_input: where the user input is returned
     """
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'aborted'], input_keys=['prompt'], output_keys=['user_input'])
+    def __init__(self, prompt=None):
+        smach.State.__init__(self, outcomes=['succeeded', 'aborted'],
+                             input_keys=['prompt'] if prompt is None else [],
+                             output_keys=['user_input'])
+        self.prompt = prompt
 
     def execute(self, userdata):
         rospy.loginfo('Executing PromptState')
+        prompt = userdata.prompt if self.prompt is None else self.prompt
         try:
-            userdata.user_input = raw_input(userdata.prompt)
+            userdata.user_input = raw_input(prompt)
             return 'succeeded'
         except EOFError:
             return 'aborted'
@@ -46,25 +54,29 @@ class SleepState(smach.State):
 
     duration: of type rospy Duration or float in seconds. If not given or None,
                 duration is read from userdata key 'duration'.
+
+    userdata input duration: of type rospy Duration or float in seconds (not
+                registered as input key if given on initialization)
     """
     def __init__(self, duration=None):
-        if duration is None:
-            smach.State.__init__(self, outcomes=['succeeded', 'aborted'], input_keys=['duration'])
-        else:
-            smach.State.__init__(self, outcomes=['succeeded', 'aborted'])
+        smach.State.__init__(self, outcomes=['succeeded', 'preempted'],
+                             input_keys=['duration'] if duration is None else [])
         self.duration = duration
 
     def execute(self, userdata):
-        try:
-            if self.duration is None:
-                duration = userdata.duration
-            else:
-                duration = self.duration
-            rospy.loginfo("SleepState sleeping for %d seconds" % duration)
-            rospy.sleep(duration)
-            return 'succeeded'
-        except rospy.ROSInterruptException:
-            return 'aborted'
+        duration = userdata.duration if self.duration is None else self.duration
+        rospy.loginfo("SleepState sleeping for %d seconds" % duration)
+        # sleep in steps to handle state preemption
+        SLEEP_STEP = 2 # maximum to sleep per step
+        while duration > 0:
+            sleeptime = SLEEP_STEP if duration > SLEEP_STEP else duration
+            duration -= sleeptime
+            rospy.sleep(sleeptime)
+            if self.preempt_requested():
+                self.service_preempt()
+                rospy.loginfo('SleepState was preempted while sleeping!')
+                return 'preempted'
+        return 'succeeded'
 
 
 
@@ -260,19 +272,32 @@ def get_current_robot_position(frame='/map'):
 
 
 
-def execute_smach_container(smach_container, enable_introspection=False):
+def execute_smach_container(smach_container, enable_introspection=False,
+                            name='/SM_ROOT', userdata=smach.UserData()):
     if not rospy.core.is_initialized():
         rospy.init_node('smach')
 
     if enable_introspection:
         # Create and start the introspection server
-        sis = smach_ros.IntrospectionServer('smach_executor', smach_container, '/SM_ROOT')
+        sis = smach_ros.IntrospectionServer('smach_executor', smach_container, name)
         sis.start()
 
-    outcome = smach_container.execute()
+    outcome = smach_container.execute(userdata)
     print 'smach outcome: ', outcome
 
     if enable_introspection:
         # Wait for ctrl-c to stop the application
         rospy.spin()
         sis.stop()
+
+    return outcome
+
+def simple_state_wrapper(state):
+    """Wrap a minimal state machine around the given state to make it
+    executable with all SMACH features"""
+    sm = smach.StateMachine(list(state.get_registered_outcomes()),
+                            list(state.get_registered_input_keys()),
+                            list(state.get_registered_output_keys()))
+    with sm:
+        smach.StateMachine.add('SIMPLE_STATE_WRAPPED', state)
+    return sm
