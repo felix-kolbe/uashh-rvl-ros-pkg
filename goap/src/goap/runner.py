@@ -65,11 +65,13 @@ class Runner(object):
             thread.start_new_thread(rospy.spin, ())
             print "introspection spinner started"
 
+    def _update_worldstate(self):
+        """update worldstate to reality"""
+        Condition.initialize_worldstate(self.worldstate)
 
     def update_and_plan(self, goal, tries=1, introspection=False):
         """introspection: introspect GOAP planning via smach.introspection"""
-        # update to reality
-        Condition.initialize_worldstate(self.worldstate)
+        self._update_worldstate()
 
         print "worldstate initialized/updated to: ", self.worldstate
         for (condition, value) in self.worldstate._condition_values.iteritems():
@@ -81,6 +83,7 @@ class Runner(object):
 
         while tries > 0:
             tries -= 1
+            # FIXME: retries won't work here if the input does not change
             start_node = self.planner.plan(goal=goal)
             if start_node is not None:
                 break
@@ -94,14 +97,37 @@ class Runner(object):
 
 
     def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
-        """introspection: introspect GOAP planning and SMACH execution via
-        smach.introspection"""
-        start_node = self.update_and_plan(goal, tries, introspection)
-        if start_node is not None:
-            #PlanExecutor().execute(start_node)
-            return self.execute_as_smach(start_node, introspection)
-        else:
-            return 'aborted'
+        """loop that updates, plans and executes until the goal is reached
+
+        introspection: introspect GOAP planning and SMACH execution via
+                smach.introspection, defaults to False
+        """
+        outcome = None
+        # replan and retry on failure as long as a plan is found
+        while True:
+            start_node = self.update_and_plan(goal, tries, introspection)
+
+            if start_node is None:
+                rospy.logerr("GOAP Runner aborts, no plan found!")
+                return 'aborted'
+
+            #success = PlanExecutor().execute(start_node)
+            outcome = self.execute_as_smach(start_node, introspection)
+
+            if outcome != 'aborted':
+                break;
+
+            # check failure
+            rospy.logwarn("GOAP Runner execution fails, replanning..")
+
+            self._update_worldstate()
+            if not goal.is_valid(self.worldstate):
+                rospy.logwarn("Goal isn't valid in current worldstate")
+            else:
+                rospy.logerr("Though goal is valid in current worldstate, the plan execution failed!?")
+
+        # until we are succeeding or are preempted
+        return outcome
 
     def execute_as_smach(self, start_node, introspection=False):
         sm = self.path_to_smach(start_node)
@@ -136,8 +162,7 @@ class Runner(object):
     def print_worldstate_loop(self):
         rate = rospy.Rate(0.5)
         while not rospy.is_shutdown():
-            # update to reality
-            Condition.initialize_worldstate(self.worldstate)
+            self._update_worldstate()
             print self.worldstate
             rate.sleep()
 
