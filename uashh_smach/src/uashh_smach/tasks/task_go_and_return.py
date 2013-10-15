@@ -5,27 +5,17 @@
 import roslib; roslib.load_manifest('uashh_smach')
 
 import rospy
-import tf
 
-import math
-
-import smach
-import smach_ros
-from smach import State, StateMachine, Sequence
-from smach_ros import ServiceState, SimpleActionState
+from smach import Sequence
 
 import uashh_smach.platform.move_base as move_base
 import uashh_smach.util as util
 
 
 
-def main():
-    rospy.init_node('smach')
-
-    sq = Sequence(
-        outcomes = ['succeeded','aborted','preempted'],
-        connector_outcome = 'succeeded')
-
+def get_go_and_return_smach():
+    sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                  connector_outcome='succeeded')
 
     sq.userdata.goal_position_x = 1
     sq.userdata.goal_position_y = 0
@@ -34,26 +24,26 @@ def main():
     sq.userdata.saved_position_y = 0
     sq.userdata.saved_position_yaw = 1
 
-    wfg = move_base.WaitForGoalState() # We don't want multiple subscribers so we need one WaitFor state
-    
+    wfg = move_base.WaitForGoalState() # We don't want multiple subscribers so we need one WaitForGoal state
+
     with sq:
         ### Add states to the container
-        
+
         # save position
         Sequence.add('SAVE_ROBOT_POSITION', move_base.ReadRobotPositionState(),
                      remapping={'x':'saved_position_x',
                                 'y':'saved_position_y',
                                 'yaw':'saved_position_yaw'},
                      )
-        
+
         # wait for new goal
         Sequence.add('WAIT_FOR_GOAL', wfg,
 #        Sequence.add('WAIT_FOR_GOAL', move_base.WaitForGoalState(),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'}
-                         )
-        
+                     )
+
         # nav to goal
         Sequence.add('MOVE_BASE_GO', move_base.MoveBaseState('/map'),
                      remapping={'x':'goal_position_x',
@@ -61,10 +51,10 @@ def main():
                                 'yaw':'goal_position_yaw'
                                 }
                      )
-        
+
         # wait
         Sequence.add('PAUSE_AT_GOAL', util.SleepState(2))
-        
+
         # nav back
         Sequence.add('MOVE_BASE_RETURN', move_base.MoveBaseState('/map'),
                      remapping={'x':'saved_position_x',
@@ -73,20 +63,14 @@ def main():
                                 },
                      transitions={'succeeded':'SAVE_ROBOT_POSITION'}
                      )
-    
-    
-    
-    # Create and start the introspection server
-    sis = smach_ros.IntrospectionServer('server_name', sq, '/SM_ROOT')
-    sis.start()
-    
-    # Execute the state machine
-    outcome = sq.execute()
 
-    # Wait for ctrl-c to stop the application
-    rospy.spin()
-    rospy.signal_shutdown("shutting down now")
-    sis.stop()
+    return sq
+
+
+
+def main():
+    rospy.init_node('smach')
+    util.execute_smach_container(get_go_and_return_smach(), enable_introspection=True)
 
 
 if __name__ == '__main__':

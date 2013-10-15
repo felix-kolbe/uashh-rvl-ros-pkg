@@ -1,0 +1,27 @@
+<package>
+  <description brief="goap">
+
+     GOAP implementation to be used with ROS, written in Python.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/goap</url>
+
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="actionlib"/>
+
+  <depend package="smach_ros"/>
+  <depend package="uashh_smach"/>
+
+  <depend package="std_msgs"/>
+  <depend package="nav_msgs"/>
+  <depend package="move_base_msgs"/>
+  <depend package="metralabs_msgs"/>
+  <depend package="task_msgs"/>
+
+</package>
+
+
