@@ -22,7 +22,9 @@ from smach_bridge import SmachStateAction
 ## ROS specific class specializations
 
 class ROSTopicCondition(Condition):
-
+    """Mirrors a ROS message field of a topic as its value.
+    Note that this Condition's value remains None until a message is received.
+    """
     def __init__(self, state_name, topic, topic_class, field=None, msgeval=None):
         Condition.__init__(self, state_name)
         self._topic = topic
@@ -51,8 +53,8 @@ class ROSTopicCondition(Condition):
 class ResetBumperAction(Action):
 
     def __init__(self):
-        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],  # TODO: Precondition fails if message wasn't received yet
-                            [Effect(Condition.get('robot.bumpered'), False)])
+        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],
+                        [Effect(Condition.get('robot.bumpered'), False)])
         self._publisher = rospy.Publisher('/bumper_reset', Empty)
 
     def check_freeform_context(self):
@@ -63,8 +65,9 @@ class ResetBumperAction(Action):
         print 'sending bumper_reset message..'
         self._publisher.publish(Empty())
         rospy.sleep(1)  # TODO: find solution without sleep
+        # TODO: integrate check for asynchronous action bodys
 
-# TODO: implement denial of trivial actions (not changing conditions)
+# TODO: implement denial of trivial actions (not changing conditions), if they're actually concerned?
 
 class MoveBaseAction(SmachStateAction):
 
@@ -77,7 +80,7 @@ class MoveBaseAction(SmachStateAction):
 
     def check_freeform_context(self):
         # TODO: cache freeform context?
-        return self._client.wait_for_server(rospy.Duration(0.1))
+        return self.state._action_client.wait_for_server(rospy.Duration(0.1))
 
     def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
@@ -87,7 +90,8 @@ class MoveBaseAction(SmachStateAction):
 
     def translate_worldstate_to_userdata(self, next_worldstate, userdata):
         goal_pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))
-        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(pose_orientation_to_quaternion(goal_pose.orientation))
+        (_roll, _pitch, yaw) = tf.transformations.euler_from_quaternion(
+                        pose_orientation_to_quaternion(goal_pose.orientation))
         userdata.x = goal_pose.position.x
         userdata.y = goal_pose.position.y
         userdata.yaw = yaw

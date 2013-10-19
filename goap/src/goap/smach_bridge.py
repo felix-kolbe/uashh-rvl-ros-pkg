@@ -4,8 +4,6 @@ Created on Sep 9, 2013
 @author: felix
 '''
 
-import tf
-
 from smach import State
 
 from common import *
@@ -82,7 +80,9 @@ class FoldArmAction(SmachStateAction):
     def __init__(self):
         SmachStateAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE),
                                   [Precondition(Condition.get('arm_can_move'), True),
-                                   # TODO: why is this anti-effect-precondition needed?
+                                   # TODO: maybe remove necessary anti-effect-preconditions
+                                   # the currently available alternative would be to use a
+                                   # variable effect that can reach any value
                                    Precondition(Condition.get('robot.arm_folded'), False)],
                                   [Effect(Condition.get('robot.arm_folded'), True)])
 

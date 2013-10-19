@@ -70,10 +70,18 @@ class Runner(object):
         Condition.initialize_worldstate(self.worldstate)
 
     def update_and_plan(self, goal, tries=1, introspection=False):
-        """introspection: introspect GOAP planning via smach.introspection"""
+        """update worldstate and call self.plan(...)"""
         self._update_worldstate()
+        return self.plan(goal, tries, introspection)
 
+
+    def plan(self, goal, tries=1, introspection=False):
+        """plan for given goal and return start_node of plan or None
+
+        introspection: introspect GOAP planning via smach.introspection
+        """
         print "worldstate initialized/updated to: ", self.worldstate
+        # check for any still uninitialised condition
         for (condition, value) in self.worldstate._condition_values.iteritems():
             if value is None:
                 rospy.logwarn("Condition still 'None': %s", condition)
@@ -104,10 +112,11 @@ class Runner(object):
         """
         outcome = None
         # replan and retry on failure as long as a plan is found
-        while True:
+        while not rospy.is_shutdown():
             start_node = self.update_and_plan(goal, tries, introspection)
 
             if start_node is None:
+                # TODO: maybe at this point update and replan? reality might have changed
                 rospy.logerr("GOAP Runner aborts, no plan found!")
                 return 'aborted'
 
@@ -115,7 +124,7 @@ class Runner(object):
             outcome = self.execute_as_smach(start_node, introspection)
 
             if outcome != 'aborted':
-                break;
+                break; # retry
 
             # check failure
             rospy.logwarn("GOAP Runner execution fails, replanning..")

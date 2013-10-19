@@ -132,6 +132,7 @@ class Precondition(object):
         self._condition = condition
         self._value = value
         self._deviation = deviation
+        # TODO: make deviation relative/percental, not absolute
 
     def __str__(self):
         return '%s:%s=%s~%s' % (self.__class__.__name__, self._condition._state_name, self._value, self._deviation)
@@ -302,6 +303,7 @@ class Action(object):
 
         Must be implemented if the action contains variable effects.
         """
+        # TODO: maybe implement a default behaviour, at least for variable effects that can reach any value
         raise NotImplementedError
 
 
@@ -319,8 +321,12 @@ class ActionBag(object):
 
     # regressive planning
     def generate_matching_actions(self, start_worldstate, node_worldstate):
-        """Generator providing actions that might help between start_worldstate and current node_worldstate."""
-        # TODO: This solution does not work when there are actions that produce an empty common_states_set and no valid action is considered - is this actually possible? the start_worldstate should contain every condition ever needed by an action or condition
+        """Generator providing actions that might help between
+        start_worldstate and current node_worldstate.
+        """
+        # TODO: This solution does not work when there are actions that produce an empty
+        # common_states_set and no valid action is considered - is this actually possible?
+        # the start_worldstate should contain every condition ever needed by an action or condition
 
         # check which conditions differ between start and current node
         unsatisfied_conditions_set = node_worldstate.get_unsatisfied_conditions(start_worldstate)
