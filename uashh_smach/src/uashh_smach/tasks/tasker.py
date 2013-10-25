@@ -25,7 +25,7 @@ from goap.common import Condition, Goal, Precondition
 from goap.runner import Runner, GOAPPlannerState
 
 from uashh_smach.util import UserDataToOutcomeState, SleepState
-from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach
+from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach, position_tuple_to_pose, calc_random_pose_tuple
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
 
@@ -33,12 +33,6 @@ from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
 import goap.config_scitos as config_scitos
 
 
-
-def calc_Pose(x, y, yaw):
-    quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-    orientation = Quaternion(*quat)
-    position = Point(x, y, 0)
-    return Pose(position, orientation)
 
 
 class MoveBaseGOAPState(GOAPPlannerState):
@@ -49,7 +43,7 @@ class MoveBaseGOAPState(GOAPPlannerState):
                                   output_keys=['user_input'])
 
     def build_goal(self, userdata):
-        pose = calc_Pose(userdata.x, userdata.y, userdata.yaw)
+        pose = position_tuple_to_pose(userdata.x, userdata.y, userdata.yaw)
         return Goal([Precondition(Condition.get('robot.pose'), pose)])
 
 

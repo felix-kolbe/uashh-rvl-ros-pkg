@@ -16,13 +16,7 @@ from goap.runner import Runner
 
 import goap.config_scitos as config_scitos
 
-
-
-def calc_Pose(x, y, yaw):
-    quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
-    orientation = Quaternion(*quat)
-    position = Point(x, y, 0)
-    return Pose(position, orientation)
+from uashh_smach.platform.move_base import position_tuple_to_pose
 
 
 
@@ -47,7 +41,7 @@ if __name__ == "__main__":
     runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 
-    goal = Goal([Precondition(Condition.get('robot.pose'), calc_Pose(1, 0, 0)),
+    goal = Goal([Precondition(Condition.get('robot.pose'), position_tuple_to_pose(1, 0, 0)),
                  Precondition(Condition.get('memory.reminded_myself'), 555)])
 
     start_node = runner.update_and_plan(goal, introspection=True)
