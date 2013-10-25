@@ -80,8 +80,8 @@ class Introspector(object):
             """node: beginning with the start node"""
             structure.children.append(self._nodeid(node))
 
-            if len(node.parent_nodes_path_list) > 0:
-                next_node = node.parent_nodes_path_list[-1]
+            if not node.is_goal():
+                next_node = node.parent_node()
 
                 structure.internal_outcomes.append('\n'.join(str(e) for e in node.action._effects))
                 structure.outcomes_from.append(self._nodeid(node))
@@ -135,10 +135,12 @@ class Introspector(object):
 
 
     def _nodeid(self, node):
-        if node.action is None:
+        if node.is_goal():
             node_action_name = 'GOAL'
-            node_action_cost = '0'
         else:
             node_action_name = str(node.action) #.__class__.__name__
-            node_action_cost = node.action.cost()
-        return node_action_name + ' %X' % id(node) + ' h' + str(node.heuristic_distance) + ' n' + str(node_action_cost) + ' t' + str(node.cost())
+        return (node_action_name + ' %X' % id(node) +
+                ' n%s' % node.cost() +
+                ' p%s' % node.path_cost() +
+                ' h%s' % node.heuristic_distance +
+                ' t%s' % node.total_cost())

@@ -13,21 +13,21 @@ from common import ActionBag, WorldState
 
 
 class Node(object):
+    """
+    worldstate: states at this node
+    action: action that led (regressively) to this node (and that should be run when executing this path forwards)
+    possible_prev_nodes: nodes with actions that the planner found possible to help reach this node
+                            (empty until planner ran, used for visualization/debugging)
+    parent_nodes_path_list: nodes that led (from the goal) to this node
+    parent_actions_path_list: actions that led (from the goal) to this node
+    note that the parent path lists begin with the goal node and end with this node's parent
 
+    if this node is the goal node:
+    - the action is None
+    - the path lists are empty
+    - also, cost() and heuristic_distance are zero
+    """
     def __init__(self, worldstate, action, parent_nodes_path_list, parent_actions_path_list):
-        """
-        worldstate: states at this node
-        action: action that led (regressively) to this node (and that should be run when executing this path forwards)
-        possible_prev_nodes: nodes with actions that the planner found possible to help reach this node (empty until planner ran)
-        parent_nodes_path_list: nodes that led (from the goal) to this node
-        parent_actions_path_list: actions that led (from the goal) to this node
-        note that the parent path lists begin with the goal node and end with this node's parent
-
-        if this node is the goal node:
-        - the action is None
-        - the path lists are empty
-        - also, cost() and heuristic_distance are zero
-        """
         self.worldstate = worldstate
         self.action = action
         self.possible_prev_nodes = []
@@ -39,18 +39,27 @@ class Node(object):
     def __repr__(self):
 #        return '<Node %X cost=%s heur_dist=%s action=%s worldstate=%s>' % \
 #            (id(self), self.cost(), self.heuristic_distance, self.action, self.worldstate)
-        return '<Node %X cost=%s heur_dist=%s action=%s>' % \
-            (id(self), self.cost(), self.heuristic_distance, self.action)
+        return '<Node %X cost=%s pathc=%s heur_dist=%s totalc=%s action=%s>' % \
+            (id(self), self.cost(), self.path_cost(), self.heuristic_distance, self.total_cost(), self.action)
+
+    def is_goal(self):
+        """See class description"""
+        return self.action is None
+
+    def parent_node(self):
+        return self.parent_nodes_path_list[-1]
 
     def cost(self):
-        if self.action is None:
-            # goal node: no costs
-            cost = 0
-        else:
-            cost = (0 * 1 # effectively adds 1 for each node in path to favour short paths
-                    + self.action.cost() # own action's cost
-                    + self.parent_nodes_path_list[-1].cost()) # parent node's cost (therefore recursive)
-        return cost
+        """The cost of this node's action"""
+        return 0 if self.is_goal() else self.action.cost()
+
+    def path_cost(self):
+        """Path cost calculation"""
+        return self.cost() + sum(node.cost() for node in self.parent_nodes_path_list)
+
+    def total_cost(self):
+        """Path costs plus heuristic distance"""
+        return self.path_cost() + self.heuristic_distance
 
     def _calc_heuristic_distance_for_node(self, start_worldstate):
         # TODO: integrate heuristic calculation nicely
@@ -62,7 +71,7 @@ class Node(object):
         # check which conditions differ between start and current node
         unsatisfied_conditions_set = self.worldstate.get_unsatisfied_conditions(start_worldstate)
 
-        if len(self.parent_nodes_path_list) == 0:
+        if self.is_goal():
             # goal node: default distance 1 for each known unsatisfied condition
             self.heuristic_distance = len(unsatisfied_conditions_set)
         else:
@@ -190,7 +199,7 @@ class Planner(object):
             # TODO: will the planner be optimal, if a too high heuristic will favor
             # another node, which reaches the start, but with more total cost than
             # what the first node and a matching lower cost action will cost?
-            child_nodes = deque(sorted(child_nodes, key=lambda node: node.cost() + node.heuristic_distance))
+            child_nodes = deque(sorted(child_nodes, key=lambda node: node.total_cost()))
 
         print 'No plan found.'
         return None
@@ -207,13 +216,13 @@ class PlanExecutor(object):
 
         print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)
 
-        if len(start_node.parent_nodes_path_list) == 0:
+        if start_node.is_goal():
             print "Sole node left must be goal node, stopping executor"
             return True
 
         current_worldstate = start_node.worldstate
-        action = start_node.action # or: parent_actions_path_list[-1]
-        next_node = start_node.parent_nodes_path_list[-1]
+        action = start_node.action
+        next_node = start_node.parent_node()
         next_worldstate = next_node.worldstate
 
         if action.is_valid(current_worldstate):

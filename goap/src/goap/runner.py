@@ -150,8 +150,8 @@ class Runner(object):
 
         node = start_node
         with sm:
-            while len(node.parent_nodes_path_list) > 0: # skipping the goal node at the end
-                next_node = node.parent_nodes_path_list[-1]
+            while not node.is_goal(): # skipping the goal node at the end
+                next_node = node.parent_node()
 
                 if isinstance(node.action, SmachStateAction):
                     StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),

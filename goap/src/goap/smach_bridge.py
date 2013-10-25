@@ -28,7 +28,7 @@ class GOAPActionWrapperState(State):
         if not self.node.action.check_freeform_context():
             print "Action's freeform context isn't valid! Aborting wrapping state for %s", self.node.action
             return 'aborted'
-        next_node = self.node.parent_nodes_path_list[-1]
+        next_node = self.node.parent_node()
         self.node.action.run(next_node.worldstate)
         return 'succeeded'
 
