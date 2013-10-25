@@ -84,7 +84,7 @@ class WaitForMsgState(smach.State):
     """This class acts as a generic message listener with blocking, timeout, latch and flexible usage.
 
     It is meant to be extended with a case specific class that initializes this one appropriately
-    and contains the msg_cb (or overloads execute if really needed).
+    and contains the msg_cb (or overrides execute if really needed).
 
     Its waitForMsg method implements the core functionality: waiting for the message, returning
     the message itself or None on timeout.
@@ -100,14 +100,14 @@ class WaitForMsgState(smach.State):
     If msg_cb returns False, execute() will return "aborted".
     If msg_cb has no return statement, execute() will act as described above.
 
-    If thats still not enough, execute() might be overloaded.
+    If thats still not enough, execute() might be overridden.
 
     latch: If True waitForMsg will return the last received message, so one message might be returned indefinite times.
-    timeout: Seconds to wait for a message, defaults to 60.
+    timeout: Seconds to wait for a message, defaults to None, disabling timeout
     output_keys: Userdata keys that the message callback needs to write to.
     """
 
-    def __init__(self, topic, msg_type, msg_cb=None, output_keys=None, latch=False, timeout=10):
+    def __init__(self, topic, msg_type, msg_cb=None, output_keys=None, latch=False, timeout=None):
         if output_keys is None:
             output_keys = []
         smach.State.__init__(self, outcomes=['succeeded', 'aborted', 'preempted'], output_keys=output_keys)
@@ -126,8 +126,9 @@ class WaitForMsgState(smach.State):
     def waitForMsg(self):
         """Await and return the message or None on timeout."""
         rospy.loginfo('Waiting for message...')
-        timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
-        while rospy.Time.now() < timeout_time:
+        if self.timeout is not None:
+            timeout_time = rospy.Time.now() + rospy.Duration.from_sec(self.timeout)
+        while self.timeout is None or rospy.Time.now() < timeout_time:
             self.mutex.acquire()
             if self.msg is not None:
                 rospy.loginfo('Got message.')
@@ -172,11 +173,24 @@ class WaitForMsgState(smach.State):
 
 
 class CheckSmachEnabledState(WaitForMsgState):
-    def __init__(self):
-        WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True)
+    def __init__(self, **kwargs):
+        WaitForMsgState.__init__(self, '/enable_smach', Bool, msg_cb=self._msg_cb, latch=True, **kwargs)
 
     def _msg_cb(self, msg, ud):
         return msg is not None and msg.data
+
+
+def get_sleep_until_smach_enabled_smach():
+    sm = smach.StateMachine(outcomes=['succeeded', 'preempted'])
+    with sm:
+        smach.StateMachine.add('CHECK_ENABLED',
+                               CheckSmachEnabledState(timeout=None),
+                               transitions={'aborted':'SLEEP',
+                                            'succeeded':'succeeded'})
+        smach.StateMachine.add('SLEEP',
+                               SleepState(3),
+                               transitions={'succeeded':'CHECK_ENABLED'})
+    return sm
 
 
 
@@ -263,7 +277,7 @@ def get_current_robot_position(frame='/map'):
     """
     try:
         trans, rot = TransformListenerSingleton.get().lookupTransform(frame, '/base_link', rospy.Time(0))
-        (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
+        (_roll, _pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
         return trans[0], trans[1], yaw
     except (tf.LookupException, tf.ConnectivityException) as e:
         print e
@@ -287,7 +301,7 @@ def execute_smach_container(smach_container, enable_introspection=False,
 
     if enable_introspection:
         # Wait for ctrl-c to stop the application
-        rospy.spin()
+        rospy.spin() # TODO: remove spinning or make optional per parameter
         sis.stop()
 
     return outcome

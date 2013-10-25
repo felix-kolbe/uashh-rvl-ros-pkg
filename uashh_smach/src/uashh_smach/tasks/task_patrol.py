@@ -14,7 +14,27 @@ import uashh_smach.util as util
 
 
 
+def get_per_goal_subsmach():
+    sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+                  connector_outcome='succeeded',
+                  input_keys=['x', 'y', 'yaw'])
+
+    with sq:
+        # check for permission
+        Sequence.add('SLEEP_UNTIL_ENABLED', util.get_sleep_until_smach_enabled_smach())
+        # nav to goal
+        Sequence.add('MOVE_BASE_GOAL', move_base.MoveBaseState(),
+                     remapping={'x':'x',
+                                'y':'y',
+                                'yaw':'yaw'}
+                     )
+        # wait
+        Sequence.add('PAUSE_AT_GOAL', util.SleepState(5))
+    return sq
+
+
 def get_patrol_smach():
+
     sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
                   connector_outcome='succeeded')
 
@@ -61,34 +81,23 @@ def get_patrol_smach():
 
         ## action
 
-        # nav to goal 1
-        Sequence.add('MOVE_BASE_GO_1', move_base.MoveBaseState(),
+        # goal 1
+        Sequence.add('MOVE_GOAL_1', get_per_goal_subsmach(),
                      remapping={'x':'goal_position_1_x',
                                 'y':'goal_position_1_y',
                                 'yaw':'goal_position_1_yaw'
                                 },
-#                     transitions={'aborted':'MOVE_BASE_RETURN'}
-                     transitions={'aborted':'PAUSE_AT_GOAL_1'}
+                     transitions={'aborted':'MOVE_GOAL_2'}
                      )
 
-        # wait
-        Sequence.add('PAUSE_AT_GOAL_1', util.SleepState(5))
-
-        # nav to goal 2
-        Sequence.add('MOVE_BASE_GO_2', move_base.MoveBaseState(),
+        # goal 2
+        Sequence.add('MOVE_GOAL_2', get_per_goal_subsmach(),
                      remapping={'x':'goal_position_2_x',
                                 'y':'goal_position_2_y',
-                                'yaw':'goal_position_2_yaw'
-                                },
-#                     transitions={'aborted':'MOVE_BASE_RETURN'}
-                     transitions={'aborted':'PAUSE_AT_GOAL_2'}
+                                'yaw':'goal_position_2_yaw'},
+                     transitions={'aborted':'MOVE_GOAL_1',
+                                  'succeeded':'MOVE_GOAL_1'}    # continue with goal 1
                      )
-
-        # wait
-        Sequence.add('PAUSE_AT_GOAL_2', util.SleepState(5),
-                     transitions={'succeeded':'MOVE_BASE_GO_1'}     # loop
-                     )
-
 
         ## ending
 
@@ -96,8 +105,7 @@ def get_patrol_smach():
         Sequence.add('MOVE_BASE_RETURN', move_base.MoveBaseState(),
                      remapping={'x':'saved_position_x',
                                 'y':'saved_position_y',
-                                'yaw':'saved_position_yaw'
-                                }
+                                'yaw':'saved_position_yaw'}
                      )
 
     return sq

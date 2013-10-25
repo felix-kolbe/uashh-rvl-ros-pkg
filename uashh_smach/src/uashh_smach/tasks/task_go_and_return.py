@@ -14,7 +14,7 @@ import uashh_smach.util as util
 
 
 def get_go_and_return_smach():
-    sq = Sequence(outcomes=['succeeded', 'aborted', 'preempted'],
+    sq = Sequence(outcomes=['aborted', 'preempted'],
                   connector_outcome='succeeded')
 
     sq.userdata.goal_position_x = 1
@@ -38,7 +38,6 @@ def get_go_and_return_smach():
 
         # wait for new goal
         Sequence.add('WAIT_FOR_GOAL', wfg,
-#        Sequence.add('WAIT_FOR_GOAL', move_base.WaitForGoalState(),
                      remapping={'x':'goal_position_x',
                                 'y':'goal_position_y',
                                 'yaw':'goal_position_yaw'}

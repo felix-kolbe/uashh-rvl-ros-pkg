@@ -12,10 +12,11 @@ import random
 
 import smach
 from smach import State, Sequence
-from smach_ros import SimpleActionState
+from smach_ros import SimpleActionState, ServiceState
 
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction
-from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion 
+from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
+from nav_msgs.srv import GetPlan, GetPlanRequest
 
 import uashh_smach.util as util
 from uashh_smach.util import WaitForMsgState
@@ -96,7 +97,31 @@ class MoveBaseState(SimpleActionState):
         goal.target_pose.pose.position = Point(userdata.x, userdata.y, 0)
         return goal
 
-        
+
+class CheckForPlanState(ServiceState):
+    """Check whether move_base can make a plan from start to goal given as
+    tuples (x, y, yaw) via userdata"""
+    def __init__(self, frame='/map'):
+        ServiceState.__init__('move_base/make_plan', GetPlan,
+                              input_keys=['x', 'y', 'yaw', 'start_x', 'start_y', 'start_yaw'],
+                              request_cb=self.__request_cb)
+        self.frame = frame
+
+    def __request_cb(self, userdata, request):
+        request = GetPlanRequest()
+        request.goal.header.stamp = rospy.Time.now()
+        request.goal.header.frame_id = self.frame
+        request.goal.pose = position_tuple_to_pose(userdata.x, userdata.y, userdata.yaw)
+
+        request.start.header.stamp = rospy.Time.now()
+        request.start.header.frame_id = self.frame
+        request.goal.pose = position_tuple_to_pose(userdata.start_x, userdata.start_y, userdata.start_yaw)
+        #request.start.pose = position_tuple_to_pose(*util.get_current_robot_position(self.frame))
+
+        request.tolerance = 0.2 # meters in x/y
+        return request
+
+
 class CalcRandomGoalState(State):
     """Return a random (x, y, yaw) tuple via userdata.
 
