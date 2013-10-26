@@ -16,7 +16,7 @@ from std_msgs.msg import Empty
 
 from common import Action, Condition, Precondition, Effect, VariableEffect
 
-from smach_bridge import SmachStateAction
+from smach_bridge import SMACHStateWrapperAction
 
 
 ## ROS specific class specializations
@@ -69,11 +69,11 @@ class ResetBumperAction(Action):
 
 # TODO: implement denial of trivial actions (not changing conditions), if they're actually concerned?
 
-class MoveBaseAction(SmachStateAction):
+class MoveBaseAction(SMACHStateWrapperAction):
 
     def __init__(self):
         self._condition = Condition.get('robot.pose')
-        SmachStateAction.__init__(self, MoveBaseState(),
+        SMACHStateWrapperAction.__init__(self, MoveBaseState(),
                         [Precondition(Condition.get('robot.bumpered'), False),
                          Precondition(Condition.get('robot.arm_folded'), True)],
                         [VariableEffect(self._condition)])

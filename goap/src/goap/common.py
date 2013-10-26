@@ -6,6 +6,17 @@ Created on Jul 2, 2013
 
 
 
+def no_multilines(string):
+    """anti-multiline workaround for ROS message types"""
+    return string.replace('\n  ', ' ').replace(' \n', ' ').replace('\n', ' ')
+
+def stringify_dict(dict_, delim=', '):
+    return delim.join(['%s: %s' % (c, v) for (c, v) in dict_.iteritems()])
+
+def stringify(iterable, delim=', '):
+    return delim.join([str(e) for e in iterable])
+
+
 
 class WorldState(object):
     """Storage for values of conditions."""
@@ -17,11 +28,7 @@ class WorldState(object):
 
     def __str__(self):
         return '%s {%s}' % (self.__class__.__name__,
-                            ', '.join(['%s: %s' % (c, v) for (c, v)
-                                       in self._condition_values.iteritems()]
-                                      # anti-multiline workaround for message types:
-                                      ).replace('\n  ', ' ').replace(' \n', ' ').replace('\n', ' ')
-                            )
+                            no_multilines(stringify_dict(self._condition_values)))
 
     def __repr__(self):
         return '<WorldState %X values=%s>' % (id(self), self._condition_values)
@@ -181,7 +188,7 @@ class VariableEffect(object):
     matches every worldstate.
 
     To make an effect reach not every possible value of its condition,
-    subclass and overload _is_reachable.
+    subclass and override _is_reachable.
     """
     def __init__(self, condition):
 #        Effect.__init__(self, condition, None)
@@ -213,6 +220,9 @@ class Goal(object):
 
     def __init__(self, preconditions):
         self._preconditions = preconditions
+
+    def __str__(self):
+        return self.__class__.__name__
 
     def __repr__(self):
         return '<Goal preconditions=%s>' % self._preconditions

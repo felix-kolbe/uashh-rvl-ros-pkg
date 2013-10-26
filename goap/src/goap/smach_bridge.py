@@ -6,7 +6,7 @@ Created on Sep 9, 2013
 
 from smach import State
 
-from common import *
+from common import Condition, Precondition, Effect, VariableEffect, Action
 
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_state
@@ -17,7 +17,7 @@ ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
 ARM_FOLDED_POSE_NAMED = dict(zip(ARM_FOLDED_POSE_NAMES, ARM_FOLDED_POSE))
 
 
-class GOAPActionWrapperState(State):
+class GOAPNodeWrapperState(State):
     """Used (by the runner) to add GOAP nodes (aka instances of GOAP actions)
     to a SMACH state machine"""
     def __init__(self, node):
@@ -25,6 +25,12 @@ class GOAPActionWrapperState(State):
         self.node = node
 
     def execute(self, userdata):
+#        if not self.node.action.is_valid(current_worldstate): TODO: current worldstate not known
+#            print "Action isn't valid to worldstate! Aborting executor"
+#            print ' action: %r' % self.node.action
+#            print ' worldstate:', self.node.worldstate
+#            return 'aborted'
+#        print "Action %s valid to worldstate" % self.node.action
         if not self.node.action.check_freeform_context():
             print "Action's freeform context isn't valid! Aborting wrapping state for %s", self.node.action
             return 'aborted'
@@ -33,7 +39,7 @@ class GOAPActionWrapperState(State):
         return 'succeeded'
 
 
-class SmachStateAction(Action):
+class SMACHStateWrapperAction(Action):
     """A special Action to wrap a SMACH state.
 
     Subclass this class to make a SMACH state available to GOAP planning.
@@ -43,25 +49,31 @@ class SmachStateAction(Action):
         self.state = state
 
     def get_remapping(self):
-        """Overload this to set a remapping.
+        """Override this to set a remapping.
         Actually planned for future use"""
         return {}
 
     def translate_worldstate_to_userdata(self, next_worldstate, userdata):
-        """Overload to make worldstate data available to the state."""
+        """Override to make worldstate data available to the state."""
+        pass
+
+    def translate_userdata_to_worldstate(self, userdata, next_worldstate):
+        """Override to make the state's output available to the worldstate."""
         pass
 
     def run(self, next_worldstate):
-        self.state.execute()
-        raise NotImplementedError # yet
+        userdata = UserData()
+        self.translate_worldstate_to_userdata(next_worldstate, userdata)
+        self.state.execute(userdata)
+        raise NotImplementedError, "write a test and remove this raise" # TODO: write test, remove raise
 
 
 
 
-class LookAroundAction(SmachStateAction):
+class LookAroundAction(SMACHStateWrapperAction):
 
     def __init__(self):
-        SmachStateAction.__init__(self, get_lookaround_smach(glimpse=True),
+        SMACHStateWrapperAction.__init__(self, get_lookaround_smach(glimpse=True),
                                   [Precondition(Condition.get('arm_can_move'), True)],
                                   [VariableEffect(Condition.get('awareness'))])
 
@@ -75,10 +87,10 @@ class LookAroundAction(SmachStateAction):
 
 
 
-class FoldArmAction(SmachStateAction):
+class FoldArmAction(SMACHStateWrapperAction):
 
     def __init__(self):
-        SmachStateAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE),
+        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE),
                                   [Precondition(Condition.get('arm_can_move'), True),
                                    # TODO: maybe remove necessary anti-effect-preconditions
                                    # the currently available alternative would be to use a

@@ -8,7 +8,7 @@ Regressive A* planner with Node, Planner and PlanExecutor
 
 from collections import deque
 
-from common import ActionBag, WorldState
+from common import WorldState
 
 
 
@@ -35,6 +35,9 @@ class Node(object):
         self.parent_actions_path_list = parent_actions_path_list
 
         self.heuristic_distance = None
+
+    def __str__(self):
+        return 'Node %X tCost=%d' % (id(self), self.total_cost())
 
     def __repr__(self):
 #        return '<Node %X cost=%s heur_dist=%s action=%s worldstate=%s>' % \

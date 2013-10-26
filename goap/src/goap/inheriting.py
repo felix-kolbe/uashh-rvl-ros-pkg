@@ -4,7 +4,7 @@ Created on Jul 25, 2013
 @author: felix
 '''
 
-from common import *
+from common import Condition, Precondition, Effect, VariableEffect, Action
 
 
 class Memory(object):

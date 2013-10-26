@@ -13,11 +13,11 @@ from smach import State, StateMachine
 
 from uashh_smach.util import execute_smach_container
 
-from common import ActionBag, Condition, WorldState
+from common import ActionBag, Condition, WorldState, stringify, stringify_dict
 from inheriting import Memory
 from planning import Planner, PlanExecutor
 from introspection import Introspector
-from smach_bridge import SmachStateAction, GOAPActionWrapperState
+from smach_bridge import SMACHStateWrapperAction, GOAPNodeWrapperState
 
 
 
@@ -153,7 +153,8 @@ class Runner(object):
             while not node.is_goal(): # skipping the goal node at the end
                 next_node = node.parent_node()
 
-                if isinstance(node.action, SmachStateAction):
+                if isinstance(node.action, SMACHStateWrapperAction):
+                    # TODO: when smach executes SMACHStateWrapperActions, their action.check_freeform_context() is never called!
                     StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
                                           node.action.state,
                                           ['succeeded'],
@@ -161,7 +162,7 @@ class Runner(object):
                     node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
                 else:
                     StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                          GOAPActionWrapperState(node),
+                                          GOAPNodeWrapperState(node),
                                           ['succeeded'])
 
                 node = next_node
