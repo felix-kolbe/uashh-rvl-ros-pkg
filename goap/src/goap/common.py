@@ -90,6 +90,8 @@ class Condition(object):
     """
 
     def __init__(self, state_name):
+        assert state_name not in Condition._conditions_dict, \
+            "Condition '" + state_name + "' had already been created previously!"
         self._state_name = state_name
 
     def __str__(self):
@@ -178,7 +180,8 @@ class Effect(object):
         # TODO: remove me as I'm only for forward planning?
         worldstate.set_condition_value(self._condition, self._new_value)
 
-    def matches_condition(self, worldstate):
+    def matches_condition(self, worldstate, start_worldstate):
+        """Return whether this effect can reach worldstate from start_worldstate"""
         return worldstate.get_condition_value(self._condition) == self._new_value
 
 
@@ -204,11 +207,15 @@ class VariableEffect(object):
         # TODO: remove me as I'm only for forward planning?
 #         worldstate.memory.set_value(self._condition, self._new_value)
 
-    def matches_condition(self, worldstate):
-        return self._is_reachable(worldstate.get_condition_value(self._condition))
+    def matches_condition(self, worldstate, start_worldstate):
+        """Return whether this effect can reach worldstate from start_worldstate"""
+        return self._is_reachable(worldstate.get_condition_value(self._condition),
+                                  start_worldstate.get_condition_value(self._condition))
 
-    def _is_reachable(self, value):
-        """Return a Boolean whether this variable effect can reach the given value.
+    def _is_reachable(self, value, start_value):
+        """Return a Boolean whether this variable effect can reach the given
+        value from the given start_value. If this effect can reach certain
+        values from any value, the start_value just might be ignored.
 
         Defaults to True, subclass to limit variability.
         """
@@ -286,11 +293,11 @@ class Action(object):
         """Override to add context checks required to run this action that cannot be satisfied by the planner."""
         return True
 
-    def has_satisfying_effects(self, worldstate, unsatisfied_conditions):
+    def has_satisfying_effects(self, worldstate, start_worldstate, unsatisfied_conditions):
         """Return True if at least one of own effects matches unsatisfied_conditions."""
         for effect in self._effects:
             if effect._condition in unsatisfied_conditions: # TODO: maybe put this check into called method // no, would make the return value trilateral
-                if effect.matches_condition(worldstate):
+                if effect.matches_condition(worldstate, start_worldstate):
                     return True
         return False
 
@@ -343,7 +350,9 @@ class ActionBag(object):
 
         # check which action might satisfy those conditions
         for action in self._actions:
-            if action.has_satisfying_effects(node_worldstate, unsatisfied_conditions_set):
+            if not action.check_freeform_context():
+                print 'ignoring action with bad freeform context: ', action # TODO: move to one time call
+            elif action.has_satisfying_effects(node_worldstate, start_worldstate, unsatisfied_conditions_set):
                 print 'helping action: ', action
                 yield action
             else:
