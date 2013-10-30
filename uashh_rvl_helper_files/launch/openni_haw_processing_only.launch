@@ -1,0 +1,14 @@
+<launch>
+
+  <!-- Load openni part converting images to pointcloud -->
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <arg name="camera" value="kinect1" />
+    <arg name="load_driver" value="false" />
+    <arg name="publish_tf" value="false" />
+
+    <arg name="manager" value="kinect1_nodelet_manager_proc" />
+    # todo: renaming manager does not work yet,
+    also topics have to be renamed which isn't possible
+  </include>
+
+</launch>

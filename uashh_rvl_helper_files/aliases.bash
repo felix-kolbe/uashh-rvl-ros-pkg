@@ -22,7 +22,7 @@ alias mla_mock='jsp'
 alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch'
 alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw_mounted_on_extension_downright.launch'
 alias cam='roslaunch camera1394 haw_cam.launch'
-alias kinect='roslaunch '$HELPER_PKG' openni_fuerte_with_calibration_haw.launch'
+alias kinect='roslaunch '$HELPER_PKG' openni_haw.launch'
 alias cm='roslaunch '$HELPER_PKG' computer_monitor.launch'
 
 
