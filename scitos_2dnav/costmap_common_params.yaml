@@ -1,10 +1,9 @@
-obstacle_range: 2.5 # 2.5
-raytrace_range: 4.0 # 3.0
+
+## old footprint:
 #footprint: [[355,0], [-75+179,-310], [-75-179,-310], [-75-370,-100], [-75-370,100], [-75-179,310], [-75+179,-310]]
 #footprint: [[0.300,0], [0.104,-0.310], [-0.154,-0.310], [-0.445,-0.100], [-0.445,0.100], [-0.154,0.310], [0.104,0.310]]
 
-
-#### better footprint:
+## better footprint:
 # points relative to robots circle center:
 # cos(pi/6)*310 = 286,4
 # sin(pi/6)*310 = 155
@@ -14,20 +13,56 @@ raytrace_range: 4.0 # 3.0
 # python script to translate them 75 cm to base_link:
 # for p in l: p[0] = round(p[0]-0.075, 3)
 # print l
-footprint: [[0.235, 0], [0.211, 0.155], [0.08, 0.286], [-0.075, 0.31], [-0.275, 0.25], [-0.505, 0.105], [-0.505, -0.105], [-0.275, -0.25], [-0.075, -0.31], [0.08, -0.286], [0.211, -0.155]]
+#footprint: [[0.235, 0], [0.211, 0.155], [0.08, 0.286], [-0.075, 0.31], [-0.275, 0.25], [-0.505, 0.105], [-0.505, -0.105], [-0.275, -0.25], [-0.075, -0.31], [0.08, -0.286], [0.211, -0.155]]
+
+## footprint that is extendend in the front:
+footprint: [[0.385, 0], [0.361, 0.155], [0.23, 0.286], [-0.075, 0.31], [-0.275, 0.25], [-0.505, 0.105], [-0.505, -0.105], [-0.275, -0.25], [-0.075, -0.31], [0.23, -0.286], [0.361, -0.155]]
 
 
 #robot_radius: 0.350
-inflation_radius: 0.50 # 0.55
+#robot_radius: 0.5
+
+inflation_radius: 0.5 # 0.50 # def: 0.55
+
+
+obstacle_range: 2.5 # 2.5
+raytrace_range: 4.0 # 3.0
+
+max_obstacle_height: 1.9 # robot is about 1.95 m high when fully stretched but unlikely to move in this position
+
 
 map_type: costmap # def: voxel
 publish_voxel_map: false
 
-#observation_sources: laser_scan_sensor point_cloud_sensor
-#laser_scan_sensor: {sensor_frame: frame_name, data_type: LaserScan, topic: topic_name, marking: true, clearing: true}
-#point_cloud_sensor: {sensor_frame: frame_name, data_type: PointCloud, topic: topic_name, marking: true, clearing: true}
 
-observation_sources: laser_scan_sensor laser_scan_sensor_rear
-laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
-laser_scan_sensor_rear: {sensor_frame: laser_rear, data_type: LaserScan, topic: scan_rear, marking: true, clearing: true}
 
+observation_sources: laser_scan_sensor laser_scan_sensor_rear point_cloud_kinect_arm
+
+laser_scan_sensor:
+    sensor_frame: laser
+    data_type: LaserScan
+    topic: scan
+    marking: true
+    clearing: true
+    # expected_update_rate: 0.5
+
+laser_scan_sensor_rear:
+    sensor_frame: laser_rear
+    data_type: LaserScan
+    topic: scan_rear
+    marking: true
+    clearing: true
+    # expected_update_rate: 0.2
+
+point_cloud_kinect_arm:
+    data_type: PointCloud2
+    topic: /kinect1/depth/points
+    marking: true
+    clearing: false
+    min_obstacle_height: 0.1
+    obstacle_range: 2.5
+    raytrace_range: 4.0
+    # expected_update_rate: 1
+
+
+# transform_tolerance: 1 # def: 0.2
