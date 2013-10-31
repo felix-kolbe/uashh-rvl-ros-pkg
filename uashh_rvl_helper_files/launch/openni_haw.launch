@@ -1,0 +1,25 @@
+<launch>
+
+  <!-- Load basic openni -->
+  <include file="$(find openni_launch)/launch/openni.launch">
+    <arg name="rgb_camera_info_url" value="package://uashh_rvl_helper_files/config/rgb.yaml" />
+    <arg name="depth_camera_info_url" value="package://uashh_rvl_helper_files/config/depth.yaml" />
+    <arg name="camera" value="kinect1" />
+    <!-- disabling registration as of openni driver bug since jan/feb'13 -->
+    <arg name="depth_registration" value="false" />
+
+    <!-- todo: for driver only remove the processing part from the 
+        openni.launch file, the is no argument yet
+    -->
+  </include>
+
+  <!-- enable 12V power for kinect -->
+  <node pkg="dynamic_reconfigure" type="dynparam" name="$(anon dynparam)" args="set /metralabs_ros EBC1_Enable12V true" />
+
+  <!-- enable data skip -->
+  <node pkg="dynamic_reconfigure" type="dynparam" name="$(anon dynparam)" args="set /kinect1/driver data_skip 10" />
+
+  <!-- Load Kinect-hand-calibration -->
+  <include file="$(find kinect_hand_calibration)/launch/kinect_hand_calibration_haw.launch"/>
+
+</launch>

@@ -1,2 +1,11 @@
+
+# the following both have not been that helpful:
+
+# planner_frequency: 0 # 0.05 # def: 0
+
+# oscillation_timeout: 0 #5.0 # def: 0.0
+# oscillation_distance: 0.3 # def: 0.5
+
+
 NavfnROS:
   allow_unknown: true

@@ -5,32 +5,39 @@
 <include file="$(find )/launch/.launch"/>
 -->
 
+
 <!-- scitos and arm -->
 <include file="$(find metralabs_ros)/launch/scitos_haw_schunk_start.launch"/>
 
+
 <!-- kinect -->
 <include file="$(find uashh_rvl_helper_files)/launch/openni_fuerte_with_calibration_haw.launch"/>
-<include file="$(find kinect_movement_filter)/launch/kinect_movement_filter_haw.launch"/>
+<include file="$(find kinect_movement_filter)/launch/kinect_movement_filter_haw_noregistration.launch"/>
+<!-- disable registration -->
+<node pkg="dynamic_reconfigure" type="dynparam" name="$(anon dynparam)" args="set /kinect1/driver depth_registration false" />
+
 
 <!-- 3d nav -->
-<include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_arm_navigation_collision_map.launch"/>
-<include file="$(find uashh_rvl_helper_files)/launch/octomap_mapping_haw_no_motion.launch"/>
-<include file="$(find uashh_rvl_helper_files)/launch/collider_haw_no_motion.launch"/>
+<!--<include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_arm_navigation_collision_map.launch"/>-->
+<!--<include file="$(find uashh_rvl_helper_files)/launch/octomap_mapping_haw_no_motion.launch"/>-->
+<!--<include file="$(find uashh_rvl_helper_files)/launch/collider_haw_no_motion.launch"/>-->
 
 
 <!-- 2d nav -->
-<include file="$(find rotoscan_node)/launch/laserscanner_w_tf.launch"/>
+<include file="$(find uashh_rvl_helper_files)/launch/laserscanner_haw.launch"/>
+<include file="$(find uashh_rvl_helper_files)/launch/laserscanner_hokuyo_haw_mounted_on_extension_downright.launch"/>
 <include file="$(find uashh_rvl_helper_files)/launch/slam_gmapping_haw.launch"/>
-<!-- - ->
-<include file="$(find uashh_rvl_helper_files)/launch/move_base_haw.launch"/>
-<!- - -->
-<!-- -->
+<!--<include file="$(find uashh_rvl_helper_files)/launch/move_base_haw.launch"/>-->
 <include file="$(find scitos_2dnav)/move_base.launch"/>
-<node pkg="cmd_vel_filter" type="cmd_vel_filter" name="cmd_vel_filter"/>
-<!-- -->
+
 
 <!-- remote control -->
 <node pkg="teleop_arm_controller" type="teleop_arm_controller" name="teleop_arm_controller"/>
 <include file="$(find teleop_ps3)/launch/teleop_ps3.launch"/>
+
+
+<!-- diagnostics -->
+<node pkg="diagnostic_aggregator" type="aggregator_node" name="aggregator_node"/>
+
 
 </launch>

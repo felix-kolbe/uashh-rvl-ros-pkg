@@ -675,7 +675,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 87; 100; 96
-    Fixed Frame: /map
+    Fixed Frame: /odom
   Name: root
   Tools:
     - Class: rviz/Interact
@@ -695,17 +695,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 4.53617
+      Distance: 12.1061
       Focal Point:
-        X: -0.0657998
-        Y: 0.126387
-        Z: 0.240178
+        X: -0.40579
+        Y: 0.243141
+        Z: -0.493911
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.954797
+      Pitch: 1.5548
       Target Frame: /base_link
       Value: Orbit (rviz)
-      Yaw: 4.53063
+      Yaw: 3.70882
     Saved: ~
 Window Geometry:
   Displays:

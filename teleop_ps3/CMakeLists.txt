@@ -28,7 +28,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #target_link_libraries(example ${PROJECT_NAME})
 
+rosbuild_add_boost_directories()
 
 rosbuild_add_executable(teleop_ps3 src/teleop_ps3.cpp)
 rosbuild_add_compile_flags(teleop_ps3 -std=c++0x)
+rosbuild_link_boost(teleop_ps3 thread)
 

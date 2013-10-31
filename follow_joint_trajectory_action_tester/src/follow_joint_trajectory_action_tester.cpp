@@ -14,11 +14,11 @@ int main (int argc, char **argv)
 	// true causes the client to spin its own thread
 	actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> ac("schunk/follow_joint_trajectory", true);
 
-	ROS_INFO("Waiting for action server to start.");
+	ROS_INFO("Waiting for action server..");
 	// wait for the action server to start
 	ac.waitForServer(); //will wait for infinite time
 
-	ROS_INFO("Action server started, sending goal.");
+	ROS_INFO("Action server available, sending goal..");
 	// send a goal to the action
 	control_msgs::FollowJointTrajectoryGoal goal;
 
@@ -79,8 +79,14 @@ int main (int argc, char **argv)
 
 	ac.sendGoal(goal);
 
+	ROS_INFO("Sleeping..");
+	ros::Duration(3).sleep();
+
+	ROS_INFO("Cancelling goal..");
+	ac.cancelAllGoals();
+
 	//wait for the action to return
-	bool finished_before_timeout = ac.waitForResult(ros::Duration(30.0));
+	bool finished_before_timeout = ac.waitForResult(ros::Duration(10.0));
 
 	if (finished_before_timeout)
 	{
