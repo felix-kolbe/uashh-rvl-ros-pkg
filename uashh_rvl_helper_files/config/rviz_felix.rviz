@@ -4,19 +4,19 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Global Options1
+        - /LocalPathPlan1
+        - /loc_cm/inflated_obstacles1
         - /OctoMapPointCloud1/Autocompute Value Bounds1
-        - /CM/occupied cells2/Namespaces1
       Splitter Ratio: 0.636585
     Tree Height: 756
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
     Expanded:
-      - /2D Pose Estimate1
       - /2D Nav Goal1
-      - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.468401
+    Splitter Ratio: 0.434783
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -26,7 +26,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: LaserScan rear
   - Class: rviz/Help
     Name: Help
 Visualization Manager:
@@ -50,9 +50,27 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: false
+    - Alpha: 0.5
+      Cell Size: 0.5
+      Class: rviz/Grid
+      Color: 47; 47; 47
+      Enabled: false
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 100
+      Reference Frame: <Fixed Frame>
+      Value: false
     - Class: rviz/TF
       Enabled: true
-      Frame Timeout: 15
+      Frame Timeout: 6
       Frames:
         /CameraMount:
           Value: true
@@ -107,9 +125,9 @@ Visualization Manager:
         All Enabled: true
       Marker Scale: 0.4
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
-      Show Names: true
+      Show Names: false
       Tree:
         /map:
           /odom:
@@ -148,7 +166,7 @@ Visualization Manager:
                 {}
       Update Interval: 0
       Value: true
-    - Alpha: 1
+    - Alpha: 0.8
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -243,16 +261,16 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Angle Tolerance: 0.1
+    - Angle Tolerance: 0.3
       Class: rviz/Odometry
-      Color: 255; 25; 0
-      Enabled: true
-      Keep: 100
-      Length: 1
+      Color: 255; 0; 0
+      Enabled: false
+      Keep: 20
+      Length: 0.3
       Name: Odometry
-      Position Tolerance: 0.1
-      Topic: ""
-      Value: true
+      Position Tolerance: 0.5
+      Topic: /odom
+      Value: false
     - Alpha: 0.5
       Buffer Length: 50
       Class: rviz/Range
@@ -270,7 +288,7 @@ Visualization Manager:
       Axis: Z
       Channel Name: x
       Class: rviz/LaserScan
-      Color: 0; 0; 255
+      Color: 255; 0; 0
       Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
@@ -281,7 +299,7 @@ Visualization Manager:
       Name: LaserScan
       Position Transformer: XYZ
       Queue Size: 10
-      Selectable: true
+      Selectable: false
       Size (Pixels): 3
       Size (m): 0.01
       Style: Points
@@ -298,7 +316,7 @@ Visualization Manager:
       Axis: Z
       Channel Name: intensity
       Class: rviz/LaserScan
-      Color: 0; 0; 255
+      Color: 255; 0; 0
       Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
@@ -309,7 +327,7 @@ Visualization Manager:
       Name: LaserScan rear
       Position Transformer: XYZ
       Queue Size: 10
-      Selectable: true
+      Selectable: false
       Size (Pixels): 3
       Size (m): 0.01
       Style: Points
@@ -317,7 +335,7 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 0.7
+    - Alpha: 1
       Class: rviz/Map
       Draw Behind: true
       Enabled: true
@@ -366,51 +384,34 @@ Visualization Manager:
       Shape: Arrow
       Topic: /move_base_task/goal
       Value: true
-    - Alpha: 1
-      Class: motion_planning_rviz_plugin/Planning
-      Collision Enabled: false
-      Enabled: false
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: ""
-      Loop Display: false
-      Name: Planning
-      Robot Description: robot_description
-      State Display Time: 0.05
-      Topic: ""
-      Value: false
-      Visual Enabled: true
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
+        Max Value: 0
+        Min Value: 0
         Value: true
       Axis: Z
-      Channel Name: path_cost
+      Channel Name: total_cost
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Max Color: 255; 255; 255
-      Max Intensity: 202
+      Max Intensity: 157.9
       Min Color: 0; 0; 0
-      Min Intensity: 0
+      Min Intensity: 7.6
       Name: move_base costs
       Position Transformer: XYZ
       Queue Size: 1
       Selectable: false
       Size (Pixels): 3
-      Size (m): 0.02
+      Size (m): 0.05
       Style: Spheres
       Topic: /move_base/TrajectoryPlannerROS/cost_cloud
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -428,12 +429,19 @@ Visualization Manager:
       Topic: /move_base/TrajectoryPlannerROS/local_plan
       Value: true
     - Alpha: 1
-      Buffer Length: 5
+      Buffer Length: 1
       Class: rviz/Path
       Color: 255; 0; 0
-      Enabled: false
+      Enabled: true
       Name: Navfn Path
       Topic: /move_base/NavfnROS/plan
+      Value: true
+    - Alpha: 1
+      Class: rviz/Polygon
+      Color: 11; 161; 255
+      Enabled: false
+      Name: glob_cm/footprint
+      Topic: /move_base/global_costmap/robot_footprint
       Value: false
     - Alpha: 0.5
       Class: rviz/GridCells
@@ -451,11 +459,11 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Class: rviz/Polygon
-      Color: 11; 161; 255
-      Enabled: false
-      Name: glob_cm/footprint
-      Topic: /move_base/global_costmap/robot_footprint
-      Value: false
+      Color: 170; 0; 255
+      Enabled: true
+      Name: loc_cm/footprint
+      Topic: /move_base/local_costmap/robot_footprint
+      Value: true
     - Alpha: 0.5
       Class: rviz/GridCells
       Color: 225; 24; 20
@@ -465,7 +473,7 @@ Visualization Manager:
       Value: true
     - Alpha: 0.5
       Class: rviz/GridCells
-      Color: 255; 147; 20
+      Color: 255; 201; 74
       Enabled: true
       Name: loc_cm/inflated_obstacles
       Topic: /move_base/local_costmap/inflated_obstacles
@@ -479,11 +487,11 @@ Visualization Manager:
       Value: true
     - Alpha: 1
       Class: rviz/Polygon
-      Color: 170; 0; 255
-      Enabled: true
-      Name: loc_cm/footprint
-      Topic: /move_base/local_costmap/robot_footprint
-      Value: true
+      Color: 25; 255; 0
+      Enabled: false
+      Name: navfn_cm/footprint
+      Topic: /move_base/NavfnROS/NavfnROS_costmap/robot_footprint
+      Value: false
     - Alpha: 1
       Class: rviz/GridCells
       Color: 25; 255; 0
@@ -504,13 +512,6 @@ Visualization Manager:
       Enabled: false
       Name: navfn_cm/unknown_space
       Topic: /move_base/NavfnROS/NavfnROS_costmap/unknown_space
-      Value: false
-    - Alpha: 1
-      Class: rviz/Polygon
-      Color: 25; 255; 0
-      Enabled: false
-      Name: navfn_cm/footprint
-      Topic: /move_base/NavfnROS/NavfnROS_costmap/robot_footprint
       Value: false
     - Class: rviz/Image
       Enabled: false
@@ -553,16 +554,16 @@ Visualization Manager:
       Min Intensity: 0
       Name: Kinect Point Cloud
       Position Transformer: XYZ
-      Queue Size: 1
+      Queue Size: 2
       Selectable: false
-      Size (Pixels): 3
-      Size (m): 0.01
+      Size (Pixels): 4
+      Size (m): 0.005
       Style: Points
       Topic: /kinect1/depth_registered/points
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 1
+    - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 3
@@ -590,6 +591,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: occupied_cells_vis_array
+      Name: OctoMapVisMarkers
+      Namespaces:
+        {}
+      Queue Size: 1
+      Value: false
     - Alpha: 1
       Class: mapping_rviz_plugin/CollisionMap
       Color: 255; 0; 0
@@ -611,15 +620,7 @@ Visualization Manager:
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /occupied_cells
-      Name: CM/occupied cells
-      Namespaces:
-        {}
-      Queue Size: 1
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /occupied_cells_vis_array
-      Name: CM/occupied cells
+      Name: CM/occupied cells ??
       Namespaces:
         {}
       Queue Size: 1
@@ -639,9 +640,41 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Alpha: 1
+      Class: motion_planning_rviz_plugin/Planning
+      Collision Enabled: false
+      Enabled: false
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: ""
+      Loop Display: false
+      Name: Planning
+      Robot Description: robot_description
+      State Display Time: 0.05
+      Topic: ""
+      Value: false
+      Visual Enabled: true
+    - Arrow Length: 0.3
+      Class: rviz/PoseArray
+      Color: 0; 85; 127
+      Enabled: true
+      Name: Goal Poses
+      Topic: /task_planning/goal_poses
+      Value: true
+    - Alpha: 0.8
+      Buffer Length: 40
+      Class: rviz/Path
+      Color: 0; 85; 0
+      Enabled: true
+      Name: Goal Paths
+      Topic: /task_planning/goal_paths
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 48; 48; 48
+    Background Color: 87; 100; 96
     Fixed Frame: /map
   Name: root
   Tools:
@@ -654,7 +687,7 @@ Visualization Manager:
     - Class: rviz/SetInitialPose
       Topic: /initialpose
     - Class: rviz/SetGoal
-      Topic: /move_base_task/goal
+      Topic: /move_base_simple/goal
     - Class: rviz/PublishPoint
       Single click: true
       Topic: /clicked_point
@@ -662,17 +695,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.62842
+      Distance: 4.53617
       Focal Point:
-        X: 0.734539
-        Y: -1.38733
-        Z: 0.987431
+        X: -0.0657998
+        Y: 0.126387
+        Z: 0.240178
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.599797
-      Target Frame: <Fixed Frame>
+      Pitch: 0.954797
+      Target Frame: /base_link
       Value: Orbit (rviz)
-      Yaw: 3.65037
+      Yaw: 4.53063
     Saved: ~
 Window Geometry:
   Displays:
@@ -681,20 +714,20 @@ Window Geometry:
   Help:
     collapsed: false
   Hide Left Dock: false
-  Hide Right Dock: true
+  Hide Right Dock: false
   Image Kinect Depth:
     collapsed: false
   Image Kinect RGB:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000001520000038afc0200000005fb000000240049006d0061006700650020004b0069006e0065006300740020004400650070007400680000000043000000160000001600fffffffb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000043000000170000001600fffffffb000000100044006900730070006c00610079007301000000430000038a000000e900fffffffb0000000800540069006d006500000002370000007f0000003b00fffffffb0000000800480065006c0070000000028e000001350000007c00ffffff000000010000011100000420fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000043000000850000006a00fffffffb0000000a0056006900650077007300000000ce00000180000000b600fffffffb0000001200530065006c0065006300740069006f006e00000002540000020f0000006a00ffffff000005380000038a00000004000000040000000800000008fc00000002000000020000000000000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000002000000000000018c0000038afc0200000005fb000000240049006d0061006700650020004b0069006e00650063007400200044006500700074006800000000430000008f0000001600fffffffb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000043000000dd0000001600fffffffb000000100044006900730070006c00610079007301000000430000038a000000e900fffffffb0000000800540069006d0065000000034e0000007f0000003b00fffffffb0000000800480065006c0070000000028e000001350000007c00ffffff00000001000001110000038afc0200000003fb0000001e0054006f006f006c002000500072006f007000650072007400690065007301000000430000006a0000006a00fffffffb0000000a0056006900650077007301000000b300000180000000b600fffffffb0000001200530065006c0065006300740069006f006e0100000239000001940000006a00ffffff000003e70000038a00000004000000040000000800000008fc00000002000000020000000000000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
-    collapsed: true
+    collapsed: false
   Time:
     collapsed: false
   Tool Properties:
-    collapsed: true
+    collapsed: false
   Views:
-    collapsed: true
+    collapsed: false
   Width: 1680
   X: 1920
   Y: 100
