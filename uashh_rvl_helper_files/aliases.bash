@@ -33,6 +33,8 @@ alias kmf='roslaunch kinect_movement_filter kinect_movement_filter_haw.launch'
 alias kmf_noreg='roslaunch kinect_movement_filter kinect_movement_filter_haw_noregistration.launch'
 alias diag_agg='rosrun diagnostic_aggregator aggregator_node'
 
+alias tasker='rosrun uashh_smach tasker.py'
+
 
 # computing nodes
 alias gmapp='roslaunch '$HELPER_PKG' slam_gmapping_haw.launch'
@@ -58,6 +60,7 @@ alias rviz='rosrun rviz rviz'
 alias rviz_felix='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.rviz'
 alias rviz_felix_vcg='rviz --display-config $(rospack find '$HELPER_PKG')/config/rviz_felix.vcg'
 alias smach_viewer='rosrun smach_viewer smach_viewer.py'
+alias sv='smach_viewer'
 
 alias camera_raw_compressed='rosrun image_view image_view image:=/camera/image_raw compressed'
 alias camera_small_compressed='rosrun image_view image_view image:=/camera/image_small compressed'
