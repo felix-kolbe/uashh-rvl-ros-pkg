@@ -50,8 +50,10 @@ class Runner(object):
         self.planner = Planner(self.actionbag, self.worldstate, None)
 
         self._introspector = None
-
         self._last_goal = None
+
+        self._preempt_requested = False # preemption propagation workaround (not multi-threadable)
+        self._current_smach = None # used to propagate preempt into generated smach
 
 
     def __repr__(self):
@@ -67,6 +69,23 @@ class Runner(object):
             self._introspector = Introspector()
             thread.start_new_thread(rospy.spin, ())
             print "introspection spinner started"
+
+
+    def request_preempt(self):
+        self._preempt_requested = True
+        if self._current_smach is not None:
+            self._current_smach.request_preempt()
+
+    def preempt_requested(self):
+        return self._preempt_requested or (self._current_smach.preempt_requested()
+                                           if self._current_smach is not None
+                                           else False)
+
+    def service_preempt(self):
+        self._preempt_requested = False
+        if self._current_smach is not None:
+            self._current_smach.service_preempt()
+
 
     def _update_worldstate(self):
         """update worldstate to reality"""
@@ -148,6 +167,9 @@ class Runner(object):
 
         # introspection
         for goal, start_node in goal_dict.iteritems():
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
             if start_node is not None:
                 self._introspector.publish(
                        start_node, '/MULTIPLE_GOALS/' + goal.__class__.__name__)
@@ -185,6 +207,9 @@ class Runner(object):
             if self._last_goal is goal:
                 continue
 
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
 
             plan = self.plan(goal)
             if plan is None:
@@ -216,6 +241,10 @@ class Runner(object):
         outcome = None
         # replan and retry on failure as long as a plan is found
         while not rospy.is_shutdown():
+            if self.preempt_requested():
+                self.service_preempt()
+                return 'preempted'
+
             start_node = self.update_and_plan(goal, tries, introspection)
 
             if start_node is None:
@@ -241,14 +270,17 @@ class Runner(object):
         # until we are succeeding or are preempted
         return outcome
 
+
     def execute_as_smach(self, start_node, introspection=False):
-        sm = self.path_to_smach(start_node)
+        sm = self._path_to_smach(start_node)
         # TODO: create proxies / userdata info for inner-sm introspection
-        outcome = execute_smach_container(sm, introspection, name='/SM_GENERATED')
+        self._current_smach = sm
+        outcome = execute_smach_container(sm, introspection, name='/GOAP_GENERATED_SMACH')
+        self._current_smach = None
         return outcome
 
 
-    def path_to_smach(self, start_node):
+    def _path_to_smach(self, start_node):
         sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted'])
 
         node = start_node
@@ -291,14 +323,11 @@ class GOAPPlannerState(State):
         self.runner = runner
 
     def execute(self, userdata):
-        # TODO: propagate preemption request into goap submachine
         # TODO: maybe make this class a smach.Container and add states dynamically?
         goal = self._build_goal(userdata)
         outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
         print "Generated GOAP sub state machine returns: %s" % outcome
         if self.preempt_requested():
-            rospy.logwarn("Preempt request was ignored as GOAPPlannerState cannot"
-                          " yet forward it to inner generated machine.")
             self.service_preempt()
             return 'preempted'
         return outcome
@@ -306,6 +335,14 @@ class GOAPPlannerState(State):
     def _build_goal(self, userdata):
         """Build and return a goap.Goal the planner should accomplish"""
         raise NotImplementedError
+
+    def request_preempt(self):
+        self.runner.request_preempt()
+        State.request_preempt(self)
+
+    def service_preempt(self):
+        self.runner.service_preempt()
+        State.service_preempt(self)
 
 
 # TODO: merge into GOAPRunnerState, renaming _build_goal to _build_goals
@@ -316,14 +353,11 @@ class GOAPGoalsState(State):
         self.runner = runner
 
     def execute(self, userdata):
-#        # TODO: propagate preemption request into goap submachine
 #        # TODO: maybe make this class a smach.Container and add states dynamically?
         goals = self._build_goals(userdata)
         outcome = self.runner.plan_and_execute_goals(goals)
         print "Generated GOAP sub state machine returns: %s" % outcome
         if self.preempt_requested():
-            rospy.logwarn("Preempt request was ignored as GOAPGoalsState cannot"
-                          " yet forward it to inner generated machine.")
             self.service_preempt()
             return 'preempted'
         return outcome
@@ -331,4 +365,12 @@ class GOAPGoalsState(State):
     def _build_goals(self, userdata):
         """Build and return a goap.Goal list the planner should accomplish"""
         raise NotImplementedError
+
+    def request_preempt(self):
+        self.runner.request_preempt()
+        State.request_preempt(self)
+
+    def service_preempt(self):
+        self.runner.service_preempt()
+        State.service_preempt(self)
 
