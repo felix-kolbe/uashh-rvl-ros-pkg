@@ -210,10 +210,7 @@ class Planner(object):
 
 class PlanExecutor(object):
 
-    def __init__(self):
-        pass
-
-    def execute(self, start_node):
+    def execute(self, start_node, introspector=None):
         """Execute a GOAP plan, return True on success, False otherwise"""
         assert len(start_node.parent_nodes_path_list) == len(start_node.parent_actions_path_list)
 
@@ -228,12 +225,15 @@ class PlanExecutor(object):
         next_node = start_node.parent_node()
         next_worldstate = next_node.worldstate
 
+        if introspector is not None:
+            introspector.publish_update(start_node)
+
         if action.is_valid(current_worldstate):
             if action.check_freeform_context():
                 print 'PlanExecutor now executing: ', action
                 action.run(next_worldstate)
 #                print 'Memory is now: ', action._memory   # only for mem actions
-                return self.execute(next_node)
+                return self.execute(next_node, introspector)
             else:
                 print "Action's freeform context isn't valid! Aborting executor"
                 print ' action: ', action
