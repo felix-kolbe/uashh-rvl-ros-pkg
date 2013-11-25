@@ -77,12 +77,12 @@ class LookAroundAction(SMACHStateWrapperAction):
                                   [Precondition(Condition.get('arm_can_move'), True)],
                                   [VariableEffect(Condition.get('awareness'))])
 
-    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+    def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
         assert effect is self._effects[0]
         # increase awareness by one
         precond_value = worldstate.get_condition_value(effect._condition) - 1
-        Precondition(effect._condition, precond_value, None).apply(worldstate)
+        return [Precondition(effect._condition, precond_value, None)]
 
 
 

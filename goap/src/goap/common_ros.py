@@ -116,11 +116,11 @@ class MoveBaseAction(SMACHStateWrapperAction):
         return True
 
 
-    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+    def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
         assert effect._condition is self._condition
         precond_value = start_worldstate.get_condition_value(Condition.get('robot.pose'))
-        Precondition(effect._condition, precond_value, None).apply(worldstate)
+        return [Precondition(effect._condition, precond_value, None)]
 
     def translate_worldstate_to_userdata(self, next_worldstate, userdata):
         goal_pose = next_worldstate.get_condition_value(Condition.get('robot.pose'))

@@ -104,7 +104,7 @@ class Condition(object):
         """Returns the current value, hopefully not blocking."""
         raise NotImplementedError
 
-    def update_value(self, worldstate):
+    def _update_value(self, worldstate):
         """Update the condition's current value to the given worldstate."""
         worldstate.set_condition_value(self, self.get_value())
 
@@ -131,7 +131,7 @@ class Condition(object):
     def initialize_worldstate(cls, worldstate):
         """Initialize the given worldstate with all known conditions and their current values."""
         for condition in cls._conditions_dict.values():
-            condition.update_value(worldstate)
+            condition._update_value(worldstate)
 
 
 
@@ -164,7 +164,7 @@ class Precondition(object):
 
 class Effect(object):
     # TODO: integrate conditions beside memory
-    # TODO: think about optional deviation
+    # TODO: think about optional deviation (coordinate with multiple action results)
 
     def __init__(self, condition, new_value):
         self._condition = condition
@@ -235,10 +235,8 @@ class Goal(object):
         return '<Goal preconditions=%s>' % self._preconditions
 
     def is_valid(self, worldstate):
-        for precondition in self._preconditions:
-            if not precondition.is_valid(worldstate):
-                return False
-        return True
+        return all(precondition.is_valid(worldstate)
+                   for precondition in self._preconditions)
 
     def apply_preconditions(self, worldstate):
         for precondition in self._preconditions:
@@ -272,11 +270,10 @@ class Action(object):
     ## following for executor
 
     def is_valid(self, worldstate):
-        """Return whether this action is applicable from the given worldstate on, i.e. all preconditions are."""
-        for precondition in self._preconditions:
-            if not precondition.is_valid(worldstate):
-                return False
-        return True
+        """Return whether this action is applicable from the given worldstate
+        on, i.e. all preconditions are valid."""
+        return all(precondition.is_valid(worldstate)
+                   for precondition in self._preconditions)
 
 
     ## following was for forward planner
@@ -309,14 +306,17 @@ class Action(object):
         # TODO: make required derivation of variable actions more obvious and fail-safe
         for precondition in self._preconditions:
             precondition.apply(worldstate)
-        # let the action apply ad hoc preconditions for its variable effects
+
+        # let the action generate preconditions for its variable effects
         var_effects = [effect for effect in self._effects if isinstance(effect, VariableEffect)]
         if len(var_effects) > 0:
-            self.apply_adhoc_preconditions_for_vareffects(var_effects, worldstate, start_worldstate)
+            g = self._generate_variable_preconditions(var_effects, worldstate, start_worldstate)
+            for precondition in g:
+                precondition.apply(worldstate)
 
-    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+    def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         """
-        Let the action itself apply preconditions for its variable effects.
+        Let the action itself generate variable preconditions for its variable effects.
 
         Must be implemented if the action contains variable effects.
         """

@@ -103,11 +103,11 @@ class MemoryIncrementerAction(Action):
     def run(self, next_worldstate):
         self._memory.set_value(self._state_name, self._memory.get_value(self._state_name) + self._increment)
 
-    def apply_adhoc_preconditions_for_vareffects(self, var_effects, worldstate, start_worldstate):
+    def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
         assert effect._condition is self._condition
         precond_value = worldstate.get_condition_value(effect._condition) - self._increment
-        Precondition(effect._condition, precond_value, None).apply(worldstate)
+        return [Precondition(effect._condition, precond_value, None)]
 
 
 
