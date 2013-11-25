@@ -4,7 +4,7 @@ Created on Sep 9, 2013
 @author: felix
 '''
 
-from smach import State
+from smach import State, UserData
 
 from common import Condition, Precondition, Effect, VariableEffect, Action
 
@@ -12,9 +12,16 @@ from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_state
 
 
-ARM_FOLDED_POSE = [0, 0.52, 0.52, -1.57, 0]
-ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
-ARM_FOLDED_POSE_NAMED = dict(zip(ARM_FOLDED_POSE_NAMES, ARM_FOLDED_POSE))
+#from config_scitos import ARM_POSE_FOLDED, ARM_POSE_FLOOR
+# FIXME: remove these duplicate constants!! (cyclic import issue)
+ARM_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
+
+ARM_POSE_FOLDED = [0, 0.52, 0.52, -1.57, 0]
+ARM_POSE_FOLDED_NAMED = dict(zip(ARM_NAMES, ARM_POSE_FOLDED))
+
+ARM_POSE_FLOOR = [0, 0.96, 0.96, -2.0, -1.57]
+ARM_POSE_FLOOR_NAMED = dict(zip(ARM_NAMES, ARM_POSE_FLOOR))
+
 
 
 class GOAPNodeWrapperState(State):
@@ -90,12 +97,24 @@ class LookAroundAction(SMACHStateWrapperAction):
 class FoldArmAction(SMACHStateWrapperAction):
 
     def __init__(self):
-        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_FOLDED_POSE),
+        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FOLDED),
                                   [Precondition(Condition.get('arm_can_move'), True),
                                    # TODO: maybe remove necessary anti-effect-preconditions
                                    # the currently available alternative would be to use a
                                    # variable effect that can reach any value
                                    Precondition(Condition.get('robot.arm_folded'), False)],
                                   [Effect(Condition.get('robot.arm_folded'), True)])
+
+
+class MoveArmFloorAction(SMACHStateWrapperAction):
+
+    def __init__(self):
+        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FLOOR),
+                                  [Precondition(Condition.get('arm_can_move'), True),
+                                   # TODO: maybe remove necessary anti-effect-preconditions
+                                   # the currently available alternative would be to use a
+                                   # variable effect that can reach any value
+                                   Precondition(Condition.get('robot.arm_pose_floor'), False)],
+                                  [Effect(Condition.get('robot.arm_pose_floor'), True)])
 
 

@@ -20,6 +20,7 @@ from geometry_msgs.msg import PoseStamped
 from common import Action, Condition, Precondition, Effect, VariableEffect, Goal
 
 from smach_bridge import SMACHStateWrapperAction
+from rospy.service import ServiceException
 
 
 ## ROS specific class specializations
@@ -51,12 +52,16 @@ class ROSTopicCondition(Condition):
         return self._value
 
 
+# TODO: create super class ROSTopicAction(Action):
+
+
 ## concrete usable classes (no constructor parameters anymore)
 
 class ResetBumperAction(Action):
 
     def __init__(self):
-        Action.__init__(self, [Precondition(Condition.get('robot.bumpered'), True)],
+        Action.__init__(self,
+                        [Precondition(Condition.get('robot.bumpered'), True)],
                         [Effect(Condition.get('robot.bumpered'), False)])
         self._publisher = rospy.Publisher('/bumper_reset', Empty)
 
@@ -83,21 +88,31 @@ class MoveBaseAction(SMACHStateWrapperAction):
 
         def _is_reachable(self, value, start_value):
             request = GetPlanRequest()
+            request.start.header.stamp = rospy.Time.now()
             request.start.header.frame_id = '/map'
             request.start.pose = start_value
+            request.goal.header.stamp = rospy.Time.now()
             request.goal.header.frame_id = '/map'
             request.goal.pose = value
-            request.tolerance = 0.2 # meters in x/y
-            response = self._service_proxy(request)
-            self._planned_paths_pub.publish(response.plan)
-            return len(response.plan.poses) > 0
+            request.tolerance = 0.3 # meters in x/y
+            rospy.loginfo("%s sending request: %s", self, request)
+            try:
+                response = self._service_proxy(request)
+                rospy.logwarn("%s received response: %s", self, response)
+                response.plan.header.frame_id = '/map'
+                self._planned_paths_pub.publish(response.plan)
+                return len(response.plan.poses) > 0
+            except ServiceException as e:
+                rospy.logerr(e)
+                return None
 
     def __init__(self):
         self._condition = Condition.get('robot.pose')
         self._check_path_vareffect = MoveBaseAction.CheckForPathVarEffect(self._condition)
         SMACHStateWrapperAction.__init__(self, MoveBaseState(),
                         [Precondition(Condition.get('robot.bumpered'), False),
-                         Precondition(Condition.get('robot.arm_folded'), True)],
+                         Precondition(Condition.get('robot.arm_pose_floor'), True)
+                        ],
                         [self._check_path_vareffect])
 
     def check_freeform_context(self):
@@ -114,7 +129,6 @@ class MoveBaseAction(SMACHStateWrapperAction):
                              self._check_path_vareffect.service_topic))
             return False
         return True
-
 
     def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect

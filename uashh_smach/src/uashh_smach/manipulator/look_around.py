@@ -37,7 +37,7 @@ POSES_LOOKAROUND = [ # without first joint!
                     ]
 
 
-POSES = [POSE_DEFAULT]
+POSES = []
 for pose in POSES_LOOKAROUND:
     for turn in POSES_LOOKAROUND_TURNINGS:
         POSES.append([turn] + pose)
@@ -45,13 +45,13 @@ for pose in POSES_LOOKAROUND:
 POSES.append(POSE_DEFAULT)
 
 
-POSES_GLIMPSE = [POSE_DEFAULT]
+POSES_GLIMPSE = []
 POSES_GLIMPSE.extend([turn] + POSES_LOOKAROUND[2]
                      for turn in POSES_LOOKAROUND_TURNINGS_GLIMPSE)
 POSES_GLIMPSE.append(POSE_DEFAULT)
 
 
-POSES_CRAZY = [POSE_DEFAULT]
+POSES_CRAZY = []
 POSES_CRAZY.extend([[turn] + pose for turn, pose
                     in zip(POSES_LOOKAROUND_TURNINGS_CRAZY, POSES_LOOKAROUND)
                     ])
