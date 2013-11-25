@@ -71,7 +71,7 @@ class Introspector(object):
 
         rospy.sleep(5)
 
-    def publish(self, start_node):
+    def publish(self, start_node, pathprefix=None):
         """Publishes a planned GOAP plan
 
         The start node will be set as the active state, as its userdata is displayed.
@@ -99,7 +99,7 @@ class Introspector(object):
 
         structure = SmachContainerStructure()
         structure.header.stamp = rospy.Time.now()
-        structure.path = self._pathprefix
+        structure.path = self._pathprefix if pathprefix is None else pathprefix
 #        structure.container_outcomes = ['succeeded', 'aborted']
         _add_nodes_recursively(start_node, structure)
         self._publisher_structure.publish(structure)

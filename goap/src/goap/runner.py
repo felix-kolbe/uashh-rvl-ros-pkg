@@ -146,6 +146,12 @@ class Runner(object):
                                                           key=lambda t: t[1],
                                                           reverse=True))
 
+        # introspection
+        for goal, start_node in goal_dict.iteritems():
+            if start_node is not None:
+                self._introspector.publish(
+                       start_node, '/MULTIPLE_GOALS/' + goal.__class__.__name__)
+
         # execution
         if len(goals_with_plan) > 0:
             goal = goals_with_plan[0]
