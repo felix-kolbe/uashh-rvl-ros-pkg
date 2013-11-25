@@ -262,7 +262,26 @@ class Action(object):
         return '<%s preconditions=%s effects=%s>' % (self.__class__.__name__, self._preconditions, self._effects)
 
     def cost(self):
-        return 1
+        """Return this action's cost value
+
+        Override to apply own cost calculation. The returned cost must not be
+        less than the number of declared effects!
+
+        To check this when overriding use validate_cost:
+            def cost(self):
+                return self.validate_cost(..custom cost calculation..)
+        """
+        return len(self._effects)
+
+    def validate_cost(self, cost):
+        """Can be used to validate custom cost calculations, see cost()"""
+        minimum_cost = len(self._effects)
+        if cost < minimum_cost:
+            print ("Warning: action %s proposed too small cost (%s), overriding with minimum cost (%d)"
+                   % (self.__class__.__name__, cost, minimum_cost))
+            cost = minimum_cost
+        return cost
+
 
     def run(self, next_worldstate):
         """

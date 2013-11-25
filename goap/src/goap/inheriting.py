@@ -98,7 +98,7 @@ class MemoryIncrementerAction(Action):
                             self._state_name, self._increment)
 
     def cost(self):
-        return abs(2 - float(1) / abs(self._increment))
+        return self.validate_cost(abs(2 - float(1) / abs(self._increment)))
 
     def run(self, next_worldstate):
         self._memory.set_value(self._state_name, self._memory.get_value(self._state_name) + self._increment)

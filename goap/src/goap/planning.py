@@ -111,6 +111,9 @@ class Node(object):
                                 % (condition._state_name, distance_remaining, distance_total, relative_distance)
                         self.heuristic_distance += relative_distance
 
+            # make sure heuristic distance is less or equal the number of conditions
+            self.heuristic_distance = min(len(unsatisfied_conditions_set), self.heuristic_distance)
+
     # regressive planning
     def get_child_nodes_for_valid_actions(self, actions_generator, start_worldstate):
         assert len(self.possible_prev_nodes) == 0, "Node.get_child_nodes_for_valid_actions is probably not safe to be called twice"
@@ -199,9 +202,6 @@ class Planner(object):
             # add new nodes and sort. this is stable, so old nodes stay
             # more left in the deque than new nodes with same weight
             child_nodes.extend(new_child_nodes)
-            # TODO: will the planner be optimal, if a too high heuristic will favor
-            # another node, which reaches the start, but with more total cost than
-            # what the first node and a matching lower cost action will cost?
             child_nodes = deque(sorted(child_nodes, key=lambda node: node.total_cost()))
 
         print 'No plan found.'
