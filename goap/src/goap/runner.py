@@ -18,6 +18,7 @@ from inheriting import Memory
 from planning import Planner, PlanExecutor
 from introspection import Introspector
 from smach_bridge import SMACHStateWrapperAction, GOAPNodeWrapperState
+from collections import OrderedDict
 
 
 
@@ -50,6 +51,8 @@ class Runner(object):
 
         self._introspector = None
 
+        self._last_goal = None
+
 
     def __repr__(self):
         return '<%s memory=%s worldstate=%s actions=%s planner=%s>' % (self.__class__.__name__,
@@ -68,6 +71,7 @@ class Runner(object):
     def _update_worldstate(self):
         """update worldstate to reality"""
         Condition.initialize_worldstate(self.worldstate)
+        print "worldstate initialized/updated to: ", self.worldstate
 
     def update_and_plan(self, goal, tries=1, introspection=False):
         """update worldstate and call self.plan(...)"""
@@ -80,7 +84,6 @@ class Runner(object):
 
         introspection: introspect GOAP planning via smach.introspection
         """
-        print "worldstate initialized/updated to: ", self.worldstate
         # check for any still uninitialised condition
         for (condition, value) in self.worldstate._condition_values.iteritems():
             if value is None:
@@ -102,6 +105,100 @@ class Runner(object):
             self._introspector.publish_net(self.planner.last_goal_node, start_node)
 
         return start_node
+
+
+    def plan_and_execute_goals_NOT_USED(self, goals):
+        """Attempts to plan every goal and then filters for plans and sorts for usability"""
+        self._setup_introspection()
+
+        self._update_worldstate()
+
+        print "Available goals:"
+        print stringify(goals, '\n')
+
+        # planning
+        # mapping goals to start nodes a.k.a. plans (they can be None)
+        goal_dict = {goal: self.plan(goal, introspection=False)
+                     for goal in goals}
+
+        # sorting and filtering
+        goal_dict = OrderedDict(sorted(goal_dict.items(),
+                                       key=lambda t: t[0].usability,
+                                       reverse=True))
+        goals_with_plan = [goal
+                           for (goal, start_node) in goal_dict.iteritems()
+                           if start_node is not None]
+#        goals_with_plan.sort(key=lambda goal: goal.usability, reverse=True)
+        planned_goals_usability_dict = {goal: goal.usability
+                                        for goal in goals_with_plan}
+
+        print ("Got %d goals, for %d of which a plan was found."
+               % (len(goal_dict), len(goals_with_plan)))
+        print "Planned goals:"
+        print stringify_dict(planned_goals_usability_dict, '\n')
+
+        # halve the usability of the goal last used
+        if self._last_goal in goals_with_plan:
+            print "downgrading goal: %s", self._last_goal
+            planned_goals_usability_dict[self._last_goal] = planned_goals_usability_dict[self._last_goal] / 2
+
+        planned_goals_usability_dict = OrderedDict(sorted(planned_goals_usability_dict.items(),
+                                                          key=lambda t: t[1],
+                                                          reverse=True))
+
+        # execution
+        if len(goals_with_plan) > 0:
+            goal = goals_with_plan[0]
+            self._last_goal = goal
+            print "Executing most usable goal: ", goal
+            outcome = self.execute_as_smach(goal_dict[goal], introspection=True)
+            print "Most usable goal returned: ", outcome
+        else:
+            print "For no goal a plan could be found!"
+            outcome = 'aborted'
+
+        return outcome
+
+
+    def plan_and_execute_goals(self, goals):
+        """Sort goals by usability and try to plan and execute one by one until
+        one goal is achieved"""
+        self._setup_introspection()
+
+        self._update_worldstate()
+
+        # sort goals
+        goals.sort(key=lambda goal: goal.usability, reverse=True)
+
+        print "Available goals:"
+        print stringify(goals, '\n')
+
+        # plan until plan for one goal found
+        for goal in goals:
+            # skip goal we used last time
+            if self._last_goal is goal:
+                continue
+
+
+            plan = self.plan(goal)
+            if plan is None:
+                continue # try next goal
+
+            # execution
+            self._last_goal = goal
+            print "Executing most usable goal: ", goal
+            print "With plan: ", plan
+            outcome = self.execute_as_smach(plan, introspection=True)
+            print "Most usable goal returned: ", outcome
+            if outcome == 'aborted':
+                continue # try next goal
+
+            return outcome
+
+        print "For no goal a plan could be found!"
+        outcome = 'aborted'
+
+        return outcome
 
 
     def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
@@ -178,6 +275,7 @@ class Runner(object):
 
 
 
+# TODO: rename to GOAPRunnerState
 class GOAPPlannerState(State):
     """Subclass this state to activate the GOAP planner from within a
     surrounding state machine, e.g. the ActionServerWrapper"
@@ -189,14 +287,42 @@ class GOAPPlannerState(State):
     def execute(self, userdata):
         # TODO: propagate preemption request into goap submachine
         # TODO: maybe make this class a smach.Container and add states dynamically?
-        goal = self.build_goal(userdata)
+        goal = self._build_goal(userdata)
         outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
         print "Generated GOAP sub state machine returns: %s" % outcome
         if self.preempt_requested():
             rospy.logwarn("Preempt request was ignored as GOAPPlannerState cannot"
                           " yet forward it to inner generated machine.")
+            self.service_preempt()
+            return 'preempted'
         return outcome
 
-    def build_goal(self, userdata):
+    def _build_goal(self, userdata):
         """Build and return a goap.Goal the planner should accomplish"""
         raise NotImplementedError
+
+
+# TODO: merge into GOAPRunnerState, renaming _build_goal to _build_goals
+class GOAPGoalsState(State):
+
+    def __init__(self, runner, **kwargs):
+        State.__init__(self, ['succeeded', 'aborted', 'preempted'], **kwargs)
+        self.runner = runner
+
+    def execute(self, userdata):
+#        # TODO: propagate preemption request into goap submachine
+#        # TODO: maybe make this class a smach.Container and add states dynamically?
+        goals = self._build_goals(userdata)
+        outcome = self.runner.plan_and_execute_goals(goals)
+        print "Generated GOAP sub state machine returns: %s" % outcome
+        if self.preempt_requested():
+            rospy.logwarn("Preempt request was ignored as GOAPGoalsState cannot"
+                          " yet forward it to inner generated machine.")
+            self.service_preempt()
+            return 'preempted'
+        return outcome
+
+    def _build_goals(self, userdata):
+        """Build and return a goap.Goal list the planner should accomplish"""
+        raise NotImplementedError
+

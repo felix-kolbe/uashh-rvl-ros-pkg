@@ -10,6 +10,7 @@ from metralabs_msgs.msg import ScitosG5Bumper
 
 
 from common_ros import MoveBaseAction, ResetBumperAction, ROSTopicCondition
+from common_ros import LocalAwareGoal
 from inheriting import MemoryCondition
 from smach_bridge import LookAroundAction, FoldArmAction, ARM_FOLDED_POSE_NAMED
 
@@ -41,5 +42,15 @@ def get_all_actions(memory):
         MoveBaseAction(),
         LookAroundAction(),
         FoldArmAction()
+        ]
+
+
+
+def get_all_goals(memory):
+    return [
+        # memory
+        # ROS
+#        MoveAroundGoal(),
+        LocalAwareGoal()
         ]
 

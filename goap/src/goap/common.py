@@ -224,15 +224,19 @@ class VariableEffect(object):
 
 
 class Goal(object):
-
-    def __init__(self, preconditions):
+    """
+    usability range: from 0 to 1, defaults to 1
+    """
+    def __init__(self, preconditions, usability=1):
         self._preconditions = preconditions
+        self.usability = usability
 
     def __str__(self):
-        return self.__class__.__name__
+        return '%s (u=%s)' % (self.__class__.__name__, self.usability)
 
     def __repr__(self):
-        return '<Goal preconditions=%s>' % self._preconditions
+        return '<%s usability=%f preconditions=%s>' % (
+                   self.__class__.__name__, self.usability, self._preconditions)
 
     def is_valid(self, worldstate):
         return all(precondition.is_valid(worldstate)

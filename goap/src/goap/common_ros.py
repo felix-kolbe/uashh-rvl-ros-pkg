@@ -17,7 +17,7 @@ from nav_msgs.msg import Path
 from nav_msgs.srv import GetPlan, GetPlanRequest
 from geometry_msgs.msg import PoseStamped
 
-from common import Action, Condition, Precondition, Effect, VariableEffect
+from common import Action, Condition, Precondition, Effect, VariableEffect, Goal
 
 from smach_bridge import SMACHStateWrapperAction
 
@@ -129,3 +129,26 @@ class MoveBaseAction(SMACHStateWrapperAction):
         userdata.x = goal_pose.position.x
         userdata.y = goal_pose.position.y
         userdata.yaw = yaw
+
+
+
+class MoveToPoseGoal(Goal):
+    tl = None
+
+    def __init__(self, pose, frame, usability):
+        if frame != '/map' and frame != 'map':
+            if MoveToPoseGoal.tl is None:
+                MoveToPoseGoal.tl = tf.TransformListener()
+                rospy.sleep(1)
+            pose_stamped = PoseStamped()
+            pose_stamped.header.frame_id = frame
+            pose_stamped.pose = pose
+            #tf.Transformer().waitForTransform('/map', frame)
+            pose_stmpd_in_map = MoveToPoseGoal.tl.transformPose('/map', pose_stamped)
+            pose = pose_stmpd_in_map.pose
+        Goal.__init__(self, [Precondition(Condition.get('robot.pose'), pose)], usability)
+
+
+class LocalAwareGoal(Goal):
+    def __init__(self):
+        Goal.__init__(self, [Precondition(Condition.get('awareness'), 1)], 0.3)

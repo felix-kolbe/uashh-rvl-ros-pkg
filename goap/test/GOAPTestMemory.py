@@ -178,6 +178,13 @@ class TestIncrementer(unittest.TestCase):
         self.assertIsInstance(start_node, Node, 'Plan should be a Node')
 
 
+    def testRunnerMultipleGoals(self):
+        print '==', self.testRunnerMultipleGoals.__name__
+        goal_big = Goal([Precondition(Condition.get('memory.counter'), 23)])
+        goals = [self.goal, self.goal_inaccessible, goal_big]
+        self.runner.plan_and_execute_goals(goals)
+
+
     def tearDown(self):
         print 'memory was:', self.memory
 

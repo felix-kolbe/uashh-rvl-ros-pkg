@@ -19,6 +19,7 @@
   <depend package="arm_navigation_msgs"/>
   <!--<depend package="motion_planning_msgs"/>-->
   <depend package="move_base_msgs"/>
+  <depend package="hector_nav_msgs"/>
 
 </package>
 

@@ -9,22 +9,29 @@ import roslib; roslib.load_manifest('uashh_smach')
 
 import rospy
 import rostopic
-import tf
+
+from rospy.service import ServiceException
 
 import thread
+import threading
+import math
+from collections import deque
 
 from std_msgs.msg import String
-from geometry_msgs.msg import Pose, Point, Quaternion
+from geometry_msgs.msg import PoseStamped, PoseArray
 from task_msgs.msg import TaskActivationAction
-
+from nav_msgs.msg import Path
+from hector_nav_msgs.srv import GetRobotTrajectory, GetRobotTrajectoryRequest
 
 from smach import Sequence, StateMachine
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
 from goap.common import Condition, Goal, Precondition
-from goap.runner import Runner, GOAPPlannerState
+from goap.runner import Runner, GOAPPlannerState, GOAPGoalsState
+from goap.common_ros import MoveToPoseGoal
 
-from uashh_smach.util import UserDataToOutcomeState, SleepState
+
+from uashh_smach.util import UserDataToOutcomeState, SleepState, get_sleep_until_smach_enabled_smach
 from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach, position_tuple_to_pose, calc_random_pose_tuple
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
@@ -42,9 +49,9 @@ class MoveBaseGOAPState(GOAPPlannerState):
                                   input_keys=['x', 'y', 'yaw'],
                                   output_keys=['user_input'])
 
-    def build_goal(self, userdata):
+    def _build_goal(self, userdata):
         pose = position_tuple_to_pose(userdata.x, userdata.y, userdata.yaw)
-        return Goal([Precondition(Condition.get('robot.pose'), pose)])
+        return Goal([Precondition(Condition.get('robot.pose'), pose)]) # TODO: prepared goal available: MoveToPoseGoal
 
 
 class IncreaseAwarenessGOAPState(GOAPPlannerState):
@@ -52,8 +59,133 @@ class IncreaseAwarenessGOAPState(GOAPPlannerState):
     def __init__(self, runner):
         GOAPPlannerState.__init__(self, runner)
 
-    def build_goal(self, userdata):
-        return Goal([Precondition(Condition.get('awareness'), 4)])
+    def _build_goal(self, userdata):
+        return Goal([Precondition(Condition.get('awareness'), 4)]) # TODO: prepared goal available: LocalAwareGoal
+
+
+
+class TaskPosesGoalGenerator(object):
+
+    def __init__(self):
+        self.mutex = threading.Lock()
+        self._messages = deque()
+        self._goal_poses_sub = rospy.Subscriber('/move_base_task/goal', PoseStamped, self._callback)
+
+    def _callback(self, msg):
+        self.mutex.acquire()
+        self._messages.appendleft(msg)
+        self.mutex.release()
+
+    def get_goals(self):
+        self.mutex.acquire()
+        goals = []
+
+        for i in range(10):
+            try:
+                # targeted metrics:
+                # new message, age 1 seconds: 1 - 1/100 = 0.99
+                # old message, age 50 seconds: 1 - 50/100 = 0.5
+                msg = self._messages[i]
+                age = (rospy.Time.now() - msg.header.stamp).to_sec()
+                assert age > 0
+                if age < 1000:
+                    goals.append(MoveToPoseGoal(msg.pose, msg.header.frame_id,
+                                                1 - age / 1000))
+            except IndexError:
+                break
+
+        self.mutex.release()
+        return goals
+
+
+class RandomGoalGenerator(object):
+
+    def get_goals(self):
+        """Uses a simple metric to let the farthest possible goals have a
+        usability near 1 and nearer goals a smaller one"""
+        distance_max = 3
+        random_pose_tuples = [calc_random_pose_tuple(1, distance_max=distance_max)
+                              for _ in xrange(40)]
+
+#        # debug usability:
+#        for x, y, yaw in random_pose_tuples:
+#            distance = math.sqrt(x * x + y * y)
+#            usability = distance / distance_max
+#            print "distance=%s, usability=%s" % (distance, usability)
+
+        goals = [MoveToPoseGoal(position_tuple_to_pose(x, y, yaw),
+                                '/base_link',
+                                usability=math.sqrt(x * x + y * y) / distance_max)
+                 for x, y, yaw in random_pose_tuples]
+        return goals
+
+
+
+class HectorExplorationGoalGenerator(object):
+
+    def __init__(self):
+        self._service_proxy = rospy.ServiceProxy('/get_exploration_path', GetRobotTrajectory)
+        self._planned_paths_pub = rospy.Publisher('/task_planning/goal_paths', Path)
+
+    def get_goals(self):
+        """Requests a path from the hector exploration service. For the path's
+        final pose a goal with usability 1 is created. For every 5th pose in
+        the path a goal is created with decreasing usability.
+        """
+        request = GetRobotTrajectoryRequest()
+        try:
+            response = self._service_proxy(request)
+        except ServiceException as e:
+            rospy.logerr(e)
+            return []
+
+        goals = []
+        print response
+        path = response.trajectory
+        self._planned_paths_pub.publish(path)
+        poses = path.poses
+        usability = 1
+        for i in xrange(len(poses) - 1, 0, -5):
+            target_pose = poses[i]
+            goals.append(MoveToPoseGoal(target_pose.pose,
+                                        target_pose.header.frame_id,
+                                        usability))
+            usability -= 0.01
+
+        return goals
+
+
+
+class AutonomousGOAPState(GOAPGoalsState):
+    """Use GOAP to achieve autonomous behaviour. Generates various goals to be
+    handled by the GOAP planner"""
+    def __init__(self, runner):
+        GOAPGoalsState.__init__(self, runner)
+        self._goal_generators = [TaskPosesGoalGenerator(),
+                                 RandomGoalGenerator(),
+                                 HectorExplorationGoalGenerator()]
+
+        self._static_goals = config_scitos.get_all_goals(self.runner.memory)
+        self._goal_poses_pub = rospy.Publisher('/task_planning/goal_poses', PoseArray, latch=True)
+
+    def _build_goals(self, userdata):
+        # static goals
+        goals = self._static_goals[:]
+
+        # dynamically generated goals
+        for goal_generator in self._goal_generators:
+            goals.extend(goal_generator.get_goals())
+
+        # publish all poses (for visualization only)
+        pose_array = PoseArray()
+        pose_array.header.frame_id = '/map'
+        for goal in goals:
+            for precondition in goal._preconditions:
+                if precondition._condition._state_name == 'robot.pose':
+                    pose_array.poses.append(precondition._value)
+        self._goal_poses_pub.publish(pose_array)
+
+        return goals
 
 
 def tasker():
@@ -73,6 +205,17 @@ def tasker():
         Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState(runner))
 
 
+    sq_autonomous_goap = Sequence(outcomes=['preempted'],
+                                  connector_outcome='succeeded')
+    with sq_autonomous_goap:
+        Sequence.add('SLEEP_UNTIL_ENABLED', get_sleep_until_smach_enabled_smach())
+        Sequence.add('AUTONOMOUS_GOAP', AutonomousGOAPState(runner),
+                     transitions={'succeeded':'SLEEP_UNTIL_ENABLED',
+                                  'aborted':'SLEEP'})
+        Sequence.add('SLEEP', SleepState(5),
+                     transitions={'succeeded':'SLEEP_UNTIL_ENABLED'})
+
+
     ## tasker machine
     sm_tasker = StateMachine(outcomes=['succeeded', 'aborted', 'preempted',
                                        'field_error', 'undefined_task'],
@@ -82,6 +225,8 @@ def tasker():
         # states using goap
         StateMachine.add('MOVE_TO_NEW_GOAL_GOAP', sq_move_to_new_goal)
         StateMachine.add('INCREASE_AWARENESS_GOAP', IncreaseAwarenessGOAPState(runner))
+        StateMachine.add('AUTONOMOUS_GOAP_CYCLE', sq_autonomous_goap)
+        StateMachine.add('AUTONOMOUS_GOAP_SINGLE_GOAL', AutonomousGOAPState(runner))
 
         # states from uashh_smach
         StateMachine.add('LOOK_AROUND', get_lookaround_smach())
@@ -99,10 +244,9 @@ def tasker():
         ## now the task receiver is created and automatically links to
         ##   all task states added above
         task_states_labels = sm_tasker.get_children().keys()
-        task_states_labels = sorted(task_states_labels)  # sort alphabetically
-        task_states_labels = sorted(task_states_labels,  # sort by _GOAP
-                                    key=lambda label: '_GOAP' in label,
-                                    reverse=True)
+        task_states_labels.sort()  # sort alphabetically and then by _GOAP
+        task_states_labels.sort(key=lambda label: '_GOAP' in label, reverse=True)
+
         task_receiver_transitions = {'undefined_outcome':'undefined_task'}
         task_receiver_transitions.update({l:l for l in task_states_labels})
 
