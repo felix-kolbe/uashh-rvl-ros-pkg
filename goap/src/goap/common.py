@@ -251,7 +251,6 @@ class Goal(object):
 class Action(object):
 
     def __init__(self, preconditions, effects):
-        super(Action, self).__init__()
         self._preconditions = preconditions
         self._effects = effects
 

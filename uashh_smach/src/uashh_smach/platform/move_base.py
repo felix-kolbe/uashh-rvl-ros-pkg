@@ -84,7 +84,7 @@ def get_move_base_state(frame='/map', x=0, y=0, yaw=0):
 class MoveBaseState(SimpleActionState):
     """Calls a move_base action server with the goal (x, y, yaw) from userdata"""
     def __init__(self, frame='/map'):
-        super(MoveBaseState, self).__init__('move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self.__goal_cb)
+        SimpleActionState.__init__(self, 'move_base', MoveBaseAction, input_keys=['x', 'y', 'yaw'], goal_cb=self.__goal_cb)
         self.frame = frame
 
     def __goal_cb(self, userdata, old_goal):
@@ -102,7 +102,7 @@ class CheckForPlanState(ServiceState):
     """Check whether move_base can make a plan from start to goal given as
     tuples (x, y, yaw) via userdata"""
     def __init__(self, frame='/map'):
-        ServiceState.__init__('move_base/make_plan', GetPlan,
+        ServiceState.__init__(self, 'move_base/make_plan', GetPlan,
                               input_keys=['x', 'y', 'yaw', 'start_x', 'start_y', 'start_yaw'],
                               request_cb=self.__request_cb)
         self.frame = frame
