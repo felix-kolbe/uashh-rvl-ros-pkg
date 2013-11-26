@@ -4,16 +4,16 @@ Created on Oct 6, 2013
 
 @author: felix
 '''
-import roslib; roslib.load_manifest('goap')
+import roslib; roslib.load_manifest('rgoap')
 import rospy
 
 from smach import Sequence
 
 from uashh_smach.util import SleepState, execute_smach_container
 from uashh_smach.platform.move_base import WaitForGoalState
-from uashh_smach.tasks.tasker import MoveBaseGOAPState
+from uashh_smach.tasks.tasker import MoveBaseRGOAPState
 
-from goap.runner import Runner
+from rgoap.runner import Runner
 
 
 def test_runner():
@@ -33,7 +33,7 @@ def test_runner():
         Sequence.add('WAIT_FOR_GOAL', wfg,
                      transitions={'aborted':'SLEEP'})
 
-        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState(runner),
+        Sequence.add('MOVE_BASE_RGOAP', MoveBaseRGOAPState(runner),
                      transitions={'succeeded':'SLEEP'})
 
     execute_smach_container(sq, enable_introspection=True)

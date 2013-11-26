@@ -24,8 +24,8 @@ ARM_POSE_FLOOR_NAMED = dict(zip(ARM_NAMES, ARM_POSE_FLOOR))
 
 
 
-class GOAPNodeWrapperState(State):
-    """Used (by the runner) to add GOAP nodes (aka instances of GOAP actions)
+class RGOAPNodeWrapperState(State):
+    """Used (by the runner) to add RGOAP nodes (aka instances of RGOAP actions)
     to a SMACH state machine"""
     def __init__(self, node):
         State.__init__(self, outcomes=['succeeded', 'aborted'])
@@ -49,7 +49,7 @@ class GOAPNodeWrapperState(State):
 class SMACHStateWrapperAction(Action):
     """A special Action to wrap a SMACH state.
 
-    Subclass this class to make a SMACH state available to GOAP planning.
+    Subclass this class to make a SMACH state available to RGOAP planning.
     """
     def __init__(self, state, preconditions, effects, **kwargs):
         Action.__init__(self, preconditions, effects, **kwargs)

@@ -5,7 +5,7 @@ Created on Jul 4, 2013
 '''
 import unittest
 
-from goap.inheriting import Memory
+from rgoap.inheriting import Memory
 
 
 class MemoryTest(unittest.TestCase):

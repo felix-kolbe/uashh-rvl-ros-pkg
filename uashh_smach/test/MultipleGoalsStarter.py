@@ -10,12 +10,12 @@ import roslib; roslib.load_manifest('uashh_smach')
 
 import rospy
 
-from goap.runner import Runner
+from rgoap.runner import Runner
 
-import goap.config_scitos as config_scitos
+import rgoap.config_scitos as config_scitos
 
 import uashh_smach.util as util
-from uashh_smach.tasks.tasker import AutonomousGOAPState
+from uashh_smach.tasks.tasker import AutonomousRGOAPState
 
 
 def multiple_goals_starter():
@@ -25,7 +25,7 @@ def multiple_goals_starter():
 #    wfg = WaitForGoalState() # We don't want multiple subscribers so we need one WaitForGoal state
 
     runner = Runner(config_scitos)
-    sm = util.simple_state_wrapper(AutonomousGOAPState(runner))
+    sm = util.simple_state_wrapper(AutonomousRGOAPState(runner))
 
     print sm
 

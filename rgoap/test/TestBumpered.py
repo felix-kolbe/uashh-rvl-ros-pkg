@@ -9,12 +9,12 @@ import tf
 
 from geometry_msgs.msg import Pose, Point, Quaternion
 
-from goap.common import *
-from goap.inheriting import *
-from goap.common_ros import *
-from goap.runner import Runner
+from rgoap.common import *
+from rgoap.inheriting import *
+from rgoap.common_ros import *
+from rgoap.runner import Runner
 
-import goap.config_scitos as config_scitos
+import rgoap.config_scitos as config_scitos
 
 from uashh_smach.platform.move_base import position_tuple_to_pose
 
@@ -22,7 +22,7 @@ from uashh_smach.platform.move_base import position_tuple_to_pose
 
 if __name__ == "__main__":
 
-    rospy.init_node('goap_bumper_test', log_level=rospy.INFO)
+    rospy.init_node('rgoap_bumper_test', log_level=rospy.INFO)
 
     runner = Runner(config_scitos)
 

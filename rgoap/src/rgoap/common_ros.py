@@ -4,7 +4,7 @@ Created on Jul 24, 2013
 @author: felix
 '''
 
-import roslib; roslib.load_manifest('goap')
+import roslib; roslib.load_manifest('rgoap')
 import rospy
 
 import rostopic

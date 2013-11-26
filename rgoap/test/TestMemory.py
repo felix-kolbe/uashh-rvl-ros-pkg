@@ -5,10 +5,10 @@ Created on Jul 5, 2013
 '''
 import unittest
 
-from goap.common import *
-from goap.inheriting import *
-from goap.planning import Node
-from goap.runner import Runner
+from rgoap.common import *
+from rgoap.inheriting import *
+from rgoap.planning import Node
+from rgoap.runner import Runner
 
 
 #@unittest.skip

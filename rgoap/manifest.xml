@@ -1,13 +1,13 @@
 <package>
-  <description brief="goap">
+  <description brief="rgoap">
 
-     GOAP implementation to be used with ROS, written in Python.
+     Robotic GOAP implementation to be used with ROS, written in Python.
 
   </description>
   <author>Felix Kolbe</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/goap</url>
+  <url>http://ros.org/wiki/rgoap</url>
 
   <depend package="rospy"/>
   <depend package="tf"/>

@@ -5,7 +5,7 @@ Created on Jul 10, 2013
 '''
 import unittest
 
-from goap.common import Condition
+from rgoap.common import Condition
 
 
 class ConditionTest(unittest.TestCase):

@@ -26,9 +26,9 @@ from hector_nav_msgs.srv import GetRobotTrajectory, GetRobotTrajectoryRequest
 from smach import Sequence, StateMachine
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
-from goap.common import Condition, Goal, Precondition
-from goap.runner import Runner, GOAPRunnerState
-from goap.common_ros import MoveToPoseGoal
+from rgoap.common import Condition, Goal, Precondition
+from rgoap.runner import Runner, RGOAPRunnerState
+from rgoap.common_ros import MoveToPoseGoal
 
 
 from uashh_smach.util import UserDataToOutcomeState, SleepState, get_sleep_until_smach_enabled_smach
@@ -37,15 +37,15 @@ from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
 
 
-import goap.config_scitos as config_scitos
+import rgoap.config_scitos as config_scitos
 
 
 
 
-class MoveBaseGOAPState(GOAPRunnerState):
-    """Use GOAP to move the robot to a pose that is calculated from x,y,yaw tuple in userdata"""
+class MoveBaseRGOAPState(RGOAPRunnerState):
+    """Use RGOAP to move the robot to a pose that is calculated from x,y,yaw tuple in userdata"""
     def __init__(self, runner):
-        GOAPRunnerState.__init__(self, runner,
+        RGOAPRunnerState.__init__(self, runner,
                                   input_keys=['x', 'y', 'yaw'],
                                   output_keys=['user_input'])
 
@@ -54,10 +54,10 @@ class MoveBaseGOAPState(GOAPRunnerState):
         return Goal([Precondition(Condition.get('robot.pose'), pose)]) # TODO: prepared goal available: MoveToPoseGoal
 
 
-class IncreaseAwarenessGOAPState(GOAPRunnerState):
-    """Use GOAP to increase the robot's awareness (a memory variable)"""
+class IncreaseAwarenessRGOAPState(RGOAPRunnerState):
+    """Use RGOAP to increase the robot's awareness (a memory variable)"""
     def __init__(self, runner):
-        GOAPRunnerState.__init__(self, runner)
+        RGOAPRunnerState.__init__(self, runner)
 
     def _build_goal(self, userdata):
         return Goal([Precondition(Condition.get('awareness'), 4)]) # TODO: prepared goal available: LocalAwareGoal
@@ -155,11 +155,11 @@ class HectorExplorationGoalGenerator(object):
         return goals
 
 
-class AutonomousGOAPState(GOAPRunnerState):
-    """Use GOAP to achieve autonomous behaviour. Generates various goals to be
-    handled by the GOAP planner"""
+class AutonomousRGOAPState(RGOAPRunnerState):
+    """Use RGOAP to achieve autonomous behaviour. Generates various goals to be
+    handled by the RGOAP planner"""
     def __init__(self, runner):
-        GOAPRunnerState.__init__(self, runner)
+        RGOAPRunnerState.__init__(self, runner)
         self._goal_generators = [TaskPosesGoalGenerator(),
                                  RandomGoalGenerator(),
                                  HectorExplorationGoalGenerator()]
@@ -201,14 +201,14 @@ def tasker():
                                    connector_outcome='succeeded')
     with sq_move_to_new_goal:
         Sequence.add('WAIT_FOR_GOAL', wfg)
-        Sequence.add('MOVE_BASE_GOAP', MoveBaseGOAPState(runner))
+        Sequence.add('MOVE_BASE_RGOAP', MoveBaseRGOAPState(runner))
 
 
-    sq_autonomous_goap = Sequence(outcomes=['preempted'],
+    sq_autonomous_rgoap = Sequence(outcomes=['preempted'],
                                   connector_outcome='succeeded')
-    with sq_autonomous_goap:
+    with sq_autonomous_rgoap:
         Sequence.add('SLEEP_UNTIL_ENABLED', get_sleep_until_smach_enabled_smach())
-        Sequence.add('AUTONOMOUS_GOAP', AutonomousGOAPState(runner),
+        Sequence.add('AUTONOMOUS_RGOAP', AutonomousRGOAPState(runner),
                      transitions={'succeeded':'SLEEP_UNTIL_ENABLED',
                                   'aborted':'SLEEP'})
         Sequence.add('SLEEP', SleepState(5),
@@ -221,11 +221,11 @@ def tasker():
                              input_keys=['task_goal'])
     with sm_tasker:
         ## add all tasks to be available
-        # states using goap
-        StateMachine.add('MOVE_TO_NEW_GOAL_GOAP', sq_move_to_new_goal)
-        StateMachine.add('INCREASE_AWARENESS_GOAP', IncreaseAwarenessGOAPState(runner))
-        StateMachine.add('AUTONOMOUS_GOAP_CYCLE', sq_autonomous_goap)
-        StateMachine.add('AUTONOMOUS_GOAP_SINGLE_GOAL', AutonomousGOAPState(runner))
+        # states using rgoap
+        StateMachine.add('MOVE_TO_NEW_GOAL_RGOAP', sq_move_to_new_goal)
+        StateMachine.add('INCREASE_AWARENESS_RGOAP', IncreaseAwarenessRGOAPState(runner))
+        StateMachine.add('AUTONOMOUS_RGOAP_CYCLE', sq_autonomous_rgoap)
+        StateMachine.add('AUTONOMOUS_RGOAP_SINGLE_GOAL', AutonomousRGOAPState(runner))
 
         # states from uashh_smach
         StateMachine.add('LOOK_AROUND', get_lookaround_smach())
@@ -243,8 +243,8 @@ def tasker():
         ## now the task receiver is created and automatically links to
         ##   all task states added above
         task_states_labels = sm_tasker.get_children().keys()
-        task_states_labels.sort()  # sort alphabetically and then by _GOAP
-        task_states_labels.sort(key=lambda label: '_GOAP' in label, reverse=True)
+        task_states_labels.sort()  # sort alphabetically and then by _RGOAP
+        task_states_labels.sort(key=lambda label: '_RGOAP' in label, reverse=True)
 
         task_receiver_transitions = {'undefined_outcome':'undefined_task'}
         task_receiver_transitions.update({l:l for l in task_states_labels})

@@ -8,20 +8,20 @@ from unittest.case import SkipTest
 
 import rospy
 
-from goap.common import Condition, Precondition, Goal
-from goap.runner import Runner
-from goap.inheriting import MemoryCondition
+from rgoap.common import Condition, Precondition, Goal
+from rgoap.runner import Runner
+from rgoap.inheriting import MemoryCondition
 
-from goap.smach_bridge import LookAroundAction
+from rgoap.smach_bridge import LookAroundAction
 
-from goap import config_scitos
+from rgoap import config_scitos
 
 
 class Test(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        rospy.init_node('smach_goap_test')
+        rospy.init_node('smach_rgoap_test')
 
     def setUp(self):
         self.runner = Runner() # config_scitos

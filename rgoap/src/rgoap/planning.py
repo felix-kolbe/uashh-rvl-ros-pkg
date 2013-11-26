@@ -211,7 +211,7 @@ class Planner(object):
 class PlanExecutor(object):
 
     def execute(self, start_node, introspector=None):
-        """Execute a GOAP plan, return True on success, False otherwise"""
+        """Execute an RGOAP plan, return True on success, False otherwise"""
         assert len(start_node.parent_nodes_path_list) == len(start_node.parent_actions_path_list)
 
         print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)

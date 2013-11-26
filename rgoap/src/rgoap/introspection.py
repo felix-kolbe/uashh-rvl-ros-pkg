@@ -11,12 +11,12 @@ from smach_ros.introspection import STATUS_TOPIC, STRUCTURE_TOPIC
 
 
 class Introspector(object):
-    """Gives insight to a planner's plan and GOAP net by publishing prepared
-    information to a smach_viewer.
+    """Gives insight to a RGOAP planner's plan and planning graph by
+    publishing prepared information to a smach_viewer.
     """
     def __init__(self):
-        self._pathprefix = '/GOAP_PLAN'
-        self._pathprefix_net = '/GOAP_NET'
+        self._pathprefix = '/RGOAP_PLAN'
+        self._pathprefix_net = '/RGOAP_NET'
         self._publisher_structure = rospy.Publisher(self._pathprefix + STRUCTURE_TOPIC, SmachContainerStructure, latch=True)
         self._publisher_status = rospy.Publisher(self._pathprefix + STATUS_TOPIC, SmachContainerStatus, latch=True)
         self._publisher_structure_net = rospy.Publisher(self._pathprefix_net + STRUCTURE_TOPIC, SmachContainerStructure, latch=True)
@@ -24,7 +24,7 @@ class Introspector(object):
 
 
     def publish_net(self, goal_node, start_node=None):
-        """Publishes a GOAP planning net, reconstructing it from with the goal node.
+        """Publishes an RGOAP planning net, reconstructing it from the goal node.
 
         The goal node will be set as the active state, as its userdata is displayed.
         """
@@ -72,7 +72,7 @@ class Introspector(object):
         rospy.sleep(5)
 
     def publish(self, start_node, pathprefix=None):
-        """Publishes a planned GOAP plan
+        """Publishes a planned RGOAP plan
 
         The start node will be set as the active state, as its userdata is displayed.
         """
