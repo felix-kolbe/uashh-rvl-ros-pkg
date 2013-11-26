@@ -313,19 +313,29 @@ class Runner(object):
 
 
 
-# TODO: rename to GOAPRunnerState
-class GOAPPlannerState(State):
+class GOAPRunnerState(State):
     """Subclass this state to activate the GOAP planner from within a
-    surrounding state machine, e.g. the ActionServerWrapper"
+    surrounding SMACH state container, e.g. the ActionServerWrapper
     """
+    # TODO: maybe make this class a smach.Container and add states dynamically?
     def __init__(self, runner, **kwargs):
         State.__init__(self, ['succeeded', 'aborted', 'preempted'], **kwargs)
         self.runner = runner
 
     def execute(self, userdata):
-        # TODO: maybe make this class a smach.Container and add states dynamically?
-        goal = self._build_goal(userdata)
-        outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
+        try:
+            goal = self._build_goal(userdata)
+            outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
+        except NotImplementedError:
+            try:
+                goals = self._build_goals(userdata)
+                outcome = self.runner.plan_and_execute_goals(goals)
+            except NotImplementedError:
+                raise NotImplementedError("Subclass %s neither implements %s nor %s" % (
+                                          self.__class__.__name__,
+                                          self._build_goal.__name__,
+                                          self._build_goals.__name__))
+
         print "Generated GOAP sub state machine returns: %s" % outcome
         if self.preempt_requested():
             self.service_preempt()
@@ -335,32 +345,6 @@ class GOAPPlannerState(State):
     def _build_goal(self, userdata):
         """Build and return a goap.Goal the planner should accomplish"""
         raise NotImplementedError
-
-    def request_preempt(self):
-        self.runner.request_preempt()
-        State.request_preempt(self)
-
-    def service_preempt(self):
-        self.runner.service_preempt()
-        State.service_preempt(self)
-
-
-# TODO: merge into GOAPRunnerState, renaming _build_goal to _build_goals
-class GOAPGoalsState(State):
-
-    def __init__(self, runner, **kwargs):
-        State.__init__(self, ['succeeded', 'aborted', 'preempted'], **kwargs)
-        self.runner = runner
-
-    def execute(self, userdata):
-#        # TODO: maybe make this class a smach.Container and add states dynamically?
-        goals = self._build_goals(userdata)
-        outcome = self.runner.plan_and_execute_goals(goals)
-        print "Generated GOAP sub state machine returns: %s" % outcome
-        if self.preempt_requested():
-            self.service_preempt()
-            return 'preempted'
-        return outcome
 
     def _build_goals(self, userdata):
         """Build and return a goap.Goal list the planner should accomplish"""
@@ -373,4 +357,3 @@ class GOAPGoalsState(State):
     def service_preempt(self):
         self.runner.service_preempt()
         State.service_preempt(self)
-

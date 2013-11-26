@@ -27,7 +27,7 @@ from smach import Sequence, StateMachine
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
 from goap.common import Condition, Goal, Precondition
-from goap.runner import Runner, GOAPPlannerState, GOAPGoalsState
+from goap.runner import Runner, GOAPRunnerState
 from goap.common_ros import MoveToPoseGoal
 
 
@@ -42,10 +42,10 @@ import goap.config_scitos as config_scitos
 
 
 
-class MoveBaseGOAPState(GOAPPlannerState):
+class MoveBaseGOAPState(GOAPRunnerState):
     """Use GOAP to move the robot to a pose that is calculated from x,y,yaw tuple in userdata"""
     def __init__(self, runner):
-        GOAPPlannerState.__init__(self, runner,
+        GOAPRunnerState.__init__(self, runner,
                                   input_keys=['x', 'y', 'yaw'],
                                   output_keys=['user_input'])
 
@@ -54,10 +54,10 @@ class MoveBaseGOAPState(GOAPPlannerState):
         return Goal([Precondition(Condition.get('robot.pose'), pose)]) # TODO: prepared goal available: MoveToPoseGoal
 
 
-class IncreaseAwarenessGOAPState(GOAPPlannerState):
+class IncreaseAwarenessGOAPState(GOAPRunnerState):
     """Use GOAP to increase the robot's awareness (a memory variable)"""
     def __init__(self, runner):
-        GOAPPlannerState.__init__(self, runner)
+        GOAPRunnerState.__init__(self, runner)
 
     def _build_goal(self, userdata):
         return Goal([Precondition(Condition.get('awareness'), 4)]) # TODO: prepared goal available: LocalAwareGoal
@@ -155,12 +155,11 @@ class HectorExplorationGoalGenerator(object):
         return goals
 
 
-
-class AutonomousGOAPState(GOAPGoalsState):
+class AutonomousGOAPState(GOAPRunnerState):
     """Use GOAP to achieve autonomous behaviour. Generates various goals to be
     handled by the GOAP planner"""
     def __init__(self, runner):
-        GOAPGoalsState.__init__(self, runner)
+        GOAPRunnerState.__init__(self, runner)
         self._goal_generators = [TaskPosesGoalGenerator(),
                                  RandomGoalGenerator(),
                                  HectorExplorationGoalGenerator()]
