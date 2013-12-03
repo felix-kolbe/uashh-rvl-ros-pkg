@@ -11,15 +11,20 @@
   <depend package="rospy"/>
   <depend package="smach_ros"/>
   <depend package="tf"/>
+  <depend package="actionlib"/>
 
   <depend package="rgoap"/>
+  <depend package="rgoap_ros"/>
+  <depend package="rgoap_smach"/>
 
   <depend package="std_msgs"/>
   <depend package="joint_motion_service"/>
   <depend package="arm_navigation_msgs"/>
-  <!--<depend package="motion_planning_msgs"/>-->
   <depend package="move_base_msgs"/>
+  <depend package="nav_msgs"/>
   <depend package="hector_nav_msgs"/>
+  <depend package="metralabs_msgs"/>
+  <depend package="task_msgs"/>
 
 </package>
 

@@ -3,22 +3,14 @@ Created on Aug 5, 2013
 
 @author: felix
 '''
-import roslib; roslib.load_manifest('rgoap')
+from time import sleep
 
-import thread
-
-import rospy
-
-from smach import State, StateMachine
-
-from uashh_smach.util import execute_smach_container
+import rgoap
 
 from common import ActionBag, Condition, WorldState, stringify, stringify_dict
-from inheriting import Memory
+from memory import Memory
 from planning import Planner, PlanExecutor
-from introspection import Introspector
-from smach_bridge import SMACHStateWrapperAction, RGOAPNodeWrapperState
-from collections import OrderedDict
+
 
 
 
@@ -49,42 +41,23 @@ class Runner(object):
 
         self.planner = Planner(self.actionbag, self.worldstate, None)
 
-        self._introspector = None
         self._last_goal = None
-
-        self._preempt_requested = False # preemption propagation workaround (not multi-threadable)
-        self._current_smach = None # used to propagate preempt into generated smach
+        self._preempt_requested = False # preemption mechanism
 
 
     def __repr__(self):
         return '<%s memory=%s worldstate=%s actions=%s planner=%s>' % (self.__class__.__name__,
                                 self.memory, self.worldstate, self.actionbag, self.planner)
 
-    def _setup_introspection(self):
-        # init what could have been initialized externally
-        if not rospy.core.is_initialized():
-            rospy.init_node('rgoap_runner_introspector')
-        # init everything else but only once
-        if self._introspector is None:
-            self._introspector = Introspector()
-            thread.start_new_thread(rospy.spin, ())
-            print "introspection spinner started"
-
 
     def request_preempt(self):
         self._preempt_requested = True
-        if self._current_smach is not None:
-            self._current_smach.request_preempt()
 
     def preempt_requested(self):
-        return self._preempt_requested or (self._current_smach.preempt_requested()
-                                           if self._current_smach is not None
-                                           else False)
+        return self._preempt_requested
 
     def service_preempt(self):
         self._preempt_requested = False
-        if self._current_smach is not None:
-            self._current_smach.service_preempt()
 
 
     def _update_worldstate(self):
@@ -99,17 +72,11 @@ class Runner(object):
 
 
     def plan(self, goal, tries=1, introspection=False):
-        """plan for given goal and return start_node of plan or None
-
-        introspection: introspect RGOAP planning via smach.introspection
-        """
+        """plan for given goal and return start_node of plan or None"""
         # check for any still uninitialised condition
         for (condition, value) in self.worldstate._condition_values.iteritems():
             if value is None:
-                rospy.logwarn("Condition still 'None': %s", condition)
-
-        if introspection:
-            self._setup_introspection()
+                print "Condition still 'None': %s" % condition #logwarn
 
         while tries > 0:
             tries -= 1
@@ -118,81 +85,12 @@ class Runner(object):
             if start_node is not None:
                 break
 
-        if introspection:
-            if start_node is not None:
-                self._introspector.publish(start_node)
-            self._introspector.publish_net(self.planner.last_goal_node, start_node)
-
         return start_node
-
-
-    def plan_and_execute_goals_NOT_USED(self, goals):
-        """Attempts to plan every goal and then filters for plans and sorts for usability"""
-        self._setup_introspection()
-
-        self._update_worldstate()
-
-        print "Available goals:"
-        print stringify(goals, '\n')
-
-        # planning
-        # mapping goals to start nodes a.k.a. plans (they can be None)
-        goal_dict = {goal: self.plan(goal, introspection=False)
-                     for goal in goals}
-
-        # sorting and filtering
-        goal_dict = OrderedDict(sorted(goal_dict.items(),
-                                       key=lambda t: t[0].usability,
-                                       reverse=True))
-        goals_with_plan = [goal
-                           for (goal, start_node) in goal_dict.iteritems()
-                           if start_node is not None]
-#        goals_with_plan.sort(key=lambda goal: goal.usability, reverse=True)
-        planned_goals_usability_dict = {goal: goal.usability
-                                        for goal in goals_with_plan}
-
-        print ("Got %d goals, for %d of which a plan was found."
-               % (len(goal_dict), len(goals_with_plan)))
-        print "Planned goals:"
-        print stringify_dict(planned_goals_usability_dict, '\n')
-
-        # halve the usability of the goal last used
-        if self._last_goal in goals_with_plan:
-            print "downgrading goal: %s", self._last_goal
-            planned_goals_usability_dict[self._last_goal] = planned_goals_usability_dict[self._last_goal] / 2
-
-        planned_goals_usability_dict = OrderedDict(sorted(planned_goals_usability_dict.items(),
-                                                          key=lambda t: t[1],
-                                                          reverse=True))
-
-        # introspection
-        for goal, start_node in goal_dict.iteritems():
-            if self.preempt_requested():
-                self.service_preempt()
-                return 'preempted'
-            if start_node is not None:
-                self._introspector.publish(
-                       start_node, '/MULTIPLE_GOALS/' + goal.__class__.__name__)
-
-        # execution
-        if len(goals_with_plan) > 0:
-            goal = goals_with_plan[0]
-            self._last_goal = goal
-            print "Executing most usable goal: ", goal
-            outcome = self.execute_as_smach(goal_dict[goal], introspection=True)
-            print "Most usable goal returned: ", outcome
-        else:
-            print "For no goal a plan could be found!"
-            outcome = 'aborted'
-
-        return outcome
 
 
     def plan_and_execute_goals(self, goals):
         """Sort goals by usability and try to plan and execute one by one until
         one goal is achieved"""
-        self._setup_introspection()
-
         self._update_worldstate()
 
         # sort goals
@@ -219,7 +117,7 @@ class Runner(object):
             self._last_goal = goal
             print "Executing most usable goal: ", goal
             print "With plan: ", plan
-            outcome = self.execute_as_smach(plan, introspection=True)
+            outcome = self.execute(plan, introspection=True)
             print "Most usable goal returned: ", outcome
             if outcome == 'aborted':
                 continue # try next goal
@@ -233,14 +131,10 @@ class Runner(object):
 
 
     def update_and_plan_and_execute(self, goal, tries=1, introspection=False):
-        """loop that updates, plans and executes until the goal is reached
-
-        introspection: introspect RGOAP planning and SMACH execution via
-                smach.introspection, defaults to False
-        """
+        """loop that updates, plans and executes until the goal is reached"""
         outcome = None
         # replan and retry on failure as long as a plan is found
-        while not rospy.is_shutdown():
+        while not rgoap.is_shutdown():
             if self.preempt_requested():
                 self.service_preempt()
                 return 'preempted'
@@ -249,111 +143,34 @@ class Runner(object):
 
             if start_node is None:
                 # TODO: maybe at this point update and replan? reality might have changed
-                rospy.logerr("RGOAP Runner aborts, no plan found!")
+                print "RGOAP Runner aborts, no plan found!" #logerr
                 return 'aborted'
 
-            #success = PlanExecutor().execute(start_node)
-            outcome = self.execute_as_smach(start_node, introspection)
+            outcome = self.execute(start_node, introspection)
 
             if outcome != 'aborted':
-                break; # retry
+                break # retry
 
             # check failure
-            rospy.logwarn("RGOAP Runner execution fails, replanning..")
+            print "RGOAP Runner execution fails, replanning.." #logwarn
 
             self._update_worldstate()
             if not goal.is_valid(self.worldstate):
-                rospy.logwarn("Goal isn't valid in current worldstate")
+                print "Goal isn't valid in current worldstate" #logwarn
             else:
-                rospy.logerr("Though goal is valid in current worldstate, the plan execution failed!?")
+                print "Though goal is valid in current worldstate, the plan execution failed!?" #logerr
 
         # until we are succeeding or are preempted
         return outcome
 
 
-    def execute_as_smach(self, start_node, introspection=False):
-        sm = self._path_to_smach(start_node)
-        # TODO: create proxies / userdata info for inner-sm introspection
-        self._current_smach = sm
-        outcome = execute_smach_container(sm, introspection, name='/RGOAP_GENERATED_SMACH')
-        self._current_smach = None
-        return outcome
-
-
-    def _path_to_smach(self, start_node):
-        sm = StateMachine(outcomes=['succeeded', 'aborted', 'preempted'])
-
-        node = start_node
-        with sm:
-            while not node.is_goal(): # skipping the goal node at the end
-                next_node = node.parent_node()
-
-                if isinstance(node.action, SMACHStateWrapperAction):
-                    # TODO: when smach executes SMACHStateWrapperActions, their action.check_freeform_context() is never called!
-                    StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                          node.action.state,
-                                          ['succeeded'],
-                                          remapping=node.action.get_remapping())
-                    node.action.translate_worldstate_to_userdata(next_node.worldstate, sm.userdata)
-                else:
-                    StateMachine.add_auto('%s_%X' % (node.action.__class__.__name__, id(node)),
-                                          RGOAPNodeWrapperState(node),
-                                          ['succeeded'])
-
-                node = next_node
-
-        return sm
+    def execute(self, start_node, introspection=False):
+        success = PlanExecutor().execute(start_node)
+        return success
 
     def print_worldstate_loop(self):
-        rate = rospy.Rate(0.5)
-        while not rospy.is_shutdown():
+        while not rgoap.is_shutdown():
             self._update_worldstate()
             print self.worldstate
-            rate.sleep()
+            sleep(2)
 
-
-
-class RGOAPRunnerState(State):
-    """Subclass this state to activate the RGOAP planner from within a
-    surrounding SMACH state container, e.g. the ActionServerWrapper
-    """
-    # TODO: maybe make this class a smach.Container and add states dynamically?
-    def __init__(self, runner, **kwargs):
-        State.__init__(self, ['succeeded', 'aborted', 'preempted'], **kwargs)
-        self.runner = runner
-
-    def execute(self, userdata):
-        try:
-            goal = self._build_goal(userdata)
-            outcome = self.runner.update_and_plan_and_execute(goal, introspection=True)
-        except NotImplementedError:
-            try:
-                goals = self._build_goals(userdata)
-                outcome = self.runner.plan_and_execute_goals(goals)
-            except NotImplementedError:
-                raise NotImplementedError("Subclass %s neither implements %s nor %s" % (
-                                          self.__class__.__name__,
-                                          self._build_goal.__name__,
-                                          self._build_goals.__name__))
-
-        print "Generated RGOAP sub state machine returns: %s" % outcome
-        if self.preempt_requested():
-            self.service_preempt()
-            return 'preempted'
-        return outcome
-
-    def _build_goal(self, userdata):
-        """Build and return a rgoap.Goal the planner should accomplish"""
-        raise NotImplementedError
-
-    def _build_goals(self, userdata):
-        """Build and return a rgoap.Goal list the planner should accomplish"""
-        raise NotImplementedError
-
-    def request_preempt(self):
-        self.runner.request_preempt()
-        State.request_preempt(self)
-
-    def service_preempt(self):
-        self.runner.service_preempt()
-        State.service_preempt(self)

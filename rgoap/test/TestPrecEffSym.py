@@ -3,33 +3,35 @@ RGOAPTestPreconditionEffectSymmetry
 
 Created on Jul 2, 2013
 @author: felix
-
-needed ROS mock ups:
-
-rosrun map_server map_server /home/felix/ros_workspace/recordings/2013-09_aula_alumni.yaml &
-mbnew & # move base server
-rosrun tf static_transform_publisher 0 0 0  0 0 0  map base_link 40 &
-rosrun tf static_transform_publisher 0 0 0  0 0 0  base_link  odom  40 &
-rostopic echo /bumper_reset &
 '''
 
-import rospy
+from rgoap import Condition, Precondition, Effect, Action, Goal
+from rgoap import MemoryCondition
+from rgoap import Runner
 
-from rgoap.common import Condition, Precondition, Goal
-from rgoap.runner import Runner
 
-import rgoap.config_scitos as config_scitos
+
+class SymmetricAction(Action):
+
+    def __init__(self):
+        Action.__init__(self,
+                        [Precondition(Condition.get('robot.bumpered'), True)],
+                        [Effect(Condition.get('robot.bumpered'), False)])
+
+    def run(self, next_worldstate):
+        print '%s: resetting bumper..' % self.__class__
+
 
 
 if __name__ == "__main__":
 
-    rospy.init_node('rgoap_bumper_test', log_level=rospy.INFO)
+    runner = Runner()
 
-    runner = Runner(config_scitos)
+    Condition.add(MemoryCondition(runner.memory, 'robot.bumpered', True))
 
-    print 'Waiting to let conditions represent reality...'
-    print 'Remember to start topic publishers so conditions make sense instead of None!'
-    rospy.sleep(2)
+    runner.actionbag.add(SymmetricAction())
+
+
     Condition.initialize_worldstate(runner.worldstate)
     print 'worldstate now is: ', runner.worldstate
 
@@ -44,8 +46,4 @@ if __name__ == "__main__":
     if start_node is None:
         print 'No plan found! Check your ROS graph!'
     else:
-        runner.execute_as_smach(start_node, introspection=True)
-
-
-    rospy.sleep(20)
-
+        runner.execute(start_node)

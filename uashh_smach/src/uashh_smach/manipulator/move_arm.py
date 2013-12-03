@@ -12,13 +12,8 @@ from smach_ros import SimpleActionState
 import arm_navigation_msgs.msg  # for MoveArmGoal, MoveArmAction
 from arm_navigation_msgs.msg import MotionPlanRequest, JointConstraint
 
+from uashh_smach.config_scitos import ARM_NAMES as JOINT_NAMES
 
-
-JOINT_NAMES = ['DH_1_2',
-               'DH_2_3',
-               'DH_3_4',
-               'DH_4_5',
-               'DH_5_6']
 
 
 def create_motion_plan_request_for_joints(joint_positions):

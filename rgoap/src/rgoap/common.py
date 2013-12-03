@@ -247,6 +247,7 @@ class Goal(object):
             precondition.apply(worldstate)
 
 
+# TODO: implement denial of trivial actions (not changing conditions), if they're actually concerned?
 
 class Action(object):
 

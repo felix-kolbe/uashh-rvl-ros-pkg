@@ -3,6 +3,7 @@ Created on Aug 7, 2013
 
 @author: felix
 '''
+import roslib; roslib.load_manifest('rgoap_ros')
 import rospy
 import pickle
 

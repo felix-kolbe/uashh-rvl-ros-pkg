@@ -1,61 +1,117 @@
 '''
-Created on Jul 24, 2013
+Created on Nov 26, 2013
 
 @author: felix
 '''
-
-import roslib; roslib.load_manifest('rgoap')
+import roslib; roslib.load_manifest('uashh_smach')
 import rospy
 
-import rostopic
-import tf
-
-from uashh_smach.platform.move_base import MoveBaseState, pose_orientation_to_quaternion
-
-from std_msgs.msg import Empty
-from nav_msgs.msg import Path
-from nav_msgs.srv import GetPlan, GetPlanRequest
-from geometry_msgs.msg import PoseStamped
-
-from common import Action, Condition, Precondition, Effect, VariableEffect, Goal
-
-from smach_bridge import SMACHStateWrapperAction
 from rospy.service import ServiceException
 
+import tf
 
-## ROS specific class specializations
+from std_msgs.msg import Empty
+from nav_msgs.msg import Path, Odometry
+from nav_msgs.srv import GetPlan, GetPlanRequest
+from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import JointState
+from metralabs_msgs.msg import ScitosG5Bumper
 
-class ROSTopicCondition(Condition):
-    """Mirrors a ROS message field of a topic as its value.
-    Note that this Condition's value remains None until a message is received.
-    """
-    def __init__(self, state_name, topic, topic_class, field=None, msgeval=None):
-        Condition.__init__(self, state_name)
-        self._topic = topic
-        self._field = field
-        self._subscriber = rospy.Subscriber(topic, topic_class, self._callback)
-        if msgeval is None:
-            assert field is not None
-            msgeval = rostopic.msgevalgen(field)
-        self._msgeval = msgeval
+from rgoap import Condition, Precondition, VariableEffect, MemoryCondition
+from rgoap import Action, Effect, Goal
+from rgoap_ros import ROSTopicCondition
+from rgoap_smach import SMACHStateWrapperAction
 
-        self._value = None
-
-    def __repr__(self):
-        return '<%s topic=%s field=%s>' % (self.__class__.__name__, self._topic, self._field)
-
-    def _callback(self, msg):
-        self._value = self._msgeval(msg)
-#        print 'callback with: ', self._value
-
-    def get_value(self):
-        return self._value
+from uashh_smach.manipulator.look_around import get_lookaround_smach
+from uashh_smach.manipulator.move_arm import get_move_arm_to_joints_positions_state
+from uashh_smach.platform.move_base import MoveBaseState, pose_orientation_to_quaternion
 
 
-# TODO: create super class ROSTopicAction(Action):
+from uashh_smach.config_scitos import *
 
 
-## concrete usable classes (no constructor parameters anymore)
+
+### list getter
+
+def get_all_conditions(memory):
+    return [
+        # memory
+        MemoryCondition(memory, 'arm_can_move', True),
+        MemoryCondition(memory, 'awareness', 0),
+        # ROS
+        ROSTopicCondition('robot.pose', '/odom', Odometry, '/pose/pose'),
+        ROSTopicCondition('robot.bumpered', '/bumper', ScitosG5Bumper, '/motor_stop'),
+        ROSTopicCondition('robot.arm_folded', '/joint_states', JointState,
+                          msgeval=lambda msg: check_joint_msg_matches_pose(msg, ARM_POSE_FOLDED_NAMED)),
+        ROSTopicCondition('robot.arm_pose_floor', '/joint_states', JointState,
+                          msgeval=lambda msg: check_joint_msg_matches_pose(msg, ARM_POSE_FLOOR_NAMED))
+        ]
+
+
+def get_all_actions(memory):
+    return [
+        # memory
+        # ROS - pure actions
+        ResetBumperAction(),
+        # ROS - wrapped SMACH states
+        MoveBaseAction(),
+        LookAroundAction(),
+        FoldArmAction(),
+        MoveArmFloorAction()
+        ]
+
+
+
+def get_all_goals(memory):
+    return [
+        # memory
+        # ROS
+#        MoveAroundGoal(),
+     #   LocalAwareGoal()
+        ]
+
+
+
+### Actions
+
+class LookAroundAction(SMACHStateWrapperAction):
+
+    def __init__(self):
+        SMACHStateWrapperAction.__init__(self, get_lookaround_smach(glimpse=True),
+                                  [Precondition(Condition.get('arm_can_move'), True)],
+                                  [VariableEffect(Condition.get('awareness'))])
+
+    def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
+        effect = var_effects.pop()  # this action has one variable effect
+        assert effect is self._effects[0]
+        # increase awareness by one
+        precond_value = worldstate.get_condition_value(effect._condition) - 1
+        return [Precondition(effect._condition, precond_value, None)]
+
+
+class FoldArmAction(SMACHStateWrapperAction):
+
+    def __init__(self):
+        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FOLDED),
+                                  [Precondition(Condition.get('arm_can_move'), True),
+                                   # TODO: maybe remove necessary anti-effect-preconditions
+                                   # the currently available alternative would be to use a
+                                   # variable effect that can reach any value
+                                   Precondition(Condition.get('robot.arm_folded'), False)],
+                                  [Effect(Condition.get('robot.arm_folded'), True)])
+
+
+class MoveArmFloorAction(SMACHStateWrapperAction):
+
+    def __init__(self):
+        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FLOOR),
+                                  [Precondition(Condition.get('arm_can_move'), True),
+                                   # TODO: maybe remove necessary anti-effect-preconditions
+                                   # the currently available alternative would be to use a
+                                   # variable effect that can reach any value
+                                   Precondition(Condition.get('robot.arm_pose_floor'), False)],
+                                  [Effect(Condition.get('robot.arm_pose_floor'), True)])
+
 
 class ResetBumperAction(Action):
 
@@ -75,7 +131,6 @@ class ResetBumperAction(Action):
         rospy.sleep(1)  # TODO: find solution without sleep
         # TODO: integrate check for asynchronous action bodys
 
-# TODO: implement denial of trivial actions (not changing conditions), if they're actually concerned?
 
 class MoveBaseAction(SMACHStateWrapperAction):
 
@@ -146,6 +201,8 @@ class MoveBaseAction(SMACHStateWrapperAction):
 
 
 
+### Goals
+
 class MoveToPoseGoal(Goal):
     tl = None
 
@@ -166,3 +223,5 @@ class MoveToPoseGoal(Goal):
 class LocalAwareGoal(Goal):
     def __init__(self):
         Goal.__init__(self, [Precondition(Condition.get('awareness'), 1)], 0.3)
+
+

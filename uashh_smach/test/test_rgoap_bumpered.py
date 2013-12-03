@@ -2,19 +2,29 @@
 Created on Jul 2, 2013
 
 @author: felix
+
+needed ROS interfaces / mock ups:
+
+# map
+rosrun map_server map_server /home/felix/ros_workspace/recordings/2013-09_aula_alumni.yaml &
+# move base server
+mbnew &
+# tfs
+rosrun tf static_transform_publisher 0 0 0  0 0 0  map odom 40 &
+rosrun tf static_transform_publisher 0 0 0  0 0 0  odom base_link  40 &
+
+rostopic echo /bumper_reset &
+
+# publisher for odometry, bumper status and joint states
 '''
-import unittest
+import rospy
 
-import tf
+from rgoap import *
+from rgoap.memory import MemoryChangeVarAction
 
-from geometry_msgs.msg import Pose, Point, Quaternion
+from rgoap_ros import SMACHRunner
 
-from rgoap.common import *
-from rgoap.inheriting import *
-from rgoap.common_ros import *
-from rgoap.runner import Runner
-
-import rgoap.config_scitos as config_scitos
+import uashh_smach.rgoap_subclasses as rgoap_subclasses
 
 from uashh_smach.platform.move_base import position_tuple_to_pose
 
@@ -24,7 +34,7 @@ if __name__ == "__main__":
 
     rospy.init_node('rgoap_bumper_test', log_level=rospy.INFO)
 
-    runner = Runner(config_scitos)
+    runner = SMACHRunner(rgoap_subclasses)
 
     Condition.add(MemoryCondition(runner.memory, 'memory.reminded_myself'))
 

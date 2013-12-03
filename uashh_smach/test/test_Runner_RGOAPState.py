@@ -13,7 +13,9 @@ from uashh_smach.util import SleepState, execute_smach_container
 from uashh_smach.platform.move_base import WaitForGoalState
 from uashh_smach.tasks.tasker import MoveBaseRGOAPState
 
-from rgoap.runner import Runner
+from rgoap import Runner
+
+# TODO: remove uashh_smach dependencies from this test and move it to rgoap_ros
 
 
 def test_runner():

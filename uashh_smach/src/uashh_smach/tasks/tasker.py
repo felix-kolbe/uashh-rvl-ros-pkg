@@ -27,17 +27,16 @@ from smach import Sequence, StateMachine
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
 from rgoap.common import Condition, Goal, Precondition
-from rgoap.runner import Runner, RGOAPRunnerState
-from rgoap.common_ros import MoveToPoseGoal
-
+from rgoap_ros import SMACHRunner
+from rgoap_smach import RGOAPRunnerState
 
 from uashh_smach.util import UserDataToOutcomeState, SleepState, get_sleep_until_smach_enabled_smach
 from uashh_smach.platform.move_base import WaitForGoalState, get_random_goal_smach, position_tuple_to_pose, calc_random_pose_tuple
 from uashh_smach.manipulator.look_around import get_lookaround_smach
 from uashh_smach.tasks import task_go_and_return, task_move_around, task_patrol
 
-
-import rgoap.config_scitos as config_scitos
+from uashh_smach import rgoap_subclasses
+from uashh_smach.rgoap_subclasses import MoveToPoseGoal
 
 
 
@@ -164,7 +163,7 @@ class AutonomousRGOAPState(RGOAPRunnerState):
                                  RandomGoalGenerator(),
                                  HectorExplorationGoalGenerator()]
 
-        self._static_goals = config_scitos.get_all_goals(self.runner.memory)
+        self._static_goals = rgoap_subclasses.get_all_goals(self.runner.memory)
         self._goal_poses_pub = rospy.Publisher('/task_planning/goal_poses', PoseArray, latch=True)
 
     def _build_goals(self, userdata):
@@ -193,7 +192,7 @@ def tasker():
 
     wfg = WaitForGoalState() # We don't want multiple subscribers so we need one WaitForGoal state
 
-    runner = Runner(config_scitos)
+    runner = SMACHRunner(rgoap_subclasses)
 
 
     ## sub machines
