@@ -87,12 +87,12 @@ def getKey():
 	termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 	return key
 
-currentJointStates = JointState()
+currentJointStates = None
 def jointStateUpdate(data):
 	#new joint states
 	global currentJointStates
-	currentJointStates = data
-	pass
+	if len(data.position) > 3:
+		currentJointStates = data
 
 
 speed = 0.2 # .5
@@ -104,10 +104,11 @@ def vels(speed,turn):
 
 if __name__=="__main__":
 	settings = termios.tcgetattr(sys.stdin)
-	
+
+	rospy.init_node('teleop_twist_keyboard', anonymous=True)
+
 	pub = rospy.Publisher('cmd_vel', Twist)
 	pubArm = rospy.Publisher('schunk/move_position', IDAndFloat)
-	rospy.init_node('teleop_twist_keyboard')
 
 	subArm = rospy.Subscriber('joint_states', JointState, jointStateUpdate)
 
@@ -127,25 +128,26 @@ if __name__=="__main__":
 			
 			## move arm relative
 			elif key in armBindingsDelta.keys():
-				id = armBindingsDelta[key][0]
-				if len(currentJointStates.position) == 0:
+				if currentJointStates is None:
 					print 'Relative arm movements not possible until we got joint states..'
 				else:
-					oldAngle = currentJointStates.position[id]
+					id_ = armBindingsDelta[key][0]
+					oldAngle = currentJointStates.position[id_]
 					newAngle = oldAngle + DEG_TO_RAD(armBindingsDelta[key][1])
 					print msg
-					print "id: %s old angle: %s new angle: %s" % (id, RAD_TO_DEG(oldAngle), RAD_TO_DEG(newAngle))
+					print "id: %s old angle: %.2f rad / %.2f deg -> new angle: %.2f rad / %.2f deg" % (
+							id_, oldAngle, RAD_TO_DEG(oldAngle), newAngle, RAD_TO_DEG(newAngle))
 					armMsg = IDAndFloat()
-					armMsg.id = id
+					armMsg.id = id_
 					armMsg.value = newAngle
 					pubArm.publish(armMsg)
 			
 			## move arm absolute
 			elif key in armBindingsAbs.keys():
-				id = armBindingsAbs[key][0]
+				id_ = armBindingsAbs[key][0]
 				newAngle = DEG_TO_RAD(armBindingsAbs[key][1])
 				armMsg = IDAndFloat()
-				armMsg.id = id
+				armMsg.id = id_
 				armMsg.value = newAngle
 				pubArm.publish(armMsg)
 			
@@ -175,6 +177,11 @@ if __name__=="__main__":
 
 	except Exception, e:
 		print e
+		try:
+			import traceback
+			traceback.print_exc()
+		except:
+			pass
 
 	finally:
 		print 'Sending a zero velocity message...'
