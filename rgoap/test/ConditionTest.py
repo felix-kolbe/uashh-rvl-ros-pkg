@@ -12,9 +12,10 @@ class ConditionTest(unittest.TestCase):
 
 
     def setUp(self):
+        Condition._conditions_dict.clear() # start every test without previous conditions
+
         self.condition1 = Condition('name1')
         self.condition2 = Condition('name2')
-        Condition._conditions_dict = {}
 
 
     def tearDown(self):

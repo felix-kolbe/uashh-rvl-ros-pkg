@@ -19,7 +19,7 @@ from metralabs_msgs.msg import ScitosG5Bumper
 
 from rgoap import Condition, Precondition, VariableEffect, MemoryCondition
 from rgoap import Action, Effect, Goal
-from rgoap_ros import ROSTopicCondition
+from rgoap_ros import ROSTopicCondition, ROSTopicAction
 from rgoap_smach import SMACHStateWrapperAction
 
 from uashh_smach.manipulator.look_around import get_lookaround_smach
@@ -75,11 +75,11 @@ def get_all_goals(memory):
 ### Actions
 
 class LookAroundAction(SMACHStateWrapperAction):
-
     def __init__(self):
-        SMACHStateWrapperAction.__init__(self, get_lookaround_smach(glimpse=True),
-                                  [Precondition(Condition.get('arm_can_move'), True)],
-                                  [VariableEffect(Condition.get('awareness'))])
+        SMACHStateWrapperAction.__init__(
+                    self, get_lookaround_smach(glimpse=True),
+                    [Precondition(Condition.get('arm_can_move'), True)],
+                    [VariableEffect(Condition.get('awareness'))])
 
     def _generate_variable_preconditions(self, var_effects, worldstate, start_worldstate):
         effect = var_effects.pop()  # this action has one variable effect
@@ -90,46 +90,37 @@ class LookAroundAction(SMACHStateWrapperAction):
 
 
 class FoldArmAction(SMACHStateWrapperAction):
-
     def __init__(self):
-        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FOLDED),
-                                  [Precondition(Condition.get('arm_can_move'), True),
-                                   # TODO: maybe remove necessary anti-effect-preconditions
-                                   # the currently available alternative would be to use a
-                                   # variable effect that can reach any value
-                                   Precondition(Condition.get('robot.arm_folded'), False)],
-                                  [Effect(Condition.get('robot.arm_folded'), True)])
+        SMACHStateWrapperAction.__init__(
+                self, get_move_arm_to_joints_positions_state(ARM_POSE_FOLDED),
+                [Precondition(Condition.get('arm_can_move'), True),
+                 # TODO: maybe remove necessary anti-effect-preconditions
+                 # the currently available alternative would be to use a
+                 # variable effect that can reach any value
+                 Precondition(Condition.get('robot.arm_folded'), False)],
+                [Effect(Condition.get('robot.arm_folded'), True)])
 
 
 class MoveArmFloorAction(SMACHStateWrapperAction):
-
     def __init__(self):
-        SMACHStateWrapperAction.__init__(self, get_move_arm_to_joints_positions_state(ARM_POSE_FLOOR),
-                                  [Precondition(Condition.get('arm_can_move'), True),
-                                   # TODO: maybe remove necessary anti-effect-preconditions
-                                   # the currently available alternative would be to use a
-                                   # variable effect that can reach any value
-                                   Precondition(Condition.get('robot.arm_pose_floor'), False)],
-                                  [Effect(Condition.get('robot.arm_pose_floor'), True)])
+        SMACHStateWrapperAction.__init__(
+                self, get_move_arm_to_joints_positions_state(ARM_POSE_FLOOR),
+                [Precondition(Condition.get('arm_can_move'), True),
+                 # TODO: maybe remove necessary anti-effect-preconditions
+                 # the currently available alternative would be to use a
+                 # variable effect that can reach any value
+                 Precondition(Condition.get('robot.arm_pose_floor'), False)],
+                [Effect(Condition.get('robot.arm_pose_floor'), True)])
 
 
-class ResetBumperAction(Action):
-
+class ResetBumperAction(ROSTopicAction):
     def __init__(self):
-        Action.__init__(self,
-                        [Precondition(Condition.get('robot.bumpered'), True)],
-                        [Effect(Condition.get('robot.bumpered'), False)])
-        self._publisher = rospy.Publisher('/bumper_reset', Empty)
+        ROSTopicAction.__init__(
+                self, '/bumper_reset', Empty,
+                [Precondition(Condition.get('robot.bumpered'), True)],
+                [Effect(Condition.get('robot.bumpered'), False)],
+                msg_args=[])
 
-    def check_freeform_context(self):
-        return self._publisher.get_num_connections() > 0  # unsafe
-
-    def run(self, next_worldstate):
-        print 'num of subscribers: ', self._publisher.get_num_connections()
-        print 'sending bumper_reset message..'
-        self._publisher.publish(Empty())
-        rospy.sleep(1)  # TODO: find solution without sleep
-        # TODO: integrate check for asynchronous action bodys
 
 
 class MoveBaseAction(SMACHStateWrapperAction):
