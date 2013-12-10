@@ -51,6 +51,7 @@ class SMACHStateWrapperAction(Action):
         pass
 
     def translate_userdata_to_worldstate(self, userdata, next_worldstate):
+        # FIXME: translation from userdata does not work
         """Override to make the state's output available to the worldstate."""
         pass
 
@@ -58,7 +59,7 @@ class SMACHStateWrapperAction(Action):
         userdata = UserData()
         self.translate_worldstate_to_userdata(next_worldstate, userdata)
         self.state.execute(userdata)
-        raise NotImplementedError, "write a test and remove this raise" # TODO: write test, remove raise
+        self.translate_userdata_to_worldstate(userdata, next_worldstate)
 
 
 

@@ -63,6 +63,7 @@ class SMACHRunner(Runner):
             self._introspector = Introspector()
             thread.start_new_thread(rospy.spin, ())
             print "introspection spinner started"
+        # TODO: check why spinner does not work [when runner called from unittest?]
 
 
     def request_preempt(self):

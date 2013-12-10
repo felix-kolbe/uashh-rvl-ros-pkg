@@ -19,7 +19,10 @@ def stringify(iterable, delim=', '):
 
 
 class WorldState(object):
-    """Storage for values of conditions."""
+    """Storage for values of conditions.
+
+    self._condition_values: Map<Condition, Object>
+    """
 
     def __init__(self, worldstate=None):
         self._condition_values = {}
