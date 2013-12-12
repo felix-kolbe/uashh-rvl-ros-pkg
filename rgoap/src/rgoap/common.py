@@ -4,6 +4,9 @@ Created on Jul 2, 2013
 @author: felix
 '''
 
+import logging
+_logger = logging.getLogger('rgoap')
+
 
 
 def no_multilines(string):
@@ -52,14 +55,16 @@ class WorldState(object):
                 if not start_ws_dict[cond] == value:
                     matches = False
                     break
-        print 'comparing worldstates: ', matches
-#        print 'mine:  ', self._condition_values
-#        print 'start: ', start_ws_dict
+        _logger.debug('comparing worldstates: %s', matches)
+#        _logger.debug('mine:  %s', self._condition_values)
+#        _logger.debug('start: %s', start_ws_dict)
         return matches
 
     def get_state_name_dict(self):
-        """Returns a dictionary with not the conditions themselves but their state_names as keys."""
-        return {cond._state_name: val for cond, val in self._condition_values.viewitems()}
+        """Returns a dictionary with not the conditions themselves but
+        their state_names as keys."""
+        return {cond._state_name: val
+                for cond, val in self._condition_values.viewitems()}
 
     def get_unsatisfied_conditions(self, worldstate):
         """Return a set of conditions that are in both the given and this
@@ -72,9 +77,9 @@ class WorldState(object):
                                       worldstate.get_condition_value(condition))
                                   }
 
-#        print 'states different: ', ', '.join([str(c) for c in unsatisfied_conditions])
-        for condition in unsatisfied_conditions:
-            print 'state different: ', condition
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug("unsatisfied conditions:\n%s",
+                          '\n'.join([str(c) for c in unsatisfied_conditions]))
 
         return unsatisfied_conditions
 
@@ -280,8 +285,9 @@ class Action(object):
         """Can be used to validate custom cost calculations, see cost()"""
         minimum_cost = len(self._effects)
         if cost < minimum_cost:
-            print ("Warning: action %s proposed too small cost (%s), overriding with minimum cost (%d)"
-                   % (self.__class__.__name__, cost, minimum_cost))
+            _logger.error("Warning: action %s proposed too small cost (%s), "
+                          "overriding with minimum cost (%s)",
+                          self.__class__.__name__, cost, minimum_cost)
             cost = minimum_cost
         return cost
 
@@ -377,12 +383,13 @@ class ActionBag(object):
         # check which action might satisfy those conditions
         for action in self._actions:
             if not action.check_freeform_context():
-                print 'ignoring action with bad freeform context: ', action # TODO: move to one time call
+                # TODO: make warning appear once per planning cycle (not per runtime), if possible
+                _logger.warn("ignoring action with bad freeform context: %s", action)
             elif action.has_satisfying_effects(node_worldstate, start_worldstate, unsatisfied_conditions_set):
-                print 'helping action: ', action
+                _logger.debug("helping action: %s", action)
                 yield action
             else:
-                print 'helpless action: ', action
+                _logger.debug("helpless action: %s", action)
 
 
 

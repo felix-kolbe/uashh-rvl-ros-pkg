@@ -18,6 +18,10 @@ from rgoap_smach import SMACHStateWrapperAction
 from rgoap_smach import rgoap_path_to_smach_container
 
 
+import logging
+_logger = logging.getLogger('rgoap.ros')
+
+
 
 ## from uashh_smach.util import execute_smach_container
 def execute_smach_container(smach_container, enable_introspection=False,
@@ -31,7 +35,7 @@ def execute_smach_container(smach_container, enable_introspection=False,
         sis.start()
 
     outcome = smach_container.execute(userdata)
-    print 'smach outcome: ', outcome
+    _logger.info("smach outcome: %s", outcome)
 
     if enable_introspection:
         sis.stop()
@@ -62,7 +66,7 @@ class SMACHRunner(Runner):
         if self._introspector is None:
             self._introspector = Introspector()
             thread.start_new_thread(rospy.spin, ())
-            print "introspection spinner started"
+            _logger.info("introspection spinner started")
         # TODO: check why spinner does not work [when runner called from unittest?]
 
 

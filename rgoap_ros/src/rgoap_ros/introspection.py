@@ -11,6 +11,11 @@ from smach_msgs.msg import SmachContainerStatus, SmachContainerStructure
 from smach_ros.introspection import STATUS_TOPIC, STRUCTURE_TOPIC
 
 
+import logging
+_logger = logging.getLogger('rgoap.ros.introspection')
+
+
+
 class Introspector(object):
     """Gives insight to a RGOAP planner's plan and planning graph by
     publishing prepared information to a smach_viewer.
@@ -57,7 +62,7 @@ class Introspector(object):
 #        structure.container_outcomes = ['succeeded', 'aborted']
         _add_nodes_recursively(goal_node, structure)
         self._publisher_structure_net.publish(structure)
-        print 'published net has ~%s nodes' % len(structure.children)
+        _logger.info("Introspector published net with ~%s nodes", len(structure.children))
 
         status = SmachContainerStatus()
         status.header.stamp = rospy.Time.now()
@@ -104,7 +109,7 @@ class Introspector(object):
 #        structure.container_outcomes = ['succeeded', 'aborted']
         _add_nodes_recursively(start_node, structure)
         self._publisher_structure.publish(structure)
-        print 'published plan has ~%s nodes' % len(structure.children)
+        _logger.info("Introspector published plan with ~%s nodes", len(structure.children))
 
         status = SmachContainerStatus()
         status.header.stamp = rospy.Time.now()
@@ -118,7 +123,7 @@ class Introspector(object):
         self._publisher_status.publish(status)
 
 #        for node in start_node.parent_nodes_path_list:
-#            print "publishing update for node: ", node
+#            _logger.info("Introspector published update for node: %s", node)
 #            self.publish_update(node)
 
     def publish_update(self, node):

@@ -13,6 +13,10 @@ import rostopic
 from rgoap import Condition, Action
 
 
+import logging
+_logger = logging.getLogger('rgoap.ros')
+
+
 
 class ROSTopicCondition(Condition):
     """Mirrors a ROS message field of a topic as its value.
@@ -35,7 +39,7 @@ class ROSTopicCondition(Condition):
 
     def _callback(self, msg):
         self._value = self._msgeval(msg)
-#        print 'callback with: ', self._value
+#        _logger.debug("callback with: %s", self._value)
 
     def get_value(self):
         return self._value
@@ -78,13 +82,15 @@ class ROSTopicAction(Action):
         return self._publisher.get_num_connections() > 0  # unsafe
 
     def run(self, next_worldstate):
-        print 'num of subscribers: ', self._publisher.get_num_connections()
+        _logger.debug("num of subscribers to %s: %d",
+                      self.__class__.__name__,
+                      self._publisher.get_num_connections())
         if self._msg_args is None:
-            print '%s publishes message..' % self
+            _logger.info("%s publishes message..", self)
             self._publisher.publish(self._msg_cb(self._topic_class(), next_worldstate))
             rospy.sleep(1)  # TODO: find solution without sleep
         else:
-            print '%s publishes message via rostopic..' % self
+            _logger.info("%s publishes message via rostopic..", self)
             rostopic.publish_message(self._publisher, self._topic_class, self._msg_args, once=True)
             # rostopic sleeps itself
 

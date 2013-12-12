@@ -141,10 +141,10 @@ class MoveBaseAction(SMACHStateWrapperAction):
             request.goal.header.frame_id = '/map'
             request.goal.pose = value
             request.tolerance = 0.3 # meters in x/y
-            rospy.loginfo("%s sending request: %s", self, request)
+            rospy.logdebug("%s sending request: %s", self, request)
             try:
                 response = self._service_proxy(request)
-                rospy.logwarn("%s received response: %s", self, response)
+                rospy.logdebug("%s received response: %s", self, response)
                 response.plan.header.frame_id = '/map'
                 self._planned_paths_pub.publish(response.plan)
                 return len(response.plan.poses) > 0

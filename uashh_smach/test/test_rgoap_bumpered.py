@@ -19,7 +19,7 @@ rostopic echo /bumper_reset &
 '''
 import rospy
 
-from rgoap import *
+from rgoap import Condition, MemoryCondition, Precondition, Goal
 from rgoap.memory import MemoryChangeVarAction
 
 from rgoap_ros import SMACHRunner
@@ -42,11 +42,11 @@ if __name__ == "__main__":
     runner.memory.set_value('arm_can_move', True)
     runner.memory.set_value('memory.reminded_myself', 333)
 
-    print 'Waiting to let conditions represent reality...'
-    print 'Remember to start topic publishers so conditions make sense instead of None!'
+    rospy.loginfo("Waiting to let conditions represent reality...")
+    rospy.loginfo("Remember to start topic publishers so conditions make sense instead of None!")
     rospy.sleep(2)
     Condition.initialize_worldstate(runner.worldstate)
-    print 'worldstate now is: ', runner.worldstate
+    rospy.loginfo("worldstate now is: %s", runner.worldstate)
 
     runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
@@ -56,11 +56,11 @@ if __name__ == "__main__":
 
     start_node = runner.update_and_plan(goal, introspection=True)
 
-    print 'start_node: ', start_node
+    rospy.loginfo("start_node: %s", start_node)
 
 
     if start_node is None:
-        print 'No plan found! Check your ROS graph!'
+        rospy.logwarn("No plan found! Check your ROS graph!")
     else:
         runner.execute_as_smach(start_node, introspection=True)
 

@@ -11,6 +11,10 @@ from collections import deque
 from rgoap import WorldState
 
 
+import logging
+_logger = logging.getLogger('rgoap')
+
+
 
 class Node(object):
     """
@@ -106,9 +110,10 @@ class Node(object):
                         # non-numeric conditions get a default distance
                         self.heuristic_distance += 1
                     else:
-                        print "comparing condition %s: relative_distance = " \
-                                "distance_left / distance_total = %s / %s = %s" \
-                                % (condition._state_name, distance_remaining, distance_total, relative_distance)
+                        _logger.debug("comparing condition %s: relative_distance = "
+                                      "distance_left / distance_total = %s / %s = %s",
+                                      condition._state_name, distance_remaining,
+                                      distance_total, relative_distance)
                         self.heuristic_distance += relative_distance
 
             # make sure heuristic distance is less or equal the number of conditions
@@ -154,18 +159,18 @@ class Planner(object):
         if goal is not None:
             self._goal = goal
 
-        print 'actionbag: ', self._actionbag
-        print 'start_worldstate: ', self._start_worldstate
-        print 'goal: ', self._goal
+        _logger.info("Planning loop started\n""actionbag: %s\n"
+                     "start_worldstate: %s\n""goal: %s",
+                     self._actionbag, self._start_worldstate, self._goal)
 
         goal_worldstate = WorldState()
 
         self._goal.apply_preconditions(goal_worldstate)
-        print 'goal_worldstate: ', goal_worldstate
+        _logger.debug("goal_worldstate: %s", goal_worldstate)
 
         goal_node = Node(goal_worldstate, None, [], [])
         goal_node._calc_heuristic_distance_for_node(self._start_worldstate)
-        print 'goal_node: ', goal_node
+        _logger.debug("goal_node: %s", goal_node)
         self.last_goal_node = goal_node
 
         child_nodes = deque([goal_node])
@@ -174,37 +179,33 @@ class Planner(object):
         while len(child_nodes) != 0:
             loopcount += 1
             if loopcount > 500: # loop limit
-                print "Warning: planner stops because loop limit (%s) hit!" % (loopcount - 1)
+                _logger.error("Planner stops because the loop limit (%d) is hit!", loopcount - 1)
                 break
 
-            print "=Doing another planning loop #%s=" % loopcount
-            print 'nodes: ', child_nodes
+            _logger.info("Planning loop #%s", loopcount)
+            _logger.debug("nodes (%d): %s", len(child_nodes), child_nodes)
 
             current_node = child_nodes.popleft()
-            print 'popping this: ', current_node
-#             print 'nodes: ', child_nodes, len(child_nodes)
-
-            print 'current_node.worldstate: ', current_node.worldstate
+            _logger.debug("current node (least cost): %s", current_node)
+            _logger.debug("current node's worldstate: %s", current_node.worldstate)
 
             if self._start_worldstate.matches(current_node.worldstate):
-                print "Found plan! Considered nodes: %s; nodes left: %s" % (loopcount, len(child_nodes))
-                print 'plan nodes: ', current_node.parent_nodes_path_list
-                print 'plan actions: ', current_node.parent_actions_path_list
+                _logger.info("Found plan! Considered nodes: %s; nodes left: %s", loopcount, len(child_nodes))
+                _logger.info("plan nodes: %s", current_node.parent_nodes_path_list)
+                _logger.info("plan actions: %s", current_node.parent_actions_path_list)
                 return current_node
-
-            print "Current node: ", current_node
 
             new_child_nodes = current_node.get_child_nodes_for_valid_actions(
                     self._actionbag.generate_matching_actions(self._start_worldstate, current_node.worldstate),
                     self._start_worldstate)
-            print 'new child nodes: ', new_child_nodes
+            _logger.debug("new child nodes: %s", new_child_nodes)
 
             # add new nodes and sort. this is stable, so old nodes stay
             # more left in the deque than new nodes with same weight
             child_nodes.extend(new_child_nodes)
             child_nodes = deque(sorted(child_nodes, key=lambda node: node.total_cost()))
 
-        print 'No plan found.'
+        _logger.warn("No plan found.")
         return None
 
 
@@ -214,10 +215,8 @@ class PlanExecutor(object):
         """Execute an RGOAP plan, return True on success, False otherwise"""
         assert len(start_node.parent_nodes_path_list) == len(start_node.parent_actions_path_list)
 
-        print 'list lengths: ', len(start_node.parent_nodes_path_list), len(start_node.parent_actions_path_list)
-
         if start_node.is_goal():
-            print "Sole node left must be goal node, stopping executor"
+            _logger.info("Executor reached goal node, stopping execution")
             return True
 
         current_worldstate = start_node.worldstate
@@ -230,17 +229,17 @@ class PlanExecutor(object):
 
         if action.is_valid(current_worldstate):
             if action.check_freeform_context():
-                print 'PlanExecutor now executing: ', action
+                _logger.info("PlanExecutor now executes: %s", action)
                 action.run(next_worldstate)
-#                print 'Memory is now: ', action._memory   # only for mem actions
+#                _logger.info("Memory is now: %s", action._memory   # only for mem actions)
                 return self.execute(next_node, introspector)
             else:
-                print "Action's freeform context isn't valid! Aborting executor"
-                print ' action: ', action
+                _logger.error("Action's freeform context isn't valid! Aborting"
+                              " executor. action: %s", action)
         else:
-            print "Action isn't valid to worldstate! Aborting executor"
-            print ' action: ', action
-            print ' worldstate: ', current_worldstate
+            _logger.error("Action isn't valid to worldstate! Aborting"
+                          " executor.\n action: %s\n worldstate: %s",
+                          action, current_worldstate)
 
         return False
 
