@@ -86,7 +86,7 @@ class SMACHRunner(Runner):
             self._current_smach.service_preempt()
 
 
-    def plan(self, goal, tries=1, introspection=False):
+    def plan(self, goal, introspection=False):
         """plan for given goal and return start_node of plan or None
 
         introspection: introspect RGOAP planning via smach.introspection
@@ -94,7 +94,7 @@ class SMACHRunner(Runner):
         if introspection:
             self._setup_introspection()
 
-        start_node = Runner.plan(self, goal, tries)
+        start_node = Runner.plan(self, goal, introspection)
 
         if introspection:
             if start_node is not None:

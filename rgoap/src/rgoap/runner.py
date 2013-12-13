@@ -68,27 +68,33 @@ class Runner(object):
         Condition.initialize_worldstate(self.worldstate)
         _logger.info("worldstate initialized/updated to: %s", self.worldstate)
 
-    def update_and_plan(self, goal, tries=1, introspection=False):
-        """update worldstate and call self.plan(...)"""
-        self._update_worldstate()
-        return self.plan(goal, tries, introspection)
-
-
-    def plan(self, goal, tries=1, introspection=False):
-        """plan for given goal and return start_node of plan or None"""
+    def _check_conditions(self):
         # check for any still uninitialised condition
         for (condition, value) in self.worldstate._condition_values.iteritems():
             if value is None:
                 _logger.warn("Condition still 'None': %s", condition)
 
+
+    def update_and_plan(self, goal, tries=1, introspection=False):
+        """update worldstate and call self.plan(...), repeating for
+        number of tries or until a plan is found"""
+        assert tries >= 1
         while tries > 0:
             tries -= 1
-            # FIXME: retries won't work here if the input does not change
-            start_node = self.planner.plan(goal=goal)
+            self._update_worldstate()
+            start_node = self.plan(goal, introspection)
             if start_node is not None:
                 break
-
+            if tries > 0: # if there are tries left
+                _logger.warn("Runner retrying in update_and_plan")
         return start_node
+
+
+    def plan(self, goal, introspection=False):
+        """plan for given goal and return start_node of plan or None"""
+        self._check_conditions()
+        return self.planner.plan(goal=goal)
+
 
 
     def plan_and_execute_goals(self, goals):
@@ -146,7 +152,7 @@ class Runner(object):
             start_node = self.update_and_plan(goal, tries, introspection)
 
             if start_node is None:
-                # TODO: maybe at this point update and replan? reality might have changed
+                # TODO: maybe at this point update and replan, regardless of 'tries'? reality might have changed
                 _logger.error("RGOAP Runner aborts, no plan found!")
                 return 'aborted'
 

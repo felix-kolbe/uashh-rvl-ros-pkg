@@ -54,7 +54,7 @@ if __name__ == "__main__":
     goal = Goal([Precondition(Condition.get('robot.pose'), position_tuple_to_pose(1, 0, 0)),
                  Precondition(Condition.get('memory.reminded_myself'), 555)])
 
-    start_node = runner.update_and_plan(goal, introspection=True)
+    start_node = runner.update_and_plan(goal, tries=2, introspection=True)
 
     rospy.loginfo("start_node: %s", start_node)
 
