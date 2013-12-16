@@ -4,9 +4,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Status1
         - /OctoMapPointCloud1/Autocompute Value Bounds1
       Splitter Ratio: 0.636585
-    Tree Height: 799
+    Tree Height: 873
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -393,11 +394,11 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: Intensity
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Max Color: 255; 255; 255
-      Max Intensity: 102.5
+      Max Intensity: 111.9
       Min Color: 0; 0; 0
-      Min Intensity: 6.56
+      Min Intensity: 6
       Name: move_base costs
       Position Transformer: XYZ
       Queue Size: 1
@@ -408,7 +409,7 @@ Visualization Manager:
       Topic: /move_base/TrajectoryPlannerROS/cost_cloud
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -512,17 +513,6 @@ Visualization Manager:
       Value: false
     - Class: rviz/Image
       Enabled: false
-      Image Topic: /kinect1/depth_registered/image
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image Kinect Depth
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: compressedDepth
-      Value: false
-    - Class: rviz/Image
-      Enabled: false
       Image Topic: /kinect1/rgb/image_color
       Max Value: 1
       Median window: 5
@@ -531,6 +521,17 @@ Visualization Manager:
       Normalize Range: true
       Queue Size: 2
       Transport Hint: compressed
+      Value: false
+    - Class: rviz/Image
+      Enabled: false
+      Image Topic: /kinect1/depth_registered/image
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Image Kinect Depth
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: compressedDepth
       Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -544,7 +545,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Max Color: 255; 255; 255
       Max Intensity: 4096
       Min Color: 0; 0; 0
@@ -559,7 +560,7 @@ Visualization Manager:
       Topic: /kinect1/depth_registered/points
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -692,22 +693,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.98739
+      Distance: 5.21141
       Focal Point:
-        X: 0.377818
-        Y: -0.520099
-        Z: -1.72413
+        X: 0.150175
+        Y: -1.96733
+        Z: 0.597335
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.3698
-      Target Frame: /base_link
+      Pitch: 0.8848
+      Target Frame: /odom
       Value: Orbit (rviz)
-      Yaw: 2.07019
+      Yaw: 3.98519
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1046
+  Height: 1080
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -716,7 +717,7 @@ Window Geometry:
     collapsed: false
   Image Kinect RGB:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000002000000000000018c000003b5fc0200000005fb000000240049006d0061006700650020004b0069006e00650063007400200044006500700074006800000000430000008f0000001600fffffffb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000043000000dd0000001600fffffffb000000100044006900730070006c0061007900730100000043000003b5000000e900fffffffb0000000800540069006d0065000000034e0000007f0000003b00fffffffb0000000800480065006c0070000000028e000001350000007c00ffffff0000000100000111000003b5fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000043000000b40000006a00fffffffb0000000a0056006900650077007300000000fd000000ed000000b600fffffffb0000001200530065006c0065006300740069006f006e00000001f0000002080000006a00ffffff000004f4000003b500000004000000040000000800000008fc00000002000000020000000000000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000002000000000000018c000003fffc0200000005fb000000240049006d0061006700650020004b0069006e00650063007400200044006500700074006800000000430000008f0000001600fffffffb000000200049006d0061006700650020004b0069006e00650063007400200052004700420000000043000000dd0000001600fffffffb000000100044006900730070006c006100790073010000001b000003ff000000e900fffffffb0000000800540069006d0065000000034e0000007f0000003b00fffffffb0000000800480065006c0070000000028e000001350000007c00ffffff0000000100000111000003d7fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730000000043000000870000006a00fffffffb0000000a0056006900650077007300000000d0000000ed000000b600fffffffb0000001200530065006c0065006300740069006f006e00000001c3000002570000006a00ffffff000005ee000003ff00000004000000040000000800000008fc00000002000000020000000000000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
   Selection:
     collapsed: true
   Time:
@@ -725,6 +726,6 @@ Window Geometry:
     collapsed: true
   Views:
     collapsed: true
-  Width: 1670
-  X: 0
-  Y: 25
+  Width: 1920
+  X: 1920
+  Y: 0
