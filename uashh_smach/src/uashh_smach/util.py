@@ -146,7 +146,7 @@ class WaitForMsgState(smach.State):
                 rospy.loginfo('waitForMsg is preempted!')
                 return 'preempted'
 
-            rospy.sleep(.1)
+            rospy.sleep(.1) # TODO: maybe convert ROSInterruptException into valid outcome
 
         rospy.loginfo('Timeout on waiting for message!')
         return None
@@ -301,7 +301,7 @@ def execute_smach_container(smach_container, enable_introspection=False,
 
     if enable_introspection:
         # Wait for ctrl-c to stop the application
-        rospy.spin() # TODO: remove spinning or make optional per parameter
+        rospy.spin() # TODO: remove spinning or make optional
         sis.stop()
 
     return outcome

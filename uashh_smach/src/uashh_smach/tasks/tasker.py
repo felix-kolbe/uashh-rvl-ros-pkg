@@ -102,9 +102,9 @@ class RandomGoalGenerator(object):
     def get_goals(self):
         """Uses a simple metric to let the farthest possible goals have a
         usability near 1 and nearer goals a smaller one"""
-        distance_max = 3
+        distance_max = 2
         random_pose_tuples = [calc_random_pose_tuple(1, distance_max=distance_max)
-                              for _ in xrange(40)]
+                              for _ in xrange(10)]
 
 #        # debug usability:
 #        for x, y, yaw in random_pose_tuples:

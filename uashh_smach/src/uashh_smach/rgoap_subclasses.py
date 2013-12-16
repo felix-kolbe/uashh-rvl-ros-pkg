@@ -67,7 +67,7 @@ def get_all_goals(memory):
         # memory
         # ROS
 #        MoveAroundGoal(),
-     #   LocalAwareGoal()
+        LocalAwareGoal()
         ]
 
 
@@ -213,6 +213,6 @@ class MoveToPoseGoal(Goal):
 
 class LocalAwareGoal(Goal):
     def __init__(self):
-        Goal.__init__(self, [Precondition(Condition.get('awareness'), 1)], 0.3)
+        Goal.__init__(self, [Precondition(Condition.get('awareness'), 1)], 0.6)
 
 
