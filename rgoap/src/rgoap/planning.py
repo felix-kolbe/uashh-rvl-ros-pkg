@@ -120,9 +120,12 @@ class Node(object):
             self.heuristic_distance = min(len(unsatisfied_conditions_set), self.heuristic_distance)
 
     # regressive planning
-    def get_child_nodes_for_valid_actions(self, actions_generator, start_worldstate):
-        assert len(self.possible_prev_nodes) == 0, "Node.get_child_nodes_for_valid_actions is probably not safe to be called twice"
-        for action in actions_generator:
+    def get_child_nodes(self, actions, start_worldstate):
+        """Returns a list of nodes that are childs of this node and
+        contain the given action and start worldstate.
+        """
+        assert len(self.possible_prev_nodes) == 0, "Node.get_child_nodes is probably not safe to be called twice"
+        for action in actions:
             nodes_path_list = self.parent_nodes_path_list[:]
             nodes_path_list.append(self)
             actions_path_list = self.parent_actions_path_list[:]
@@ -137,10 +140,14 @@ class Node(object):
 
 
 class Planner(object):
+    """
+    The given start_worldstate must contain every condition ever needed
+    by an action or condition.
+    """
     # TODO: make ordering of actions possible (e.g. move before lookaround)
 
-    def __init__(self, actionbag, worldstate, goal):
-        self._actionbag = actionbag
+    def __init__(self, actions, worldstate, goal):
+        self._actions = actions
         self._start_worldstate = worldstate
         self._goal = goal
 
@@ -153,18 +160,26 @@ class Planner(object):
 
         If any parameter is not given the data given at initialisation is used.
         """
-
+        # store parameters in instance variables
         if start_worldstate is not None:
             self._start_worldstate = start_worldstate
         if goal is not None:
             self._goal = goal
 
-        _logger.info("Planning loop started\n""actionbag: %s\n"
+        # check input
+        checked_actions = set()
+        for action in self._actions:
+            if not action.check_freeform_context():
+                _logger.warn("Ignoring action with bad freeform context: %s", action)
+            else:
+                checked_actions.add(action)
+
+        _logger.info("Planner started\n""actions: %s\n"
                      "start_worldstate: %s\n""goal: %s",
-                     self._actionbag, self._start_worldstate, self._goal)
+                     self._actions, self._start_worldstate, self._goal)
 
+        # setup goal and loop variables
         goal_worldstate = WorldState()
-
         self._goal.apply_preconditions(goal_worldstate)
         _logger.debug("goal_worldstate: %s", goal_worldstate)
 
@@ -195,9 +210,10 @@ class Planner(object):
                 _logger.info("plan actions: %s", current_node.parent_actions_path_list)
                 return current_node
 
-            new_child_nodes = current_node.get_child_nodes_for_valid_actions(
-                    self._actionbag.generate_matching_actions(self._start_worldstate, current_node.worldstate),
-                    self._start_worldstate)
+            helpful_actions = self._filter_matching_actions(current_node.worldstate,
+                                                            checked_actions)
+            new_child_nodes = current_node.get_child_nodes(helpful_actions,
+                                                           self._start_worldstate)
             _logger.debug("new child nodes: %s", new_child_nodes)
 
             # add new nodes and sort. this is stable, so old nodes stay
@@ -207,6 +223,24 @@ class Planner(object):
 
         _logger.warn("No plan found.")
         return None
+
+    def _filter_matching_actions(self, node_worldstate, actions):
+        """Returns a list of actions that might help between
+        start_worldstate and current node_worldstate.
+        """
+        # check which conditions differ between start and current node
+        unsatisfied_conditions_set = node_worldstate.get_unsatisfied_conditions(self._start_worldstate)
+
+        helpful_actions = []
+        # check which action might satisfy those conditions
+        for action in actions:
+            if action.has_satisfying_effects(node_worldstate, self._start_worldstate, unsatisfied_conditions_set):
+                _logger.debug("helping action: %s", action)
+                helpful_actions.append(action)
+            else:
+                _logger.debug("helpless action: %s", action)
+
+        return helpful_actions
 
 
 class PlanExecutor(object):

@@ -61,8 +61,8 @@ class Test(unittest.TestCase):
         Condition.add(MemoryCondition(memory, 'awareness', 0))
         Condition.add(MemoryCondition(memory, 'arm_can_move', True))
 
-        self.runner.actionbag.add(LookAroundAction())
-        print self.runner.actionbag
+        self.runner.actions.add(LookAroundAction())
+        print self.runner.actions
 
         goal = Goal([Precondition(Condition.get('awareness'), 2)])
         self.runner.update_and_plan_and_execute(goal)
@@ -115,7 +115,7 @@ class Test(unittest.TestCase):
 #                next_worldstate.set_condition_value(Condition.get('memory.out'), userdata.o)
 
 
-        self.runner.actionbag.add(TranslateAction())
+        self.runner.actions.add(TranslateAction())
 
         goal = Goal([Precondition(Condition.get('memory.out'), NUMBER_OUT),
                      # memory.in is added to goal to be available in goal/next_worldstate

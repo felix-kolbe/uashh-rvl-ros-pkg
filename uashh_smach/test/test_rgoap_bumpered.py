@@ -48,7 +48,7 @@ if __name__ == "__main__":
     Condition.initialize_worldstate(runner.worldstate)
     rospy.loginfo("worldstate now is: %s", runner.worldstate)
 
-    runner.actionbag.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
+    runner.actions.add(MemoryChangeVarAction(runner.memory, 'memory.reminded_myself', 333, 555))
 
 
     goal = Goal([Precondition(Condition.get('robot.pose'), position_tuple_to_pose(1, 0, 0)),

@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     Condition.add(MemoryCondition(runner.memory, 'robot.bumpered', True))
 
-    runner.actionbag.add(SymmetricAction())
+    runner.actions.add(SymmetricAction())
 
 
     Condition.initialize_worldstate(runner.worldstate)

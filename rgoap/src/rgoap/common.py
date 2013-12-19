@@ -74,11 +74,11 @@ class WorldState(object):
         unsatisfied_conditions = {condition
                                   for condition in common_conditions_set
                                   if (self.get_condition_value(condition) !=
-                                      worldstate.get_condition_value(condition))
-                                  }
+                                      worldstate.get_condition_value(condition))}
 
         if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug("unsatisfied conditions:\n%s",
+            _logger.debug("unsatisfied conditions between world states: %d:\n%s",
+                          len(unsatisfied_conditions),
                           '\n'.join([str(c) for c in unsatisfied_conditions]))
 
         return unsatisfied_conditions
@@ -240,7 +240,7 @@ class Goal(object):
         self.usability = usability
 
     def __str__(self):
-        return '%s (u=%s)' % (self.__class__.__name__, self.usability)
+        return '%s (usability=%s)' % (self.__class__.__name__, self.usability)
 
     def __repr__(self):
         return '<%s usability=%f preconditions=%s>' % (
@@ -353,43 +353,8 @@ class Action(object):
         Must be implemented if the action contains variable effects.
         """
         # TODO: maybe implement a default behaviour, at least for variable effects that can reach any value
-        raise NotImplementedError
-
-
-
-class ActionBag(object):
-
-    def __init__(self):
-        self._actions = set()
-
-    def __repr__(self):
-        return '<ActionBag %s>' % self._actions
-
-    def add(self, action):
-        self._actions.add(action)
-
-    # regressive planning
-    def generate_matching_actions(self, start_worldstate, node_worldstate):
-        """Generator providing actions that might help between
-        start_worldstate and current node_worldstate.
-        """
-        # TODO: This solution does not work when there are actions that produce an empty
-        # common_states_set and no valid action is considered - is this actually possible?
-        # the start_worldstate should contain every condition ever needed by an action or condition
-
-        # check which conditions differ between start and current node
-        unsatisfied_conditions_set = node_worldstate.get_unsatisfied_conditions(start_worldstate)
-
-        # check which action might satisfy those conditions
-        for action in self._actions:
-            if not action.check_freeform_context():
-                # TODO: make warning appear once per planning cycle (not per runtime), if possible
-                _logger.warn("ignoring action with bad freeform context: %s", action)
-            elif action.has_satisfying_effects(node_worldstate, start_worldstate, unsatisfied_conditions_set):
-                _logger.debug("helping action: %s", action)
-                yield action
-            else:
-                _logger.debug("helpless action: %s", action)
-
+        for effect in self._effects:
+            if isinstance(effect, VariableEffect):
+                raise NotImplementedError
 
 
