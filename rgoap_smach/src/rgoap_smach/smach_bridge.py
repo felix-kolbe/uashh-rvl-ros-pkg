@@ -42,6 +42,13 @@ class SMACHStateWrapperAction(Action):
 
     Subclass this class to make a SMACH state available to RGOAP planning.
     """
+    # TODO: Maybe this wrapper can be improved to be more self-reliant
+    # Atm. the method rgoap_path_to_smach_container takes the state from this
+    # container, and calls this wrapper's translation method. If this wrapper
+    # itself would be a State, its execute() method could call its action's
+    # check_freeform_context() (which currently cannot be called at the right
+    # time), call the translation and the wrapped states and the state's
+    # execute() method all at once and capsuled.
     def __init__(self, state, preconditions, effects, **kwargs):
         Action.__init__(self, preconditions, effects, **kwargs)
         self.state = state

@@ -171,7 +171,6 @@ class Precondition(object):
 
 
 class Effect(object):
-    # TODO: integrate conditions beside memory
     # TODO: think about optional deviation (coordinate with multiple action results)
 
     def __init__(self, condition, new_value):

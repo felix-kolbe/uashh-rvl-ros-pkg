@@ -63,7 +63,7 @@ class TestSimple(unittest.TestCase):
         self.runner.execute_as_smach(start_node, introspection=True)
 
         import rospy
-        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+        rospy.sleep(5) # to latch introspection
 
 
     def testPlannerNeg(self):
@@ -148,7 +148,7 @@ class TestIncrementer(unittest.TestCase):
         self.assertEqual(len(start_node.parent_actions_path_list), 3, 'Plan should have three actions')
 
         import rospy
-        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+        rospy.sleep(5) # to latch introspection
 
 
     @unittest.skip("deviation does not work yet") # FIXME: deviation does not work yet
@@ -172,7 +172,7 @@ class TestIncrementer(unittest.TestCase):
         print 'start_node found: ', start_node
 
         import rospy
-        rospy.sleep(5) # to latch introspection # TODO: check why spinner does not work [while in unittest]
+        rospy.sleep(5) # to latch introspection
 
         self.assertIsNotNone(start_node, 'There should be a plan')
         self.assertIsInstance(start_node, Node, 'Plan should be a Node')
