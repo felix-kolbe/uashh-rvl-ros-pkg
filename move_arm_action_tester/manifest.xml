@@ -1,0 +1,19 @@
+<package>
+  <description brief="move_arm_action_tester">
+
+     Tests our move arm action server by calling an arm_navigation_msgs::MoveArmAction on it with a few joint poses.
+
+  </description>
+  <author>Felix Kolbe</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/move_arm_action_tester</url>
+
+  <depend package="roscpp"/>
+  <depend package="tf"/>
+  <depend package="arm_navigation_msgs"/>
+  <depend package="actionlib"/>
+
+</package>
+
+

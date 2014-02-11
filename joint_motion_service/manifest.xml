@@ -8,13 +8,10 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/joint_motion_service</url>
+
   <depend package="roscpp"/>
   <depend package="metralabs_msgs"/>
   <depend package="sensor_msgs"/>
-  
-  <depend package="arm_navigation_msgs"/>
-  <depend package="tf"/>
-  <depend package="actionlib"/>
 
 </package>
 
