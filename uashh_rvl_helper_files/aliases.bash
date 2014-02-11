@@ -16,17 +16,21 @@ alias scitos_all='mla & telearm & ps3 & rs & lsr & kinect & cm & diag_agg & jms 
 
 # hardware nodes
 # ml is killed first for a cleaner start:
-alias ml='rosnode kill /metralabs_ros && roslaunch metralabs_ros scitos_haw_only_start.launch'
-alias mla='rosnode kill /metralabs_ros && roslaunch metralabs_ros scitos_haw_schunk_start.launch'
+alias ml='rosnode kill /metralabs_ros; roslaunch metralabs_ros scitos_haw_only_start.launch & cmd_vel_mux'
+alias mla='rosnode kill /metralabs_ros; roslaunch metralabs_ros scitos_haw_schunk_start.launch & cmd_vel_mux'
 alias mla_mock='jsp'
+
 alias rs='roslaunch '$HELPER_PKG' laserscanner_haw.launch'
 alias lsr='roslaunch '$HELPER_PKG' laserscanner_hokuyo_haw_mounted_on_extension_downright.launch'
+
 alias cam='roslaunch camera1394 haw_cam.launch'
 alias kinect='roslaunch '$HELPER_PKG' openni_haw.launch'
 alias cm='roslaunch '$HELPER_PKG' computer_monitor.launch'
 
 
 # helper nodes
+# cmd_vel_mux is killed first because the nodelets don't like hot restarts
+alias cmd_vel_mux='rosnode kill /cmd_vel_mux; roslaunch metralabs_ros cmd_vel_mux.launch'
 alias jms='rosrun joint_motion_service joint_motion_service'
 alias is='roslaunch image_shrinker image_shrinker.launch'
 alias kmf='roslaunch kinect_movement_filter kinect_movement_filter_haw.launch'

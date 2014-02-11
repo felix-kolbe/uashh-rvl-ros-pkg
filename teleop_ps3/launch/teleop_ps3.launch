@@ -4,7 +4,9 @@
 		<param name="coalesce_interval" value="0.005" />
 
 	</node>
-    <node pkg="teleop_ps3" type="teleop_ps3" name="teleop_ps3" output="screen"/>
+    <node pkg="teleop_ps3" type="teleop_ps3" name="teleop_ps3" output="screen">
+	<remap from="/cmd_vel" to="/cmd_vel_in/teleop_ps3"/>
+    </node>
 </launch>
 
 <!--

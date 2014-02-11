@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="teleop_twist_keyboard" type="teleop_twist_keyboard_arm_cam.py" name="$(anon teleop_twist_keyboard)" output="screen">
+    <remap from="/cmd_vel" to="/cmd_vel_in/teleop_keyboard"/>
+  </node>
+</launch>

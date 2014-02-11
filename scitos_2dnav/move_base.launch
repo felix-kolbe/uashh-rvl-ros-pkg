@@ -6,5 +6,6 @@
     <rosparam file="$(find scitos_2dnav)/global_costmap_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/base_local_planner_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/base_global_planner_params.yaml" command="load" />
+    <remap from="/cmd_vel" to="/cmd_vel_in/navigation"/>
   </node>
 </launch>

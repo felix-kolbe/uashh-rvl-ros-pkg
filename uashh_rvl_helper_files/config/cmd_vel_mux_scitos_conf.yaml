@@ -1,0 +1,30 @@
+# Configuration for subscribers to cmd_vel sources.
+# Typically automatic controllers, as ROS navigation stack should have the minimum priority
+#
+# Individual subscriber configuration:
+#   name:           Source name
+#   topic:          The topic that provides cmd_vel messages
+#   timeout:        Time in seconds without incoming messages to consider this topic inactive
+#   priority:       Priority: an UNIQUE unsigned integer from 0 (lowest) to MAX_INT 
+#   short_desc:     Short description (optional)
+
+subscribers:
+  - name:        "Default input"
+    topic:       "/cmd_vel"
+    timeout:     0.1
+    priority:    0
+    short_desc:  "The default cmd_vel, controllers unaware that we are multiplexing cmd_vel should come here"
+  - name:        "Navigation stack"
+    topic:       "/cmd_vel_in/navigation"
+    timeout:     0.3
+    priority:    2
+    short_desc:  "Navigation stack controller"
+  - name:        "PS3 teleop"
+    topic:       "/cmd_vel_in/teleop_ps3"
+    timeout:     0.5
+    priority:    4
+  - name:        "Keyboard teleop"
+    topic:       "/cmd_vel_in/teleop_keyboard"
+    timeout:     0.5
+    priority:    6
+publisher:       "/cmd_vel_prio"
