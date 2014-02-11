@@ -118,12 +118,12 @@ private:
 
 	constexpr static double speed = 0.3; // .2 .5
 	constexpr static double turn = 0.7; // .5 1
-	constexpr static double joint_speed_pitch = 0.87;	// joint 4
-	constexpr static double joint_speed_yaw = 0.43;		// joint 0
+	constexpr static double joint_speed_pitch = 0.87; // joint 4
+	constexpr static double joint_speed_yaw = 0.43; // joint 0
 //	constexpr static double gripper_speed = 0.08;
 	constexpr static double gripper_step = 0.01;
 	constexpr static double gripper_step_duration = 0.05;
-	constexpr static double velocity_epsilon = 0.001;
+	constexpr static double velocity_gate_min = 0.05;
 	constexpr static double bumper_reset_mute_duration = 0.5;
 };
 
@@ -134,7 +134,7 @@ TeleopPS3::TeleopPS3() :
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy", 1, &TeleopPS3::joyCallback, this);
 
 	base_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 3);
-	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("enable_smach", 1, true);
+	smach_enable_pub_ = nh_.advertise<std_msgs::Bool>("enable_smach", 1);
 	bumper_reset_pub_ = nh_.advertise<std_msgs::Empty>("bumper_reset", 1);
 	move_base_cancel_pub_ = nh_.advertise<actionlib_msgs::GoalID>("move_base/cancel", 1);
 
@@ -160,14 +160,18 @@ void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	geometry_msgs::TwistPtr velocity_msg (new geometry_msgs::Twist);
 	static bool sent_zero_last_time = false;
-	if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second] || joy->buttons[button_turbo]) {
+	if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second] || joy->buttons[button_turbo])
+	{
 		double speedfactor = 1 + (-joy->axes[axis_turbo]) + (-joy->axes[axis_turbo_second]); // up to thrice the speed if turbo
 		velocity_msg->linear.x = joy->axes[axis_speed] * speed * speedfactor;
 		velocity_msg->angular.z = joy->axes[axis_turn] * turn * speedfactor;
 
-		ROS_DEBUG("effective linear x = %f, effective angular z = %f", velocity_msg->linear.x, velocity_msg->angular.z);
+		ROS_DEBUG("effective linear x = %f, effective angular z = %f",
+				velocity_msg->linear.x, velocity_msg->angular.z);
 		// do not repeat zero'd messages on idle to not disturb other publishers
-		if(fabs(velocity_msg->linear.x) <= velocity_epsilon && fabs(velocity_msg->angular.z) <= velocity_epsilon) {
+		if(fabs(velocity_msg->linear.x) <= velocity_gate_min &&
+				fabs(velocity_msg->angular.z) <= velocity_gate_min)
+		{
 			velocity_msg->linear.x = 0;
 			velocity_msg->angular.z = 0;
 			if(sent_zero_last_time == false) {
@@ -199,7 +203,8 @@ void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	/// arm move control
 
-	if(joy->buttons[button_emergency]) {
+	if(joy->buttons[button_emergency] && !joy->buttons[button_modifier_nonarm_config]) {
+		// emergency not when pushed with nonarm config
 		arm_emergency_pub_.publish(std_msgs::Empty());
 	}
 	else if(joy->buttons[button_deadman] || joy->buttons[button_deadman_second]) {
@@ -279,6 +284,10 @@ void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	//				joint_msg->name[i] = names[i];
 	//				joint_msg->position[i] = values[i];
 	//			}
+
+
+//		ARM_FOLDED_POSE = [0, 0.52, 0.52, -1.57, 0]
+//		ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
 				joint_msg->name = {"DH_1_2", "DH_2_3", "DH_3_4", "DH_4_5", "DH_5_6"};
 				joint_msg->position = {0, 0.5, 0.5, -1.6, 0};
 				joint_msg->velocity.assign(5, 0.3);
@@ -349,9 +358,20 @@ public:
 		feedback_pub_ = nh_.advertise<sensor_msgs::JoyFeedbackArray>("/joy/set_feedback", 5);
 
 		bumper_sub_ = nh_.subscribe("/bumper", 3, &TeleopPS3Feedback::bumperCallback, this);
+		smach_enabled_sub_ = nh_.subscribe("/enable_smach", 3, &TeleopPS3Feedback::smachEnabledCallback, this);
 
 		sendLEDs(false, true, false, true);
 		sendRumble(0, 0);
+
+
+		// init led arrays
+		for(int id=0; id<4; id++)
+		{
+			leds_status[id].id = id;
+			leds_status[id].intensity = 0;
+			leds_knight_rider[id].id = id;
+			leds_knight_rider[id].intensity = 0;
+		}
 
 		boost::thread(&TeleopPS3Feedback::knightRiderThread, this);
 
@@ -372,8 +392,19 @@ protected:
 			sendRumble(0, 0);
 		}
 
+		leds_status[LED_INDEX_MOTOR_STOP].intensity = bumper->motor_stop ? 1 : 0;
+		updateLEDs();
+
 		last_state = current_state;
 	}
+
+	void smachEnabledCallback(const std_msgs::BoolConstPtr& smach_enabled_msg)
+	{
+		bool smach_enabled = smach_enabled_msg->data;
+		leds_status[LED_INDEX_SMACH_DISABLED].intensity = !smach_enabled ? 1 : 0;
+		updateLEDs();
+	}
+
 
 	void rumbleDemo()
 	{
@@ -478,23 +509,19 @@ protected:
 	void knightRiderThread()
 	{
 		ros::WallDuration step;
-		step.fromSec(0.1);
+		step.fromSec(0.2);
 
 		ID id = 0;
 		ID inc = +1;
-		LED leds[4];
-		for(int id=0; id<4; id++)
-		{
-			leds[id].id = id;
-			leds[id].intensity = 0;
-		}
+		LED *leds = leds_knight_rider;
 
 		while(ros::ok())
 		{
 			// at this point every leds[i] is off
 
 			leds[id].intensity = 1;
-			sendLEDs(leds);
+//			sendLEDs(leds);
+			updateLEDs(true);
 			leds[id].intensity = 0;
 
 			// at this point every leds[i] is off
@@ -510,11 +537,83 @@ protected:
 		}
 	}
 
+	void updateLEDs(bool knight_rider=false)
+	{
+		static boost::mutex method_mutex;
+		method_mutex.lock();
+
+		bool sent_knight_rider_last_time = false;
+
+		if (sent_knight_rider_last_time && knight_rider)
+		{
+			sendLEDs(leds_knight_rider);
+		}
+		else if (!sent_knight_rider_last_time && !knight_rider)
+		{
+			// only forward status leds if statii are set
+
+			// check status leds for active leds
+			bool status_set = false;
+			for(int id=0; id<4; id++)
+			{
+				if(leds_status[id].intensity != 0)
+				{
+					status_set = true;
+					break;
+				}
+			}
+			if (status_set)
+				sendLEDs(leds_status);
+		}
+		else // if both are different
+		{
+			// only forward knight rider leds if statii are not set
+
+			// check status leds for active leds
+			bool status_set = false;
+			for(int id=0; id<4; id++)
+			{
+				if(leds_status[id].intensity != 0)
+				{
+					status_set = true;
+					break;
+				}
+			}
+
+			if (status_set)
+			{
+				if (!knight_rider)
+				{
+					sendLEDs(leds_status);
+					sent_knight_rider_last_time = false;
+				}
+				else
+				{
+					// ignore knight rider updates when statii are set
+				}
+			}
+			else // statii not set
+			{
+				sendLEDs(leds_knight_rider);
+				sent_knight_rider_last_time = true;
+			}
+		}
+
+		method_mutex.unlock();
+	}
+
 
 private:
 	ros::NodeHandle nh_;
 	ros::Publisher feedback_pub_;
 	ros::Subscriber bumper_sub_;
+	ros::Subscriber smach_enabled_sub_;
+
+	LED leds_status[4];
+	LED leds_knight_rider[4];
+
+	constexpr static int LED_INDEX_MOTOR_STOP = 0;
+	constexpr static int LED_INDEX_SMACH_DISABLED = 1;
 };
 
 
