@@ -11,11 +11,14 @@
 
 
 <!-- kinect -->
-<include file="$(find uashh_rvl_helper_files)/launch/openni_fuerte_with_calibration_haw.launch"/>
+<!-- not at the moment.. 
+<include file="$(find uashh_rvl_helper_files)/launch/openni_haw.launch"/>
 <include file="$(find kinect_movement_filter)/launch/kinect_movement_filter_haw_noregistration.launch"/>
+-->
 <!-- disable registration -->
+<!--
 <node pkg="dynamic_reconfigure" type="dynparam" name="$(anon dynparam)" args="set /kinect1/driver depth_registration false" />
-
+-->
 
 <!-- 3d nav -->
 <!--<include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_arm_navigation_collision_map.launch"/>-->
@@ -35,9 +38,12 @@
 <node pkg="teleop_arm_controller" type="teleop_arm_controller" name="teleop_arm_controller"/>
 <include file="$(find teleop_ps3)/launch/teleop_ps3.launch"/>
 
+<!-- interaction -->
+<include file="$(find sound_play)/soundplay_node.launch"/>
 
 <!-- diagnostics -->
 <node pkg="diagnostic_aggregator" type="aggregator_node" name="aggregator_node"/>
+<include file="$(find uashh_rvl_helper_files)/launch/computer_monitor.launch"/>
 
 
 </launch>

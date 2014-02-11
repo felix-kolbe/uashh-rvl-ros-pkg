@@ -7,5 +7,15 @@
     <rosparam file="$(find scitos_2dnav)/base_local_planner_params.yaml" command="load" />
     <rosparam file="$(find scitos_2dnav)/base_global_planner_params.yaml" command="load" />
     <remap from="/cmd_vel" to="/cmd_vel_in/navigation"/>
+    
+    <!--
+    <param name="footprint_padding" value="0.01" />
+    <param name="controller_frequency" value="10.0" />
+    <param name="controller_patience" value="100.0" />
+    -->
+    <!--
+    <param name="base_global_planner" value="SBPLLatticePlanner" />
+    <param name="SBPLLatticePlanner/primitive_filename" value="/home/demo/ros_workspace/new_packages_sandbox/sbpl/matlab/mprim/pr2.mprim" />
+    -->
   </node>
 </launch>

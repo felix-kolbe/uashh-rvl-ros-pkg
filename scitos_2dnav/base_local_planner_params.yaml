@@ -15,13 +15,18 @@ TrajectoryPlannerROS:
   max_vel_x: 0.2 #0.45
   min_vel_x: 0.05 #0.1
   max_rotational_vel: 0.7 # 0.7 0.5 1.0
-  min_in_place_rotational_vel: 0.3 # 0.4 # 0.7 0.4
   
-  # escape_vel: -0.2 # -0.1
+  min_rotational_vel: 0.3 # existent?
+  min_theta_vel: 0.3 # existent?
+  
+  min_in_place_rotational_vel: 0.3 # 0.4 # 0.7 0.4
+  min_in_place_vel_theta: 0.3 # ^
+  
+  escape_vel: -0.2 # def: -0.1
   
   acc_lim_x: 0.6 # 0.2 def: 2.5 m/s/s
   acc_lim_th: 2.3 # 0.6 def: 3.2 rad/s/s
-  
+  acc_lim_theta: 2.3
   
   
   yaw_goal_tolerance: 0.3 # 0.1 0.05 rad
@@ -29,14 +34,15 @@ TrajectoryPlannerROS:
   latch_xy_goal_tolerance: true # wenn Zielort erreicht, nur drehen für Pose, nicht mehr fahren
 
 
-  pdist_scale: 0.6
-  path_distance_bias: 0.6 # 0.9 def: 0.6
+  pdist_scale: 0.8
+  path_distance_bias: 0.8 # 0.9 def: 0.6
     #The weighting for how much the controller should stay close to the path it was given 
 
-  gdist_scale: 0.8
-  goal_distance_bias: 0.8 # 0.4 def: 0.8
+  gdist_scale: 0.7
+  goal_distance_bias: 0.7 # 0.4 def: 0.8
    # The weighting for how much the controller should attempt to reach its local goal, also controls speed 
 
+  escape_reset_dist: 0.3
 
   publish_cost_grid_pc: true # -> /cost_cloud topic
   #prune_plan: true # def: true
@@ -44,7 +50,10 @@ TrajectoryPlannerROS:
   
   sim_time: 2.0 # def: 1.0
   vx_samples: 10 # 10 # def: 3
-  vtheta_samples: 20 # 40 # def: 20
+  vtheta_samples: 30 # 40 # def: 20
+  
+  # sim_granularity:  # def: 0.025
+  angular_sim_granularity: 0.1 # def: 0.025
   
   occdist_scale: 0.01 # 0.01
   

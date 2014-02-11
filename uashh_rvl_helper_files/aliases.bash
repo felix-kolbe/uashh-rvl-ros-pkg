@@ -5,7 +5,12 @@ alias aliases_reload='source `rospack find $HELPER_PKG`/aliases.bash'
 
 
 # config adjustments
-alias ros_what='echo ROS_MASTER_URI=$ROS_MASTER_URI; echo ROS_ROOT=$ROS_ROOT; echo ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH'
+alias ros_what='echo ROS_DISTRO=$ROS_DISTRO;
+		echo ROS_ROOT=$ROS_ROOT;
+		echo ROS_HOSTNAME=$ROS_HOSTNAME;
+		echo ROS_IP=$ROS_IP;
+		echo ROS_MASTER_URI=$ROS_MASTER_URI;
+		echo ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH'
 alias ros_scitos='export ROS_MASTER_URI=http://scitos_w:11311 ; export PS1="'$PS1'"'
 alias ros_local='export ROS_MASTER_URI=http://localhost:11311 ; export PS1="'$(echo "$PS1" | sed 's/\\\$ $//')'!\[\033[01;33m\]roslocal\[\033[00m\]$ "'
 
@@ -76,9 +81,8 @@ alias tf='cd /var/tmp && rosrun tf view_frames && evince frames.pdf &'
 alias kr='rosrun teleop_twist_keyboard teleop_twist_keyboard.py'
 alias kra='rosrun teleop_twist_keyboard teleop_twist_keyboard_arm_cam.py'
 alias ps3_teleop='roslaunch teleop_ps3 teleop_ps3.launch'
-#fuerte alias ps3_bt='pgrep ps3joy.py > /dev/null || sudo /opt/ros/fuerte/stacks/joystick_drivers/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
-alias ps3_bt='pgrep ps3joy.py > /dev/null || pgrep ps3joy_node.py > /dev/null || sudo /opt/ros/groovy/lib/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
-alias ps3_bt_node='pgrep ps3joy.py > /dev/null || pgrep ps3joy_node.py > /dev/null || sudo sh "source /home/demo/.bashrc && /opt/ros/groovy/lib/ps3joy/ps3joy_node.py --inactivity-timeout=300"' # ignores multiple starts
+alias ps3_bt='pgrep ps3joy.py > /dev/null || pgrep ps3joy_node > /dev/null || sudo /opt/ros/'$ROS_DISTRO'/lib/ps3joy/ps3joy.py --inactivity-timeout=300' # ignores multiple starts
+alias ps3_bt_node='pgrep ps3joy.py > /dev/null || pgrep ps3joy_node > /dev/null || sudo bash -c "source /home/demo/.bashrc; /opt/ros/groovy/lib/ps3joy/ps3joy_node.py --inactivity-timeout=300"' # ignores multiple starts
 alias ps3='ps3_bt & ps3_teleop & telearm'
 alias ps3_node='ps3_bt_node & ps3_teleop & telearm'
 
@@ -95,5 +99,6 @@ alias joint_set_velocity='rostopic pub -1 /schunk/set_velocity metralabs_msgs/ID
 alias joint_set_acceleration='rostopic pub -1 /schunk/set_acceleration metralabs_msgs/IDAndFloat -- '
 alias joint_ref_gripper='rostopic pub -1 /schunk/ref std_msgs/Int8 5'
 
+alias bumper_status='rostopic echo -n 3 /bumper'
 alias bumper_reset='rostopic pub -1 /bumper_reset std_msgs/Empty'
 alias move_base_cancel_all='rostopic pub -1 /move_base/cancel actionlib_msgs/GoalID "{stamp: { secs: 0 , nsecs: 0 } , id: ''}"'

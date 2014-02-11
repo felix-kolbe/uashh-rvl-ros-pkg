@@ -5,7 +5,7 @@ and incrementally builds an octomap. The data is sent out in different represent
 		<param name="resolution" value="0.05" />
 		
 		<!-- fixed map frame (set to 'map' if SLAM or localization running!) -->
-		<param name="frame_id" type="string" value="odom" />
+		<param name="frame_id" type="string" value="map" />
 
 		<param name="base_frame_id" type="string" value="base_link" />
 		
