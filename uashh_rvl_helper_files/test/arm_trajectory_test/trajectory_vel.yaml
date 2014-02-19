@@ -1,5 +1,5 @@
 header: auto
-joint_names: ['DH_1_2', 'DH_2_3', 'DH_3_4', 'DH_4_5', 'DH_5_6']
+joint_names: ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4', 'arm_joint_5']
 points: [
 #positions velocities accelerations time_from_start
 #[ [0,0,0,0,0], [0,0,0,0,0], [0,0,0,0,0], x000000000 ],

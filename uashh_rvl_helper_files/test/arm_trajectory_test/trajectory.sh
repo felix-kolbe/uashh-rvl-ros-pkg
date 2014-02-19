@@ -1,9 +1,9 @@
 #!/bin/bash
-#[ INFO] [1318861698.591898154]: 0 is mapping to DH_1_2
-#[ INFO] [1318861698.592026684]: 1 is mapping to DH_2_3
-#[ INFO] [1318861698.592471477]: 2 is mapping to DH_3_4
-#[ INFO] [1318861698.592571647]: 3 is mapping to DH_4_5
-#[ INFO] [1318861698.593048541]: 4 is mapping to DH_5_6
+#[ INFO] [1318861698.591898154]: 0 is mapping to arm_joint_1
+#[ INFO] [1318861698.592026684]: 1 is mapping to arm_joint_2
+#[ INFO] [1318861698.592471477]: 2 is mapping to arm_joint_3
+#[ INFO] [1318861698.592571647]: 3 is mapping to arm_joint_4
+#[ INFO] [1318861698.593048541]: 4 is mapping to arm_joint_5
 
 
 rostopic echo -n 1 /schunk/trajectory_state

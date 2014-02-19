@@ -276,7 +276,7 @@ void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 				button_blocked = true;
 
 				sensor_msgs::JointState::Ptr joint_msg (new sensor_msgs::JointState);
-	//			std::string names[] = {"DH_0_1", "DH_1_2", "DH_2_3", "DH_3_4", "DH_4_5"};
+	//			std::string names[] = {"arm_joint_1", "arm_joint_2", "arm_joint_3", "arm_joint_4", "arm_joint_5"};
 	//			double values[] = {0, 0.5, 0.5, 1.5, 0};
 	//			joint_msg->name.resize(5);
 	//			joint_msg->position.resize(5);
@@ -287,8 +287,8 @@ void TeleopPS3::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 
 //		ARM_FOLDED_POSE = [0, 0.52, 0.52, -1.57, 0]
-//		ARM_FOLDED_POSE_NAMES = ['DH_1_2', 'DH_2_3', 'DH_4_4', 'DH_4_5', 'DH_5_6']
-				joint_msg->name = {"DH_1_2", "DH_2_3", "DH_3_4", "DH_4_5", "DH_5_6"};
+//		ARM_FOLDED_POSE_NAMES = ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4', 'arm_joint_5']
+				joint_msg->name = {"arm_joint_1", "arm_joint_2", "arm_joint_3", "arm_joint_4", "arm_joint_5"};
 				joint_msg->position = {0, 0.5, 0.5, -1.6, 0};
 				joint_msg->velocity.assign(5, 0.3);
 				joints_position_pub_.publish(joint_msg);

@@ -14,11 +14,11 @@ int main(int argc, char **argv){
 
 	arm_navigation_msgs::MoveArmGoal goalB;
 	std::vector<std::string> names(5); // don't forget this number
-	names[0] = "DH_1_2";
-	names[1] = "DH_2_3";
-	names[2] = "DH_3_4";
-	names[3] = "DH_4_5";
-	names[4] = "DH_5_6";
+	names[0] = "arm_joint_1";
+	names[1] = "arm_joint_2";
+	names[2] = "arm_joint_3";
+	names[3] = "arm_joint_4";
+	names[4] = "arm_joint_5";
 
 	goalB.motion_plan_request.group_name = "SchunkArm";
 	goalB.motion_plan_request.num_planning_attempts = 1;

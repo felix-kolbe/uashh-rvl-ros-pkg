@@ -2,8 +2,8 @@
     <include file="$(find scitos_haw_schunk_arm_navigation)/launch/scitos_haw_schunk_planning_environment.launch" />
     <node pkg="arm_kinematics_constraint_aware" type="arm_kinematics_constraint_aware" name="scitos_haw_schunk_SchunkArm_kinematics">
         <param name="group" type="string" value="SchunkArm" />
-        <param name="SchunkArm/root_name" type="string" value="DH1" />
-        <param name="SchunkArm/tip_name" type="string" value="Gripper" />
+        <param name="SchunkArm/root_name" type="string" value="arm_base_link" />
+        <param name="SchunkArm/tip_name" type="string" value="gripper" />
         <param name="kinematics_solver" type="string" value="arm_kinematics_constraint_aware/KDLArmKinematicsPlugin" />
     </node>
 </launch>

@@ -5,222 +5,222 @@ multi_dof_joints:
     child_frame_id: base_link
 groups:
   - name: SchunkArm
-    base_link: DH1
-    tip_link: Gripper
+    base_link: arm_base_link
+    tip_link: gripper
 default_collision_operations:
   - object1: base_link
-    object2: DH1
+    object2: arm_base_link
     operation: disable  # Adjacent in collision
-  - object1: DH1
-    object2: ConnBase
+  - object1: arm_base_link
+    object2: arm_base_connector
     operation: disable  # Adjacent in collision
-  - object1: DH1
-    object2: DH2
+  - object1: arm_base_link
+    object2: arm_link_1
     operation: disable  # Adjacent in collision
-  - object1: DH2
-    object2: DH3
+  - object1: arm_link_1
+    object2: arm_link_2
     operation: disable  # Adjacent in collision
-  - object1: DH3
-    object2: ConnLong1
+  - object1: arm_link_2
+    object2: arm_link_2_connector
     operation: disable  # Adjacent in collision
-  - object1: DH3
-    object2: DH4
+  - object1: arm_link_2
+    object2: arm_link_3
     operation: disable  # Adjacent in collision
-  - object1: DH4
-    object2: ConnLong2
+  - object1: arm_link_3
+    object2: arm_link_3_connector
     operation: disable  # Adjacent in collision
-  - object1: DH4
-    object2: DH5
+  - object1: arm_link_3
+    object2: arm_link_4
     operation: disable  # Adjacent in collision
-  - object1: DH5
-    object2: DH6
+  - object1: arm_link_4
+    object2: arm_link_5
     operation: disable  # Adjacent in collision
-  - object1: DH6
-    object2: Gripper
+  - object1: arm_link_5
+    object2: gripper
     operation: disable  # Adjacent in collision
-  - object1: Gripper
+  - object1: gripper
     object2: GFneg
     operation: disable  # Adjacent in collision
   - object1: GFneg
     object2: GFpos
     operation: disable  # Adjacent in collision
-  - object1: Gripper
-    object2: CameraMount
+  - object1: gripper
+    object2: camera_mount
     operation: disable  # Adjacent in collision
-  - object1: CameraMount
-    object2: Kinect
+  - object1: camera_mount
+    object2: kinect
     operation: disable  # Adjacent in collision
   - object1: base_link
     object2: tail
     operation: disable  # Adjacent in collision
-  - object1: CameraMount
-    object2: ConnLong2
+  - object1: camera_mount
+    object2: arm_link_3_connector
     operation: disable  # Never in collision
-  - object1: CameraMount
-    object2: DH4
+  - object1: camera_mount
+    object2: arm_link_3
     operation: disable  # Never in collision
-  - object1: CameraMount
-    object2: DH5
+  - object1: camera_mount
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: CameraMount
-    object2: DH6
+  - object1: camera_mount
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: CameraMount
+  - object1: camera_mount
     object2: GFneg
     operation: disable  # Never in collision
-  - object1: CameraMount
+  - object1: camera_mount
     object2: GFpos
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: ConnLong1
+  - object1: arm_base_connector
+    object2: arm_link_2_connector
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: DH2
+  - object1: arm_base_connector
+    object2: arm_link_1
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: DH3
+  - object1: arm_base_connector
+    object2: arm_link_2
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: DH4
+  - object1: arm_base_connector
+    object2: arm_link_3
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: DH5
+  - object1: arm_base_connector
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: ConnBase
-    object2: DH6
+  - object1: arm_base_connector
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: ConnBase
+  - object1: arm_base_connector
     object2: base_link
     operation: disable  # Never in collision
-  - object1: ConnBase
+  - object1: arm_base_connector
     object2: tail
     operation: disable  # Never in collision
-  - object1: ConnLong1
-    object2: ConnLong2
+  - object1: arm_link_2_connector
+    object2: arm_link_3_connector
     operation: disable  # Never in collision
-  - object1: ConnLong1
-    object2: DH2
+  - object1: arm_link_2_connector
+    object2: arm_link_1
     operation: disable  # Never in collision
-  - object1: ConnLong1
-    object2: DH4
+  - object1: arm_link_2_connector
+    object2: arm_link_3
     operation: disable  # Never in collision
-  - object1: ConnLong1
-    object2: DH5
+  - object1: arm_link_2_connector
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: ConnLong1
-    object2: DH6
+  - object1: arm_link_2_connector
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: ConnLong1
+  - object1: arm_link_2_connector
     object2: tail
     operation: disable  # Never in collision
-  - object1: ConnLong2
-    object2: DH3
+  - object1: arm_link_3_connector
+    object2: arm_link_2
     operation: disable  # Never in collision
-  - object1: ConnLong2
-    object2: DH5
+  - object1: arm_link_3_connector
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: ConnLong2
-    object2: DH6
+  - object1: arm_link_3_connector
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: ConnLong2
+  - object1: arm_link_3_connector
     object2: GFneg
     operation: disable  # Never in collision
-  - object1: ConnLong2
+  - object1: arm_link_3_connector
     object2: GFpos
     operation: disable  # Never in collision
-  - object1: ConnLong2
-    object2: Gripper
+  - object1: arm_link_3_connector
+    object2: gripper
     operation: disable  # Never in collision
-  - object1: ConnLong2
+  - object1: arm_link_3_connector
     object2: tail
     operation: disable  # Never in collision
-  - object1: DH2
-    object2: DH4
+  - object1: arm_link_1
+    object2: arm_link_3
     operation: disable  # Never in collision
-  - object1: DH2
-    object2: DH5
+  - object1: arm_link_1
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: DH2
-    object2: DH6
+  - object1: arm_link_1
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: DH2
+  - object1: arm_link_1
     object2: base_link
     operation: disable  # Never in collision
-  - object1: DH2
+  - object1: arm_link_1
     object2: tail
     operation: disable  # Never in collision
-  - object1: DH3
-    object2: DH5
+  - object1: arm_link_2
+    object2: arm_link_4
     operation: disable  # Never in collision
-  - object1: DH3
-    object2: DH6
+  - object1: arm_link_2
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: DH3
+  - object1: arm_link_2
     object2: base_link
     operation: disable  # Never in collision
-  - object1: DH3
+  - object1: arm_link_2
     object2: tail
     operation: disable  # Never in collision
-  - object1: DH4
-    object2: DH6
+  - object1: arm_link_3
+    object2: arm_link_5
     operation: disable  # Never in collision
-  - object1: DH4
+  - object1: arm_link_3
     object2: GFneg
     operation: disable  # Never in collision
-  - object1: DH4
+  - object1: arm_link_3
     object2: GFpos
     operation: disable  # Never in collision
-  - object1: DH4
-    object2: Gripper
+  - object1: arm_link_3
+    object2: gripper
     operation: disable  # Never in collision
-  - object1: DH4
+  - object1: arm_link_3
     object2: base_link
     operation: disable  # Never in collision
-  - object1: DH4
+  - object1: arm_link_3
     object2: tail
     operation: disable  # Never in collision
-  - object1: DH5
+  - object1: arm_link_4
     object2: GFneg
     operation: disable  # Never in collision
-  - object1: DH5
+  - object1: arm_link_4
     object2: GFpos
     operation: disable  # Never in collision
-  - object1: DH5
-    object2: Gripper
+  - object1: arm_link_4
+    object2: gripper
     operation: disable  # Never in collision
-  - object1: DH5
-    object2: Kinect
+  - object1: arm_link_4
+    object2: kinect
     operation: disable  # Never in collision
-  - object1: DH5
+  - object1: arm_link_4
     object2: base_link
     operation: disable  # Never in collision
-  - object1: DH5
+  - object1: arm_link_4
     object2: tail
     operation: disable  # Never in collision
-  - object1: DH6
+  - object1: arm_link_5
     object2: GFneg
     operation: disable  # Never in collision
-  - object1: DH6
+  - object1: arm_link_5
     object2: GFpos
     operation: disable  # Never in collision
-  - object1: DH6
-    object2: Kinect
+  - object1: arm_link_5
+    object2: kinect
     operation: disable  # Never in collision
-  - object1: DH6
+  - object1: arm_link_5
     object2: base_link
     operation: disable  # Never in collision
-  - object1: DH6
+  - object1: arm_link_5
     object2: tail
     operation: disable  # Never in collision
   - object1: GFneg
-    object2: Kinect
+    object2: kinect
     operation: disable  # Never in collision
   - object1: GFpos
-    object2: Gripper
+    object2: gripper
     operation: disable  # Never in collision
   - object1: GFpos
-    object2: Kinect
+    object2: kinect
     operation: disable  # Never in collision
-  - object1: Gripper
-    object2: Kinect
+  - object1: gripper
+    object2: kinect
     operation: disable  # Never in collision

@@ -59,12 +59,12 @@ speedBindings={# (translational x, rotational z)
 
 
 armBindingsDelta={# (joint_name/id, delta-angle)
-		'-':(3,+10), # arm_cam +up 'DH_4_5'
-		'h':(3,+10), # arm_cam +up 'DH_4_5'
+		'-':(3,+10), # arm_cam +up 'arm_joint_4'
+		'h':(3,+10), # arm_cam +up 'arm_joint_4'
 		'+':(3,-10), # arm_cam -down
 		'n':(3,-10), # arm_cam -down
-		'*':(0,+10), # arm_cam +right 'DH_1_2'
-		'b':(0,+10), # arm_cam +right 'DH_1_2'
+		'*':(0,+10), # arm_cam +right 'arm_joint_1'
+		'b':(0,+10), # arm_cam +right 'arm_joint_1'
 		'/':(0,-10), # arm_cam -left
 		'v':(0,-10), # arm_cam -left
 		}

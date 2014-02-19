@@ -24,7 +24,7 @@ int main (int argc, char **argv)
 
 	trajectory_msgs::JointTrajectory& traj = goal.trajectory;
 
-	std::vector<std::string> names = {"DH_5_6"};
+	std::vector<std::string> names = {"arm_joint_5"};
 	traj.joint_names = names;
 
 	trajectory_msgs::JointTrajectoryPoint p1, p2, p3, p4;

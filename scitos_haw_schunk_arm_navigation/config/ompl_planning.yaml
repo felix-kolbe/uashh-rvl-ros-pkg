@@ -13,7 +13,7 @@ SchunkArm:
     - LBKPIECEkConfig1
   projection_evaluator: joint_state
 SchunkArm_cartesian:
-  parent_frame: DH1
+  parent_frame: arm_base_link
   physical_group: SchunkArm
   planner_type: RPYIKTaskSpacePlanner
   state_spaces:
@@ -45,7 +45,7 @@ SchunkArm_cartesian:
     - SBLkConfig1
     - LBKPIECEkConfig1
   kinematics_solver: arm_kinematics_constraint_aware/KDLArmKinematicsPlugin
-  tip_name: Gripper
-  root_name: DH1
+  tip_name: gripper
+  root_name: arm_base_link
   projection_evaluator: joint_state
   longest_valid_segment_fraction: 0.001

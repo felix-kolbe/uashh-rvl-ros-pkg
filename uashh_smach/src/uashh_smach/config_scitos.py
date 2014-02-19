@@ -5,7 +5,7 @@ Created on Nov 26, 2013
 '''
 
 
-ARM_NAMES = ['DH_1_2', 'DH_2_3', 'DH_3_4', 'DH_4_5', 'DH_5_6']
+ARM_NAMES = ['arm_joint_1', 'arm_joint_2', 'arm_joint_3', 'arm_joint_4', 'arm_joint_5']
 
 ARM_POSE_FOLDED = [0, 0.52, 0.52, -1.57, 0]
 ARM_POSE_FOLDED_NAMED = dict(zip(ARM_NAMES, ARM_POSE_FOLDED))

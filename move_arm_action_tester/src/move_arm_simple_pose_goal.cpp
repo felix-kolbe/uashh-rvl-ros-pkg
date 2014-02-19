@@ -65,8 +65,8 @@ int main(int argc, char **argv){
 	goalA.motion_plan_request.allowed_planning_time = ros::Duration(5.0);
 
 	arm_navigation_msgs::SimplePoseConstraint desired_pose;
-	desired_pose.header.frame_id = "DH1";
-	desired_pose.link_name = "Gripper";
+	desired_pose.header.frame_id = "arm_base_link";
+	desired_pose.link_name = "gripper";
 	desired_pose.pose.position.x = x;
 	desired_pose.pose.position.y = y;
 	desired_pose.pose.position.z = z;
